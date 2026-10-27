@@ -28,6 +28,7 @@ a{color:inherit;text-decoration:none}
 #aside{max-width:300px;display:flex;flex-direction:column;gap:14px;color:var(--deep)}
 #aside h1{font-family:var(--serif-ko);font-size:40px;margin:0;line-height:1.1}
 #aside p{margin:0;font-size:14px;line-height:1.6;color:#41534F}
+#aside .beta{display:inline-block;margin-left:4px;padding:3px 9px;border-radius:999px;background:#D9ECEA;color:#2E6B68;font-weight:700;letter-spacing:1.5px;vertical-align:1px}
 #aside .betatag{font-family:var(--sans);font-size:11px;letter-spacing:3px;font-weight:700;text-transform:uppercase}
 #aside .lead{margin-top:10px;letter-spacing:-0.025em;white-space:pre-line} /* 제목과 24px (flex gap 14 + 10) */
 @media (max-width:820px){#aside{display:none}}
@@ -43,7 +44,6 @@ a{color:inherit;text-decoration:none}
 .scr::-webkit-scrollbar{display:none}
 @keyframes in{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
 .nav{display:flex;align-items:center;gap:10px;padding:52px 22px 0;flex:none}
-.nav .rule{flex:1;height:1px;background:currentColor;opacity:.45}
 .nav .lbl{font-weight:500;font-size:14px}
 .ibtn{width:40px;height:40px;display:grid;place-items:center;border-radius:20px;margin:-8px}
 .pill{display:flex;align-items:center;gap:6px;background:#fff;border-radius:16px;padding:4px 10px 4px 4px;font-size:12px;font-weight:700}
@@ -311,7 +311,7 @@ a{color:inherit;text-decoration:none}
 
 <div id="stage">
   <div id="aside">
-    <span class="betatag">ANSAN LIFE. BETA</span>
+    <span class="betatag">ANSAN LIFE. <b class="beta">BETA</b></span>
     <h1>안산살이</h1>
     <p class="lead" id="asideLead">안산살이는 휴대폰 화면에 맞춰 만들어졌어요.<br>지금은 모바일 크기로 보여드릴게요.</p>
   </div>
@@ -663,7 +663,7 @@ mn:{cont:'Үргэлжлүүлэх',contSub:'다음 단계로',menu:'Цэс',wel
 
 /* ---------- state ---------- */
 const st={lang:null,sel:null,stack:['intro'],bgOrange:true,photo:null,remind:false,notify:true,qi:0,answers:[],query:'',always:null};
-try{st.always=localStorage.getItem('al_naver')}catch(e){}
+try{localStorage.removeItem('al_naver')}catch(e){} // 예전 '항상 이 방법으로' 기억 지움: 이제 매번 고름
 st.adFreeUntil=0;try{st.adFreeUntil=+localStorage.getItem('al_adfree')||0}catch(e){}
 /* 설문: 보상(광고 제거·기프트카드) 지급 방식이 정해질 때까지 꺼 둠. 켜려면 true */
 const SURVEY_ON=false;
@@ -700,7 +700,7 @@ const nApp=q=>`nmap://search?query=${enc(q)}&appname=${enc(appname())}`;
 const nWeb=q=>`https://map.naver.com/p/search/${enc(q)}`;
 const storeUrl=()=>/iPhone|iPad|iPod/i.test(navigator.userAgent)?'https://apps.apple.com/app/id311867728':'https://play.google.com/store/apps/details?id=com.nhn.android.nmap';
 let naverQ='',naverAppUrl='';
-function openNaver(q,appUrl){naverQ=q;naverAppUrl=appUrl||nApp(q);if(st.always==='web'){window.open(nWeb(q),'_blank','noopener');return}if(st.always==='app'){tryApp(q);return}sheet('choose');}
+function openNaver(q,appUrl){naverQ=q;naverAppUrl=appUrl||nApp(q);sheet('choose');} /* 매번 앱/웹 선택 팝업 */
 function watchApp(){let gone=false;const h=()=>{if(document.hidden)gone=true};document.addEventListener('visibilitychange',h);addEventListener('blur',h);setTimeout(()=>{document.removeEventListener('visibilitychange',h);removeEventListener('blur',h);if(!gone&&!document.hidden)sheet('notinst')},1800);}
 function tryApp(q){const a=document.createElement('a');a.href=naverAppUrl||nApp(q);a.rel='noopener';document.body.appendChild(a);a.click();a.remove();watchApp();}
 
@@ -778,7 +778,7 @@ async function mountMaps(only){const els=only?[only]:[...app.querySelectorAll('.
 function openMed(key){const it=medPick(key);if(it){st.med.sel=it;go('hdetail');}}
 
 /* ---------- common pieces ---------- */
-const nav=(label,{menu=false,right=''}={})=>`<div class="nav">${menu?`<button class="ibtn" data-act="intro" aria-label="Language">${ic('menu',20)}</button>`:`<button class="ibtn" data-act="back" aria-label="Back">${ic('back',22)}</button>`}<span class="lbl">${label}</span><span class="rule"></span>${right}</div>`;
+const nav=(label,{menu=false,right=''}={})=>`<div class="nav">${menu?`<button class="ibtn" data-act="intro" aria-label="Language">${ic('menu',20)}</button>`:`<button class="ibtn" data-act="back" aria-label="Back">${ic('back',22)}</button>`}<span class="lbl">${label}</span><span style="flex:1"></span>${right}</div>`;
 const foot=''; /* 하단 세이지 띠는 없앴어요 */
 const langPill=()=>{const c=COUNTRIES.find(x=>x.lang===st.lang);return `<button class="pill" data-act="intro" aria-label="Change language"><span class="pflag">${flag(c.c,20)}</span>${T().lang}</button>`;};
 const ttl=(h,sub,{eye='',pin=false}={})=>`<div class="ttl">${eye?`<span class="eyebrow">${eye}</span>`:''}<h1 class="h1 ${isKo()?'ko':''}">${h}</h1>${sub?`<div class="sub">${pin?ic('spot',14,'#E45C4E'):''}${sub}</div>`:''}</div>`;
@@ -1180,7 +1180,7 @@ const adsenseBox=()=>`<div id="adslot" class="card" style="padding:8px"><ins cla
 /* 광고 순서: Supabase 직접 광고 → 애드센스 → (둘 다 없으면) 예시 광고 */
 function adSlot(){if(adFree())return adFreeRow();if(!hasSb())return hasAdsense()?adsenseBox():sampleAd();const a=st.ad[st.lang];
  if(a===undefined)return '<div id="adslot"></div>';if(a)return directAd(a);
- return hasAdsense()?adsenseBox():'';}
+ return hasAdsense()?adsenseBox():sampleAd();}
 const pickAd=list=>{const tot=list.reduce((n,a)=>n+(a.weight||1),0);let r=Math.random()*tot;for(const a of list){r-=a.weight||1;if(r<=0)return a}return list[0]||null};
 let adsenseLoaded=false;
 function mountAdsense(){if(!document.querySelector('ins.adsbygoogle:not([data-adsbygoogle-status])'))return;
@@ -1217,17 +1217,14 @@ function sheet(kind){const t=T();const o=document.createElement('div');o.classNa
   <div class="card row small" style="padding:10px 12px"><span class="dot" style="background:var(--accent)"></span><span class="kr b">${esc(naverQ)}</span></div>
   <a class="choice rec" href="${esc(naverAppUrl||nApp(naverQ))}" data-app="1">${dotI('mobile','var(--deep)','#fff',40)}<span class="col grow"><span class="row" style="gap:6px"><span class="b">${t.naverApp}</span><span class="badge" style="background:var(--accent);font-size:9px">${t.rec2}</span></span><span class="tiny muted">${t.naverAppS}</span></span>${ic('arrow',16,'#6E7472')}</a>
   <a class="choice" href="${nWeb(naverQ)}" target="_blank" rel="noopener" data-web="1">${dotI('web','#fff','#22393A',40)}<span class="col grow"><span class="b">${t.naverWeb}</span><span class="tiny muted">${t.naverWebS}</span></span>${ic('ext',16,'#6E7472')}</a>
-  <button class="row small" id="alw" style="text-align:left"><span class="ck" role="checkbox" aria-checked="false"></span>${t.always}</button>
   <div class="soft-accent row" style="background:rgba(228,92,78,.08)">${ic('globe',18,'#E45C4E')}<span class="col"><span class="b small">${t.langTip}</span><span class="tiny muted">${t.langTipS}</span></span></div></div>`;}
  else{o.innerHTML=`<div class="bs"><span class="grab"></span>${dotI('download','var(--bg)','#22393A',44)}<span class="h1" style="font-size:24px">${t.notInst}</span><span class="small muted" style="line-height:1.5">${t.notInstS}</span>
   <a class="btn dark" href="${storeUrl()}" target="_blank" rel="noopener">${ic('download',18,'#fff')}${t.install}</a>
   <a class="btn line" href="${nWeb(naverQ)}" target="_blank" rel="noopener">${ic('web',18)}${t.onWeb}${ic('ext',14,'#6E7472')}</a></div>`;}
- o.addEventListener('click',e=>{if(e.target===o)o.remove();const a=e.target.closest('[data-app]');const w=e.target.closest('[data-web]');const al=e.target.closest('#alw');
-  if(al){const c=al.querySelector('.ck');const v=c.getAttribute('aria-checked')!=='true';c.setAttribute('aria-checked',v);c.innerHTML=v?ic('check',12,'#fff',3):'';o.dataset.always=v?'1':'';}
-  if(a){remember(o,'app');setTimeout(()=>o.remove(),50);watchApp();}
-  if(w){remember(o,'web');setTimeout(()=>o.remove(),50);}});
+ o.addEventListener('click',e=>{if(e.target===o)o.remove();const a=e.target.closest('[data-app]');const w=e.target.closest('[data-web]');
+  if(a){setTimeout(()=>o.remove(),50);watchApp();}
+  if(w){setTimeout(()=>o.remove(),50);}});
  app.appendChild(o);}
-function remember(o,v){if(o.dataset.always){st.always=v;try{localStorage.setItem('al_naver',v)}catch(e){}}}
 
 /* ---------- camera (HTTPS only; falls back to the photo picker) ---------- */
 let camStream=null;

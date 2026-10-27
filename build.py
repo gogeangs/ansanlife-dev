@@ -85,7 +85,7 @@ def main() -> None:
     else:
         out = ROOT / "index.html"
     pwa = "" if inline else ('<link rel="manifest" href="manifest.webmanifest">\n'
-                              '<link rel="icon" href="assets/icon-192.png" type="image/png">\n'
+                              '<link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">\n<link rel="icon" href="assets/favicon-192.png" sizes="192x192" type="image/png">\n'
                               '<link rel="apple-touch-icon" href="assets/icon-180.png">\n'
                               '<meta name="apple-mobile-web-app-capable" content="yes">\n'
                               '<meta name="apple-mobile-web-app-title" content="안산살이">\n')
