@@ -167,7 +167,7 @@ const busKey = env => env.BUS_KEY || env.DATA_GO_KR_KEY;
 async function gbis(path, params, env) {
   const q = new URLSearchParams({ ...params, format: 'json' });
   const r = await fetch(`${GBIS}/${path}?serviceKey=${encodeURIComponent(busKey(env))}&${q}`, { cf: { cacheTtl: 15 } });
-  if (!r.ok) throw new Error('http ' + r.status);
+  if (!r.ok) throw new Error('http ' + r.status + ' ' + (await r.text().catch(() => '')).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80));
   const text = await r.text();
   if (!text.trimStart().startsWith('{')) {
     // 인증키 오류 등은 XML(<OpenAPI_ServiceResponse>)로 옴
@@ -235,7 +235,7 @@ const MED = {
 async function nmc(path, params, env, ttl) {
   const q = new URLSearchParams({ ...params, _type: 'json' });
   const r = await fetch(`${NMC}/${path}?serviceKey=${encodeURIComponent(env.DATA_GO_KR_KEY)}&${q}`, { headers: { accept: 'application/json' }, cf: { cacheTtl: ttl, cacheEverything: true } });
-  if (!r.ok) throw new Error('http ' + r.status);
+  if (!r.ok) throw new Error('http ' + r.status + ' ' + (await r.text().catch(() => '')).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80));
   const text = await r.text();
   // 국립중앙의료원 API 는 _type=json 을 줘도 XML 로 응답함(2026-10-27 실제 키로 확인). 둘 다 처리
   if (text.trimStart().startsWith('{')) {
