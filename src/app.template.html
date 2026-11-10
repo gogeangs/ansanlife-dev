@@ -733,7 +733,8 @@ const hasMapKey=()=>okKey(NAVER_KEY)||okKey(GMAPS_KEY);
 const pinHtml=p=>p.dot?`<div class="mdot ${p.pharm?'ph':''}" title="${esc(p.title||'')}"></div>`:`<div class="npin ${p.home?'home':''}"><b></b><span>${p.label}</span></div>`;
 let naverP=null,googleP=null;const geoCache={};
 function loadNaver(){if(!okKey(NAVER_KEY))return Promise.resolve(null);if(naverP)return naverP;
- naverP=new Promise(res=>{window.navermap_authFailure=()=>res(null);const s=document.createElement('script');s.src=`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${enc(NAVER_KEY)}&submodules=geocoder`;s.onload=()=>res(window.naver&&window.naver.maps?window.naver:null);s.onerror=()=>res(null);document.head.appendChild(s);});return naverP;}
+ naverP=new Promise(res=>{window.navermap_authFailure=()=>res(null);const s=document.createElement('script');s.src=`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${enc(NAVER_KEY)}&submodules=geocoder`;s.onload=()=>{/* geocoder 모듈(maps-geocoder.js)은 maps.js 뒤에 따로 로드됨 → Service 가 생길 때까지 기다림 */
+  const t0=Date.now();const ready=()=>{const N=window.naver;if(N&&N.maps&&N.maps.Service&&N.maps.Service.geocode)return res(N);if(Date.now()-t0>8000)return res(N&&N.maps?N:null);setTimeout(ready,100);};ready();};s.onerror=()=>res(null);document.head.appendChild(s);});return naverP;}
 const GLANG={ko:'ko',en:'en',vi:'vi',zh:'zh-CN',ru:'ru',uz:'uz',mn:'mn'};
 function loadGoogle(){if(!okKey(GMAPS_KEY))return Promise.resolve(null);if(googleP)return googleP;
  googleP=new Promise(res=>{let done=false;const fin=v=>{if(!done){done=true;res(v)}};
@@ -748,13 +749,13 @@ function gPinClass(G){if(GPin)return GPin;GPin=class extends G.maps.OverlayView{
   onAdd(){this.getPanes().overlayMouseTarget.appendChild(this.d);}draw(){const q=this.getProjection().fromLatLngToDivPixel(this.pos);if(q){this.d.style.left=q.x+'px';this.d.style.top=q.y+'px';}}onRemove(){this.d.remove();}};return GPin;}
 const PROV={
  naver:N=>({ll:(a,b)=>new N.maps.LatLng(a,b),
-  geocode:addr=>geoCache[addr]||(geoCache[addr]=new Promise(res=>{try{N.maps.Service.geocode({query:addr},(status,r)=>{const a=status===N.maps.Service.Status.OK&&r.v2&&r.v2.addresses&&r.v2.addresses[0];res(a?new N.maps.LatLng(+a.y,+a.x):null);});}catch(e){res(null)}})),
+  geocode:addr=>geoCache[addr]||(geoCache[addr]=new Promise(res=>{try{N.maps.Service.geocode({query:addr},(status,r)=>{const a=status===N.maps.Service.Status.OK&&r.v2&&r.v2.addresses&&r.v2.addresses[0];if(!a)delete geoCache[addr];res(a?new N.maps.LatLng(+a.y,+a.x):null);});}catch(e){delete geoCache[addr];res(null)}})),
   draw(el,spec,pts){let map=el._map;if(!map){map=el._map=new N.maps.Map(el.querySelector('.live'),{center:pts[pts.length-1].ll,zoom:spec.zoom,scaleControl:false,mapDataControl:false,logoControlOptions:{position:N.maps.Position.BOTTOM_RIGHT}});}
    (el._pins||[]).forEach(m=>m.setMap(null));
    el._pins=pts.map(p=>{const mk=new N.maps.Marker({position:p.ll,map,icon:{content:pinHtml(p),anchor:new N.maps.Point(0,0)}});if(p.med)N.maps.Event.addListener(mk,'click',()=>openMed(p.med));return mk;});
    if(pts.length>1){const b=new N.maps.LatLngBounds(pts[0].ll,pts[0].ll);pts.forEach(p=>b.extend(p.ll));map.fitBounds(b,{top:50,right:40,bottom:30,left:40});}else map.setCenter(pts[0].ll);}}),
  google:G=>({ll:(a,b)=>new G.maps.LatLng(a,b),
-  geocode:addr=>geoCache[addr]||(geoCache[addr]=new Promise(res=>{try{new G.maps.Geocoder().geocode({address:addr,region:'KR'},(r,s)=>res(s==='OK'&&r[0]?r[0].geometry.location:null));}catch(e){res(null)}})),
+  geocode:addr=>geoCache[addr]||(geoCache[addr]=new Promise(res=>{try{new G.maps.Geocoder().geocode({address:addr,region:'KR'},(r,s)=>{const ok=s==='OK'&&r[0];if(!ok)delete geoCache[addr];res(ok?r[0].geometry.location:null);});}catch(e){delete geoCache[addr];res(null)}})),
   draw(el,spec,pts){let map=el._map;if(!map){map=el._map=new G.maps.Map(el.querySelector('.live'),{center:pts[pts.length-1].ll,zoom:spec.zoom,disableDefaultUI:true,clickableIcons:false,gestureHandling:'cooperative',keyboardShortcuts:false,styles:GSTYLE,backgroundColor:'#DCE6E7'});}
    (el._pins||[]).forEach(m=>m.setMap(null));const P=gPinClass(G);
    el._pins=pts.map(p=>{const o=new P(p.ll,p);o.setMap(map);return o;});
