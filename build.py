@@ -57,6 +57,17 @@ def main() -> None:
     html = html.replace("const GMAPS_KEY='__GMAPS_KEY__';", f"const GMAPS_KEY='{gkey}';")
     # 비어 있으면 사진 분석·버스·공지는 예시 데이터로 보여줍니다.
     html = html.replace("'__API_URL__'", f"'{analyze}'")
+    # Supabase Edge Function 을 API 로 쓸 때: 공개 anon 키(JWT, eyJ…). 비밀 키(service_role)는 절대 넣지 말 것
+    api_key = os.environ.get("API_KEY", "").strip()
+    if api_key:
+        import json as _j, base64 as _b
+        try:
+            role = _j.loads(_b.urlsafe_b64decode(api_key.split(".")[1] + "==")).get("role")
+        except Exception:
+            role = None
+        if role != "anon":
+            sys.exit("API_KEY 는 Supabase anon(공개) JWT 키여야 합니다 (service_role 금지)")
+    html = html.replace("'__API_KEY__'", f"'{api_key}'")
     # Supabase 공개(anon) 키·애드센스는 원래 공개되는 값이라 빌드에 넣어도 됩니다 (비밀 키는 절대 넣지 마세요)
     sb_url = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
     sb_key = os.environ.get("SUPABASE_ANON_KEY", "").strip()

@@ -90,7 +90,7 @@ function cors(origin, env) {
   return {
     ...(ok ? { 'access-control-allow-origin': origin, vary: 'origin' } : {}),
     'access-control-allow-methods': 'GET, POST, OPTIONS',
-    'access-control-allow-headers': 'content-type',
+    'access-control-allow-headers': 'content-type, authorization, apikey, x-client-info',
     'access-control-max-age': '86400',
   };
 }

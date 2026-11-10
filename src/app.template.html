@@ -717,8 +717,11 @@ async function sb(path,opt={},ms=10000){const ctl=new AbortController();const to
 /* 광고 네트워크(애드센스): 직접 광고가 없을 때만 */
 const ADS_CLIENT='__ADSENSE_CLIENT__',ADS_SLOT='__ADSENSE_SLOT__';
 const hasAdsense=()=>/^ca-pub-\d+$/.test(ADS_CLIENT)&&/^\d+$/.test(ADS_SLOT);
+/* API 가 Supabase Edge Function 이면 공개 anon 키(JWT)를 같이 보냄 (함수의 JWT 검증 통과용, 비밀값 아님) */
+const API_KEY='__API_KEY__';
+const apiHeaders=(h={})=>okKey(API_KEY)?{...h,authorization:'Bearer '+API_KEY,apikey:API_KEY}:h;
 async function api(path,opt={},ms=12000){const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),ms);
- try{const r=await fetch(API_URL+path,{...opt,signal:ctl.signal});if(!r.ok)throw new Error('http '+r.status);return await r.json();}finally{clearTimeout(to)}}
+ try{const r=await fetch(API_URL+path,{...opt,headers:apiHeaders(opt.headers||{}),signal:ctl.signal});if(!r.ok)throw new Error('http '+r.status);return await r.json();}finally{clearTimeout(to)}}
 const MAPS={
  hosp:()=>{const m=st.med&&st.med.sel;if(!m||m.lat==null)return null;const p=[{lat:m.lat,lng:m.lng,label:esc(m.name)}];if(st.med.pos)p.unshift({lat:st.med.pos.lat,lng:st.med.pos.lng,label:esc(HT().you),home:true});return {zoom:16,pts:p};},
  medlist:()=>{const m=st.med;if(!m||!m.pos||!m.hosp)return null;const all=medAll();const list=medList().slice(0,20);
@@ -1243,7 +1246,7 @@ const DESTS=Object.keys(DEST);
 const clip=v=>String(v||'').slice(0,60);
 async function analyze(dataUrl){const m=/^data:([^;]+);base64,(.*)$/.exec(dataUrl||'');if(!m)return null;
  const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),25000);
- try{const r=await fetch(API_URL+'/analyze',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({image:m[2],mediaType:m[1],lang:st.lang}),signal:ctl.signal});
+ try{const r=await fetch(API_URL+'/analyze',{method:'POST',headers:apiHeaders({'content-type':'application/json'}),body:JSON.stringify({image:m[2],mediaType:m[1],lang:st.lang}),signal:ctl.signal});
   if(!r.ok)return null;const j=await r.json();if(!j||!DESTS.includes(j.dest))return null;
   return {dest:j.dest,name:clip(j.name),name_ko:clip(j.name_ko),confidence:Math.max(0,Math.min(1,+j.confidence||0)),
    candidates:(Array.isArray(j.candidates)?j.candidates:[]).filter(c=>c&&DESTS.includes(c.dest)).slice(0,3).map(c=>({dest:c.dest,name:clip(c.name),name_ko:clip(c.name_ko)}))};}
