@@ -289,7 +289,7 @@ a{color:inherit;text-decoration:none}
 /* live map (Naver Maps JS v3) */
 .nmap{position:relative;overflow:hidden;background:#DCE6E7}
 .nmap.mini{height:170px;border-radius:20px;flex:none}
-.nmap .live{position:absolute;inset:0;opacity:0;transition:opacity .4s}
+.nmap .live{position:absolute!important;inset:0;width:100%;height:100%;opacity:0;transition:opacity .4s} /* 네이버 지도가 컨테이너를 relative 로 바꿔 높이가 0이 되는 것 방지 */
 .nmap.ready .live{opacity:1}
 .nmap.ready .fallback{visibility:hidden}
 .nmap .fallback{position:absolute;inset:0;width:100%;height:100%}
