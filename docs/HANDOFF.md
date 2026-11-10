@@ -114,3 +114,5 @@ Figma 색상 변수 컬렉션 "Ansan Life" (color/accent, deep, sage, background
 - 공지는 한국어로만 넣으세요(Supabase `notices`, 또는 임시로 `data/notices.json`). 번역은 서버가 하고, 내용이 바뀌면 다시 번역합니다.
 - Supabase `service_role` 키는 앱·저장소·Worker 어디에도 넣지 마세요. 앱에는 anon(공개) 키만 들어갑니다.
 - 앱 형태는 2026-10-27 결정대로 웹앱(PWA) 먼저. 스토어 앱은 필요할 때 같은 코드를 감싸서(Capacitor 등) 진행
+
+- 2026-11-10 네이버 Maps 애플리케이션 `ansanlife` 등록(Dynamic Map, Geocoding, Reverse Geocoding, Web URL `https://gogeangs.github.io`). Client ID `kietj7clel` 로 시험 주소 빌드. 정식 도메인이 생기면 NCP 콘솔 Maps › ansanlife › 변경에서 Web 서비스 URL 추가
