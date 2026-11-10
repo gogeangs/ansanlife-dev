@@ -159,15 +159,28 @@ function findKey(o, key, depth = 0) {
   for (const v of Object.values(o)) { const r = findKey(v, key, depth + 1); if (r !== undefined) return r; }
   return undefined;
 }
+// 공공데이터포털 오류: 원인 코드만 기록·응답 (인증키는 오류 문구에 넣지 않음)
+function upstreamErr(where, e, h) {
+  const why = String(e?.message || e).replace(/serviceKey=[^&\s]*/gi, 'serviceKey=…').slice(0, 120);
+  console.error(`[${where}] ${why}`);
+  return json({ error: 'upstream', why }, 502, h);
+}
 const busKey = env => env.BUS_KEY || env.DATA_GO_KR_KEY;
 async function gbis(path, params, env) {
   const q = new URLSearchParams({ ...params, format: 'json' });
   const r = await fetch(`${GBIS}/${path}?serviceKey=${encodeURIComponent(busKey(env))}&${q}`, { cf: { cacheTtl: 15 } });
-  if (!r.ok) throw new Error('upstream');
-  const j = await r.json();
+  if (!r.ok) throw new Error('http ' + r.status);
+  const text = await r.text();
+  if (!text.trimStart().startsWith('{')) {
+    // 인증키 오류 등은 XML(<OpenAPI_ServiceResponse>)로 옴
+    const err = (text.match(/<returnReasonCode>\s*([^<]*?)\s*<\/returnReasonCode>/) || [])[1];
+    const msg = (text.match(/<returnAuthMsg>\s*([^<]*?)\s*<\/returnAuthMsg>/) || [])[1];
+    throw new Error('upstream ' + (err || 'format') + (msg ? ' ' + msg : ''));
+  }
+  const j = JSON.parse(text);
   const code = Number(findKey(j, 'resultCode'));
   if (code === 4) return null; // 결과 없음
-  if (code !== 0 && !Number.isNaN(code)) throw new Error('upstream');
+  if (code !== 0 && !Number.isNaN(code)) throw new Error('upstream ' + code + ' ' + String(findKey(j, 'resultMessage') ?? ''));
   return j;
 }
 const num = v => (v === '' || v == null || Number.isNaN(Number(v)) ? null : Number(v));
@@ -209,7 +222,7 @@ async function busRoute(url, env, h) {
     if (!(lat > 33 && lat < 39 && lng > 124 && lng < 132)) return json({ error: 'coords' }, 400, h);
     const j = await gbis('busstationservice/v2/getBusStationAroundListv2', { x: lng.toFixed(6), y: lat.toFixed(6) }, env);
     return json({ stops: j ? mapStops(j) : [] }, 200, { ...h, 'cache-control': 'max-age=300' });
-  } catch { return json({ error: 'upstream' }, 502, h); }
+  } catch (e) { return upstreamErr('bus', e, h); }
 }
 
 /* ---------- 병원 · 약국 (국립중앙의료원, 공공데이터포털) ----------
@@ -224,7 +237,7 @@ const MED = {
 async function nmc(path, params, env, ttl) {
   const q = new URLSearchParams({ ...params, _type: 'json' });
   const r = await fetch(`${NMC}/${path}?serviceKey=${encodeURIComponent(env.DATA_GO_KR_KEY)}&${q}`, { headers: { accept: 'application/json' }, cf: { cacheTtl: ttl, cacheEverything: true } });
-  if (!r.ok) throw new Error('upstream');
+  if (!r.ok) throw new Error('http ' + r.status);
   const text = await r.text();
   // 국립중앙의료원 API 는 _type=json 을 줘도 XML 로 응답함(2026-10-27 실제 키로 확인). 둘 다 처리
   if (text.trimStart().startsWith('{')) {
@@ -245,7 +258,8 @@ function parseXmlItems(xml) {
   if (code == null) {
     // 인증키 오류 등은 <OpenAPI_ServiceResponse> 형태로 옴
     const err = (xml.match(/<returnReasonCode>\s*([^<]*?)\s*<\/returnReasonCode>/) || [])[1];
-    throw new Error('upstream ' + (err || 'format'));
+    const msg = (xml.match(/<returnAuthMsg>\s*([^<]*?)\s*<\/returnAuthMsg>/) || [])[1];
+    throw new Error('upstream ' + (err || 'format') + (msg ? ' ' + msg : ''));
   }
   if (code !== '00' && code !== '0') throw new Error('upstream ' + code);
   const items = [];
@@ -296,7 +310,7 @@ async function medRoute(url, env, h) {
     // 좌표를 약 100m 단위로 맞춰 캐시가 잘 맞게 함
     const items = await nmc(MED[kind].near, { WGS84_LON: lng.toFixed(3), WGS84_LAT: lat.toFixed(3), pageNo: '1', numOfRows: '40' }, env, 600);
     return json({ kind, items: mapMed(items, kind) }, 200, { ...h, 'cache-control': 'max-age=300' });
-  } catch { return json({ error: 'upstream' }, 502, h); }
+  } catch (e) { return upstreamErr('med', e, h); }
 }
 
 /* ---------- 공지 번역 ----------
