@@ -163,7 +163,7 @@ function upstreamErr(where, e, h) {
   console.error(`[${where}] ${why}`);
   return json({ error: 'upstream', why }, 502, h);
 }
-const busKey = env => env.BUS_KEY || env.DATA_GO_KR_KEY;
+const busKey = env => String(env.BUS_KEY || env.DATA_GO_KR_KEY || '').trim();
 async function gbis(path, params, env) {
   const q = new URLSearchParams({ ...params, format: 'json' });
   const r = await fetch(`${GBIS}/${path}?serviceKey=${encodeURIComponent(busKey(env))}&${q}`, { cf: { cacheTtl: 15 } });
@@ -234,7 +234,7 @@ const MED = {
 };
 async function nmc(path, params, env, ttl) {
   const q = new URLSearchParams({ ...params, _type: 'json' });
-  const r = await fetch(`${NMC}/${path}?serviceKey=${encodeURIComponent(env.DATA_GO_KR_KEY)}&${q}`, { headers: { accept: 'application/json' }, cf: { cacheTtl: ttl, cacheEverything: true } });
+  const r = await fetch(`${NMC}/${path}?serviceKey=${encodeURIComponent(String(env.DATA_GO_KR_KEY).trim())}&${q}`, { headers: { accept: 'application/json' }, cf: { cacheTtl: ttl, cacheEverything: true } });
   if (!r.ok) throw new Error('http ' + r.status + ' ' + (await r.text().catch(() => '')).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80));
   const text = await r.text();
   // 국립중앙의료원 API 는 _type=json 을 줘도 XML 로 응답함(2026-10-27 실제 키로 확인). 둘 다 처리

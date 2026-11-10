@@ -58,7 +58,8 @@ const ENV = new Proxy({}, {
   get(_, k) {
     if (k === 'TR_KV') return TR_KV;
     if (k === 'LIMITER') return LIMITER;
-    return Deno.env.get(String(k)) || DEFAULTS[k];
+    // 대시보드에 붙여 넣을 때 딸려 온 줄바꿈·공백 제거 (복사 시 흔함)
+    return (Deno.env.get(String(k)) || '').trim() || DEFAULTS[k];
   },
 });
 
