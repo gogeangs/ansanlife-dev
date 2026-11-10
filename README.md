@@ -32,7 +32,7 @@ NAVER_KEY=발급받은_Client_ID python3 build.py
 
 ## API 서버 켜기 (사진 분석 · 버스 실시간 · 공지 번역)
 
-`server/worker.js` 는 Cloudflare Worker 하나로 세 가지를 맡습니다. 배포 방법은 [server/README.md](server/README.md) 에 있습니다.
+`server/worker.js` 하나가 API 를 모두 맡고, **Supabase Edge Function** 으로 돌립니다(Cloudflare Worker 로도 배포 가능). 배포 방법은 [supabase/README.md](supabase/README.md) 3장, 경로 설명은 [server/README.md](server/README.md) 에 있습니다.
 
 | 기능 | 필요한 키 (Worker secret) | 서버 없을 때 |
 | --- | --- | --- |
@@ -94,7 +94,7 @@ Supabase 없이 빌드하면 예시 광고가 나오고, 설문 응답은 기기
 | `manifest.webmanifest`, `sw.js` | 앱 설치(PWA) · 오프라인 |
 | `data/notices.json` | Supabase 를 쓰기 전 임시 공지 원문 (서버가 번역) |
 | `assets/` | 인트로 배경 이미지 (주황 노을, 하늘색), 원본 PNG, 앱 아이콘 |
-| `server/` | API 서버 (Cloudflare Worker): 사진 분석, 경기도 버스, 공지 번역 |
+| `server/` | API 서버 원본 (`worker.js`): 사진 분석, 경기도 버스, 병원·약국, 공지 번역. `supabase/build_edge.py` 로 Edge Function 변환 |
 | `supabase/` | DB 스키마·보안 규칙(`schema.sql`), 관리자 권한(`admin.sql`), 설정·운영 방법 |
 | `src/admin.template.html` → `admin.html` | 공지 관리 페이지 (빌드 시 Supabase 공개 키가 들어감) |
 | `docs/HANDOFF.md` | 인수인계 메모: 디자인 규칙, 구현 상태, 남은 일, 출처 |

@@ -16,10 +16,35 @@
    SUPABASE_URL=https://xxxx.supabase.co SUPABASE_ANON_KEY=<anon 키> \
    NAVER_KEY=... API_URL=... python3 build.py
    ```
-5. 공지 번역을 Supabase 에서 읽게 하려면 `server/wrangler.toml` 의 `NOTICES_URL` 을 아래로 바꾸고 `NOTICES_KEY` 에 같은 anon 키를 넣은 뒤 `npx wrangler deploy`.
+5. 공지 번역은 아래 3장의 API(Edge Function)가 Supabase 공지를 바로 읽습니다. 따로 설정할 것 없음.
+
+## 3. API 서버 (Edge Function `api`) — 현재 운영 방식
+
+사진 분석·버스·병원/약국·공지 번역 API 를 Cloudflare 대신 **Supabase Edge Function** 으로 돌립니다. 코드 원본은 `server/worker.js` 하나이고, `supabase/build_edge.py` 가 이를 Edge Function 용 `supabase/functions/api/index.ts` 로 바꿉니다.
+
+- 주소: `https://<ref>.supabase.co/functions/v1/api` (현재 `https://mriuywhiaaslmcdrfhfh.supabase.co/functions/v1/api`)
+- 캐시·횟수 제한: Cloudflare KV / Rate Limiting 대신 `supabase/edge.sql` 의 `kv_cache`, `rate_hits`, `rate_hit()` (IP당 60초에 20회)
+- **Verify JWT 는 켠 채로 둡니다.** 앱이 공개 anon 키(JWT, `role=anon`)를 `authorization`·`apikey` 헤더로 보냅니다. 빌드 변수 `API_KEY` — `build.py` 가 role 이 anon 이 아니면 빌드를 멈춥니다.
+
+**배포 순서**
+1. SQL Editor 에서 `supabase/edge.sql` 실행 (한 번)
+2. `python3 supabase/build_edge.py` → `supabase/functions/api/index.ts` 생성
+3. 대시보드 **Edge Functions › api › Code** 에 붙여 넣고 **Deploy updates** (또는 `supabase functions deploy api`)
+4. **Edge Functions › Secrets** 에 키 입력
+   | 이름 | 값 | 없으면 |
+   | --- | --- | --- |
+   | `ANTHROPIC_API_KEY` | Claude API 키 (console.anthropic.com) | 사진 분석·공지 번역 안 됨 (`config` 오류) |
+   | `DATA_GO_KR_KEY` | 공공데이터포털 **Decoding** 인증키 | 버스·병원·약국 예시 데이터 |
+   | `BUS_KEY` (선택) | 버스 API 를 다른 계정으로 신청했을 때만 | `DATA_GO_KR_KEY` 사용 |
+   | `ALLOWED_ORIGIN` (선택) | 앱 주소, 쉼표로 여러 개 | 기본: gogeangs·eugenekimkim github.io |
+   `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` 는 Supabase 가 자동으로 넣어 줍니다.
+5. 앱 빌드
+   ```bash
+   API_URL=https://<ref>.supabase.co/functions/v1/api API_KEY=<anon JWT (Legacy API keys 탭)> \
+   SUPABASE_URL=... SUPABASE_ANON_KEY=... NAVER_KEY=... python3 build.py
    ```
-   https://xxxx.supabase.co/rest/v1/notices?select=id,type,title,body,date,url,sample&published=is.true&order=sort.desc,created_at.desc
-   ```
+
+**무료 플랜 주의:** 7일 동안 요청이 없으면 프로젝트가 일시 정지됩니다(대시보드에서 Resume). 정식 출시 때는 Pro($25/월) 권장.
 
 ## 2. 공지 관리 페이지 (admin.html) — 추천
 

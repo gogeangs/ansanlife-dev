@@ -1,4 +1,6 @@
-# API 서버 (Cloudflare Worker)
+# API 서버 (`worker.js`)
+
+> **현재 운영: Supabase Edge Function** — 배포·secret 입력은 [supabase/README.md](../supabase/README.md) 3장을 보세요. 아래 Cloudflare 방법은 대안으로 남겨 둡니다.
 
 `worker.js` 하나로 세 가지를 맡습니다.
 
