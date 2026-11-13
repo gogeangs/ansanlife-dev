@@ -142,10 +142,11 @@ a{color:inherit;text-decoration:none}
 .toprule{display:flex;align-items:center;gap:10px;padding:0 32px}
 .toprule i{display:block;width:120px;height:1px;background:var(--deep);opacity:.55}
 .welcome{padding:24px 32px 0}
+.adcard,.instcard{border-radius:12px}
 .instcard{position:relative;background:#fff;border:1px solid var(--hair);padding:14px 30px 14px 14px;gap:12px}
-.instcard .appic{width:44px;height:44px;border-radius:12px;flex:none;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.instcard .appic{width:32px;height:32px;border-radius:8px;flex:none;object-fit:cover}
 .instcard .grow{padding-right:4px}
-.instbtn{width:38px;height:38px;border-radius:50%;background:var(--deep);display:grid;place-items:center;flex:none}
+.instbtn{width:32px;height:32px;border-radius:50%;background:var(--accent);display:grid;place-items:center;flex:none}
 .instx{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center}
 .instx:hover{background:rgba(0,0,0,.05)}
 .welcome .w{font-family:var(--serif);font-style:italic;font-size:20px;opacity:.85}
@@ -844,8 +845,7 @@ SCR.home=()=>{const t=T();const icons=['trash','bus','office','med','mega','surv
  return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu,{menu:true,right:langPill()})}
  ${ttl(t.homeT,`<span>${fmtDay(new Date())}</span>`,{eye:t.welcome})}
  <div class="sheet"><nav class="toc">${t.items.map((x,i)=>`<button ${i===5&&!SURVEY_ON?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:''}</span><span class="n">0${i+1}</span></button>`).join('')}</nav>
- <div style="margin-top:8px">${adSlot()}</div>
- ${installCard()}
+ <div style="margin-top:8px;display:flex;flex-direction:column;gap:12px">${installCard()}${adSlot()}</div>
  <div class="quote"><div class="col" style="gap:6px"><span class="serif" style="font-size:16px">${t.tipT}</span><span class="small muted" style="line-height:1.55">${t.tipB}</span></div></div>
  </div>${foot}</div>`;};
 
@@ -1191,11 +1191,11 @@ SCR.ndetail=()=>{const t=T();const n=(st.news[st.lang]&&st.news[st.lang].notices
 
 /* ads: 직접 계약 광고(Supabase) → 없으면 애드센스 → 없으면 비움. Supabase 미설정(시제품)일 때만 예시 광고 */
 st.ad={};
-const sampleAd=()=>{const t=T();return `<div class="card row"><div class="col grow" style="gap:3px"><span class="row cap" style="gap:6px"><span class="dot" style="background:var(--accent);width:6px;height:6px"></span>${t.sponsored}</span><span class="serif" style="font-size:15px">${t.adT}</span><span class="small muted">${t.adS}</span></div><span style="width:64px;height:64px;border-radius:14px;background:#FBE7D6;display:grid;place-items:center;flex:none">${ic('gift',22,'#9A6A44')}</span></div>`};
+const sampleAd=()=>{const t=T();return `<div class="card row adcard"><div class="col grow" style="gap:3px"><span class="row cap" style="gap:6px"><span class="dot" style="background:var(--accent);width:6px;height:6px"></span>${t.sponsored}</span><span class="serif" style="font-size:15px">${t.adT}</span><span class="small muted">${t.adS}</span></div><span style="width:64px;height:64px;border-radius:14px;background:#FBE7D6;display:grid;place-items:center;flex:none">${ic('gift',22,'#9A6A44')}</span></div>`};
 const directAd=a=>{const t=T();const img=a.image_url&&/^https:\/\//.test(a.image_url)?`<img src="${esc(a.image_url)}" alt="" style="width:64px;height:64px;border-radius:14px;object-fit:cover;flex:none">`:`<span style="width:64px;height:64px;border-radius:14px;background:#FBE7D6;display:grid;place-items:center;flex:none">${ic('gift',22,'#9A6A44')}</span>`;
  const inner=`<div class="col grow" style="gap:3px"><span class="row cap" style="gap:6px"><span class="dot" style="background:var(--accent);width:6px;height:6px"></span>${t.adLbl}</span><span class="serif" style="font-size:15px">${esc(a.title)}</span>${a.body?`<span class="small muted">${esc(a.body)}</span>`:''}</div>${img}`;
- return a.url&&/^https:\/\//.test(a.url)?`<a class="card row" href="${esc(a.url)}" target="_blank" rel="noopener sponsored">${inner}</a>`:`<div class="card row">${inner}</div>`};
-const adsenseBox=()=>`<div id="adslot" class="card" style="padding:8px"><ins class="adsbygoogle" style="display:block" data-ad-client="${ADS_CLIENT}" data-ad-slot="${ADS_SLOT}" data-ad-format="auto" data-full-width-responsive="true"></ins></div>`;
+ return a.url&&/^https:\/\//.test(a.url)?`<a class="card row adcard" href="${esc(a.url)}" target="_blank" rel="noopener sponsored">${inner}</a>`:`<div class="card row adcard">${inner}</div>`};
+const adsenseBox=()=>`<div id="adslot" class="card adcard" style="padding:8px"><ins class="adsbygoogle" style="display:block" data-ad-client="${ADS_CLIENT}" data-ad-slot="${ADS_SLOT}" data-ad-format="auto" data-full-width-responsive="true"></ins></div>`;
 /* 광고 순서: Supabase 직접 광고 → 애드센스 → (둘 다 없으면) 예시 광고 */
 function adSlot(){if(adFree())return adFreeRow();if(!hasSb())return hasAdsense()?adsenseBox():sampleAd();const a=st.ad[st.lang];
  if(a===undefined)return '<div id="adslot"></div>';if(a)return directAd(a);
@@ -1224,7 +1224,7 @@ const isIOS=()=>/iPhone|iPad|iPod/i.test(navigator.userAgent);
 const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const installDismissed=()=>{try{return localStorage.getItem('al_inst')==='1'}catch(e){return false}};
 const installCard=()=>{if(standalone()||installDismissed()||!(installEvt||isIOS()))return '';const t=T();
- return `<div class="card row instcard"><img class="appic" src="assets/icon-192.png" alt="" width="44" height="44"><span class="col grow"><span class="b" style="font-size:13px">${t.addHome}</span><span class="tiny muted">${installEvt?t.addHomeS:t.iosHome}</span></span>${installEvt?`<button class="instbtn" data-act="install" aria-label="${t.addHome}">${ic('download',18,'#fff')}</button>`:''}<button class="instx" data-act="instx" aria-label="Close">${ic('x',11,'#6E7472')}</button></div>`;};
+ return `<div class="card row instcard"><img class="appic" src="assets/favicon-192.png" alt="" width="32" height="32"><span class="col grow"><span class="b" style="font-size:13px">${t.addHome}</span>${installEvt?'':`<span class="tiny muted">${t.iosHome}</span>`}</span>${installEvt?`<button class="instbtn" data-act="install" aria-label="${t.addHome}">${ic('download',16,'#fff')}</button>`:''}<button class="instx" data-act="instx" aria-label="Close">${ic('x',11,'#6E7472')}</button></div>`;};
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;if(cur()==='home')render();});
 addEventListener('offline',()=>toast(T().offline));
 setTimeout(flushSurvey,3000);
