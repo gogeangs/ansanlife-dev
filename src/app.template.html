@@ -71,7 +71,7 @@ a{color:inherit;text-decoration:none}
 .mtab sup{font-size:10px;color:var(--muted);font-weight:500;margin-left:2px}
 .mrow{display:flex;flex-direction:column;gap:8px;text-align:left;width:100%}
 .mrow .nm{display:flex;align-items:center;gap:10px;width:100%;text-align:left}
-.mrow .nm::before{content:"";width:16px;height:1.5px;background:var(--ink);flex:none}
+.mrow .nm::before{content:"";width:16px;height:1.5px;background:var(--ink);flex:none;align-self:flex-start;margin-top:12px}
 .mrow .nm b{font-family:var(--serif-ko);font-size:16px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mrow .ticket{width:100%;padding:12px 12px 12px 16px}
 .mstat{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600}
@@ -130,6 +130,11 @@ a{color:inherit;text-decoration:none}
 .toprule i{display:block;width:120px;height:1px;background:var(--deep);opacity:.55}
 .welcome{padding:24px 32px 0}
 .adcard,.instcard{border-radius:12px}
+.roma{display:block;font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0;color:var(--muted);margin-top:1px}
+.roma.big{font-size:13px;margin-top:-2px}
+.roma-in{opacity:.75}
+.tag.dept{display:inline-flex;gap:5px;align-items:baseline}
+.tag.dept .kr{font-size:10px;color:var(--muted);font-weight:500}
 .instcard{position:relative;background:#fff;border:1px solid var(--hair);padding:14px 30px 14px 14px;gap:12px}
 .instcard .appic{width:32px;height:32px;border-radius:8px;flex:none;object-fit:cover}
 .instcard .grow{padding-right:4px}
@@ -298,6 +303,8 @@ a{color:inherit;text-decoration:none}
 .nmap.mini{height:170px;border-radius:20px;flex:none}
 .nmap .live{position:absolute!important;inset:0;width:100%;height:100%;opacity:0;transition:opacity .4s} /* 네이버 지도가 컨테이너를 relative 로 바꿔 높이가 0이 되는 것 방지 */
 .nmap.ready .live{opacity:1}
+.nmap .mshield{position:absolute;inset:0;z-index:2;touch-action:pan-y;cursor:grab;display:none}.nmap.ready .mshield{display:block}
+.nmap .mhint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;background:rgba(30,34,33,.78);color:#fff;font-size:12px;font-weight:600;padding:8px 12px;border-radius:999px;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none}.nmap .mhint.on{opacity:1}
 .nmap.ready .fallback{visibility:hidden}
 .nmap .fallback{position:absolute;inset:0;width:100%;height:100%}
 .nmap .maptag{position:absolute;left:12px;bottom:10px;z-index:2;font-size:10px;font-weight:700;color:#4E6B70;background:rgba(255,255,255,.8);border-radius:8px;padding:2px 7px}
@@ -746,7 +753,7 @@ const miniMap=k=>`<div class="nmap mini" data-map="${k}"><div class="live"></div
 const GMAPS_KEY='__GMAPS_KEY__';
 const okKey=k=>!!k&&!k.startsWith('__');
 const hasMapKey=()=>okKey(NAVER_KEY)||okKey(GMAPS_KEY);
-const pinHtml=p=>p.dot?`<div class="mdot ${p.pharm?'ph':''}" title="${esc(p.title||'')}"></div>`:`<div class="npin ${p.home?'home':''}"><b></b><span>${p.label}</span></div>`;
+const pinHtml=(p,i)=>p.dot?`<div class="mdot ${p.pharm?'ph':''}" data-pi="${i}" title="${esc(p.title||'')}"></div>`:`<div class="npin ${p.home?'home':''}" data-pi="${i}"><b></b><span>${p.label}</span></div>`;
 let naverP=null,googleP=null;const geoCache={};
 function loadNaver(){if(!okKey(NAVER_KEY))return Promise.resolve(null);if(naverP)return naverP;
  naverP=new Promise(res=>{window.navermap_authFailure=()=>res(null);const s=document.createElement('script');s.src=`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${enc(NAVER_KEY)}&submodules=geocoder`;s.onload=()=>{/* geocoder 모듈(maps-geocoder.js)은 maps.js 뒤에 따로 로드됨 → Service 가 생길 때까지 기다림 */
@@ -761,20 +768,20 @@ function loadGoogle(){if(!okKey(GMAPS_KEY))return Promise.resolve(null);if(googl
  return googleP;}
 const GSTYLE=[{featureType:'poi',elementType:'labels.icon',stylers:[{visibility:'off'}]},{featureType:'poi.business',stylers:[{visibility:'off'}]},{featureType:'landscape',elementType:'geometry',stylers:[{color:'#EEF0EC'}]},{featureType:'water',elementType:'geometry',stylers:[{color:'#C9DADD'}]},{featureType:'road',elementType:'geometry',stylers:[{color:'#FFFFFF'}]},{featureType:'road',elementType:'labels.text.fill',stylers:[{color:'#6E7472'}]},{featureType:'poi.park',elementType:'geometry',stylers:[{color:'#DCE6DD'}]},{featureType:'transit.line',elementType:'geometry',stylers:[{color:'#B9C6C7'}]}];
 let GPin=null;
-function gPinClass(G){if(GPin)return GPin;GPin=class extends G.maps.OverlayView{constructor(pos,p){super();this.pos=pos;this.d=document.createElement('div');this.d.style.cssText='position:absolute;width:0;height:0';this.d.innerHTML=pinHtml(p);if(p.med){this.d.firstChild.setAttribute('role','button');this.d.addEventListener('click',e=>{e.stopPropagation();openMed(p.med);});}}
+function gPinClass(G){if(GPin)return GPin;GPin=class extends G.maps.OverlayView{constructor(pos,p,i){super();this.pos=pos;this.d=document.createElement('div');this.d.style.cssText='position:absolute;width:0;height:0';this.d.innerHTML=pinHtml(p,i);if(p.med){this.d.firstChild.setAttribute('role','button');this.d.addEventListener('click',e=>{e.stopPropagation();openMed(p.med);});}}
   onAdd(){this.getPanes().overlayMouseTarget.appendChild(this.d);}draw(){const q=this.getProjection().fromLatLngToDivPixel(this.pos);if(q){this.d.style.left=q.x+'px';this.d.style.top=q.y+'px';}}onRemove(){this.d.remove();}};return GPin;}
 const PROV={
  naver:N=>({ll:(a,b)=>new N.maps.LatLng(a,b),
   geocode:addr=>geoCache[addr]||(geoCache[addr]=new Promise(res=>{try{N.maps.Service.geocode({query:addr},(status,r)=>{const a=status===N.maps.Service.Status.OK&&r.v2&&r.v2.addresses&&r.v2.addresses[0];if(!a)delete geoCache[addr];res(a?new N.maps.LatLng(+a.y,+a.x):null);});}catch(e){delete geoCache[addr];res(null)}})),
-  draw(el,spec,pts){let map=el._map;if(!map){map=el._map=new N.maps.Map(el.querySelector('.live'),{center:pts[pts.length-1].ll,zoom:spec.zoom,scaleControl:false,mapDataControl:false,logoControlOptions:{position:N.maps.Position.BOTTOM_RIGHT}});}
+  draw(el,spec,pts){let map=el._map;if(!map){map=el._map=new N.maps.Map(el.querySelector('.live'),{center:pts[pts.length-1].ll,zoom:spec.zoom,scaleControl:false,mapDataControl:false,logoControlOptions:{position:N.maps.Position.BOTTOM_RIGHT},draggable:false,pinchZoom:false,scrollWheel:false,keyboardShortcuts:false,disableDoubleTapZoom:true,disableDoubleClickZoom:true,disableTwoFingerTapZoom:true});el._ctl={pan:(dx,dy)=>map.panBy(new N.maps.Point(-dx,-dy)),zoom:d=>map.setZoom(map.getZoom()+d,true)};}
    (el._pins||[]).forEach(m=>m.setMap(null));
-   el._pins=pts.map(p=>{const mk=new N.maps.Marker({position:p.ll,map,icon:{content:pinHtml(p),anchor:new N.maps.Point(0,0)}});if(p.med)N.maps.Event.addListener(mk,'click',()=>openMed(p.med));return mk;});
+   el._pins=pts.map((p,i)=>{const mk=new N.maps.Marker({position:p.ll,map,icon:{content:pinHtml(p,i),anchor:new N.maps.Point(0,0)}});if(p.med)N.maps.Event.addListener(mk,'click',()=>openMed(p.med));return mk;});
    if(pts.length>1){const b=new N.maps.LatLngBounds(pts[0].ll,pts[0].ll);pts.forEach(p=>b.extend(p.ll));map.fitBounds(b,{top:50,right:40,bottom:30,left:40});}else map.setCenter(pts[0].ll);}}),
  google:G=>({ll:(a,b)=>new G.maps.LatLng(a,b),
   geocode:addr=>geoCache[addr]||(geoCache[addr]=new Promise(res=>{try{new G.maps.Geocoder().geocode({address:addr,region:'KR'},(r,s)=>{const ok=s==='OK'&&r[0];if(!ok)delete geoCache[addr];res(ok?r[0].geometry.location:null);});}catch(e){delete geoCache[addr];res(null)}})),
-  draw(el,spec,pts){let map=el._map;if(!map){map=el._map=new G.maps.Map(el.querySelector('.live'),{center:pts[pts.length-1].ll,zoom:spec.zoom,disableDefaultUI:true,clickableIcons:false,gestureHandling:'cooperative',keyboardShortcuts:false,styles:GSTYLE,backgroundColor:'#DCE6E7'});}
+  draw(el,spec,pts){let map=el._map;if(!map){map=el._map=new G.maps.Map(el.querySelector('.live'),{center:pts[pts.length-1].ll,zoom:spec.zoom,disableDefaultUI:true,clickableIcons:false,gestureHandling:'none',keyboardShortcuts:false,styles:GSTYLE,backgroundColor:'#DCE6E7'});el._ctl={pan:(dx,dy)=>map.panBy(-dx,-dy),zoom:d=>map.setZoom(map.getZoom()+d)};}
    (el._pins||[]).forEach(m=>m.setMap(null));const P=gPinClass(G);
-   el._pins=pts.map(p=>{const o=new P(p.ll,p);o.setMap(map);return o;});
+   el._pins=pts.map((p,i)=>{const o=new P(p.ll,p,i);o.setMap(map);return o;});
    if(pts.length>1){const b=new G.maps.LatLngBounds();pts.forEach(p=>b.extend(p.ll));map.fitBounds(b,{top:50,right:40,bottom:30,left:40});const z=G.maps.event.addListenerOnce(map,'idle',()=>{if(map.getZoom()>17)map.setZoom(17);});}else{map.setCenter(pts[0].ll);map.setZoom(spec.zoom);}}})};
 function geocode(N,addr){return PROV.naver(N).geocode(addr);}
 let provP=null;
@@ -783,7 +790,30 @@ async function mountMaps(only){const els=only?[only]:[...app.querySelectorAll('.
  for(const el of els){if(!el.isConnected)continue;const sp0=MAPS[el.dataset.map];const spec=typeof sp0==='function'?sp0():sp0;if(!spec)continue;
   const ll=await Promise.all(spec.pts.map(p=>p.lat!=null?P.ll(p.lat,p.lng):p.home&&st.addr.lat?P.ll(st.addr.lat,st.addr.lng):P.geocode(p.home?st.addr.full:p.addr)));
   const pts=spec.pts.map((p,i)=>({...p,ll:ll[i]})).filter(p=>p.ll);if(!pts.length||!el.isConnected)continue;
-  try{P.draw(el,spec,pts);el.classList.add('ready');}catch(e){}}}
+  try{P.draw(el,spec,pts);el._pts=pts;mapShield(el);el.classList.add('ready');}catch(e){}}}
+/* 지도 위 한 손가락은 페이지 스크롤, 두 손가락으로 지도 이동·확대 (QA 9번). 지도 자체 제스처는 끄고 투명한 막이 받아서 처리 */
+const MAPHINT={ko:'두 손가락으로 지도를 움직여요',en:'Use two fingers to move the map',vi:'Dùng hai ngón tay để di chuyển bản đồ',zh:'用两根手指移动地图',ru:'Двигайте карту двумя пальцами',uz:'Xaritani ikki barmoq bilan suring',mn:'Газрын зургийг хоёр хуруугаар хөдөлгөнө үү'};
+function mapShield(el){if(el.querySelector('.mshield'))return;const sh=document.createElement('div');sh.className='mshield';const hint=document.createElement('div');hint.className='mhint';hint.textContent=MAPHINT[st.lang]||MAPHINT.en;el.append(sh,hint);
+ const ps=new Map();let mid=null,dist=0,scale=1,start=null,moved=false,hintT;
+ const showHint=()=>{hint.classList.add('on');clearTimeout(hintT);hintT=setTimeout(()=>hint.classList.remove('on'),1400);};
+ const two=()=>{const v=[...ps.values()];return {x:(v[0].x+v[1].x)/2,y:(v[0].y+v[1].y)/2,d:Math.hypot(v[0].x-v[1].x,v[0].y-v[1].y)};};
+ sh.addEventListener('pointerdown',e=>{ps.set(e.pointerId,{x:e.clientX,y:e.clientY});try{sh.setPointerCapture(e.pointerId)}catch(_){}
+  if(ps.size===1){start={x:e.clientX,y:e.clientY,t:Date.now(),mouse:e.pointerType==='mouse'};moved=false;mid={x:e.clientX,y:e.clientY};}
+  if(ps.size===2){const g=two();mid=g;dist=g.d;scale=1;moved=true;}});
+ sh.addEventListener('pointermove',e=>{if(!ps.has(e.pointerId))return;ps.set(e.pointerId,{x:e.clientX,y:e.clientY});const c=el._ctl;if(!c)return;
+  if(ps.size===2){e.preventDefault();const g=two();c.pan(g.x-mid.x,g.y-mid.y);mid=g;if(dist)scale=g.d/dist;return;}
+  if(ps.size===1&&start){const dx=e.clientX-start.x,dy=e.clientY-start.y;if(Math.hypot(dx,dy)>8)moved=true;
+   if(start.mouse){c.pan(e.clientX-mid.x,e.clientY-mid.y);mid={x:e.clientX,y:e.clientY};} // 데스크톱 마우스는 끌어서 이동
+   else if(Math.abs(dx)>14&&Math.abs(dx)>Math.abs(dy))showHint();}});
+ const end=e=>{const was=ps.size;ps.delete(e.pointerId);const c=el._ctl;
+  if(was===2&&c&&Math.abs(Math.log2(scale))>=.4){c.zoom(Math.round(Math.log2(scale))||(scale>1?1:-1));scale=1;}
+  if(ps.size===1){const v=[...ps.values()][0];mid={x:v.x,y:v.y};start=null;}
+  if(was===1&&e.type==='pointerup'&&start&&!moved&&Date.now()-start.t<600)tapPin(el,e.clientX,e.clientY);
+  if(!ps.size)start=null;};
+ sh.addEventListener('pointerup',end);sh.addEventListener('pointercancel',end);
+ sh.addEventListener('wheel',e=>{if(e.ctrlKey&&el._ctl){e.preventDefault();el._ctl.zoom(e.deltaY<0?1:-1);}},{passive:false});}
+function tapPin(el,x,y){const hit=[...el.querySelectorAll('[data-pi]')].reverse().find(d=>{const r=d.getBoundingClientRect();return x>=r.left-6&&x<=r.right+6&&y>=r.top-6&&y<=r.bottom+6;});
+ const p=hit&&el._pts&&el._pts[+hit.dataset.pi];if(p&&p.med)openMed(p.med);}
 function openMed(key){const it=medPick(key);if(it){st.med.sel=it;go('hdetail');}}
 
 /* ---------- common pieces ---------- */
@@ -949,7 +979,7 @@ SCR.b2=()=>{const t=T();return `<div class="scr ${isKo()?'ko':''}">${nav(t.busT)
 SCR.b4=()=>{const t=T();const rows=[['Bus A',2,5,0,true],['Bus B',6,14,1],['Bus C',11,25,2],['Bus D',null]];const live=hasApi()&&st.stop;
  const sample=`<span class="row tiny muted" style="gap:6px">${ic('refresh',13,'#6E7472')}${t.updated} · ${t.sample}</span>
   ${rows.map(([n,a,b,c,mine])=>`<div class="row" style="border-radius:18px;padding:12px 14px;background:${mine?'#fff':'var(--bg)'};${mine?'box-shadow:inset 0 0 0 1.5px var(--accent)':''}"><span class="col grow" style="gap:4px"><span><span class="badge" style="background:${a==null?'var(--walk)':'var(--bus)'}">${n}</span></span><span class="micro muted">${a==null?t.lastBus:t.crowd[c]}</span></span>${a==null?'<span class="serif">—</span>':`<span class="col" style="align-items:flex-end"><span><span class="serif ${mine?'accent':''}" style="font-size:22px">${a}</span> <span class="tiny muted">${t.min}</span></span><span class="micro muted">${t.next} ${b} ${t.min}</span></span>`}</div>`).join('')}`;
- return `<div class="scr ${isKo()?'ko':''}">${nav(t.busT)}${ttl(live?esc(st.stop.name):t.busStop,`<span>${live?(st.stop.no?esc(st.stop.no):''):t.busStopS}</span>`,{eye:t.stopT})}
+ return `<div class="scr ${isKo()?'ko':''}">${nav(t.busT)}${ttl(live?esc(st.stop.name):t.busStop,`<span>${live?[isKo()?'':esc(romaName(st.stop.name)),st.stop.no?esc(st.stop.no):''].filter(Boolean).join(' · '):t.busStopS}</span>`,{eye:t.stopT})}
  <div class="sheet" style="gap:10px">
   ${live?`<span id="arrerr" class="soft-accent small" hidden>${t.busErr}</span><div id="arrs" class="col" style="gap:10px" data-sample="${esc(sample)}"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>`:sample}
   <!-- 2정류장 전 알림: 푸시 알림을 만들 때까지 숨김 (QA 2026-11-13) -->
@@ -1009,8 +1039,96 @@ function langOk(it){const L=st.med.langSet;if(!L||!L.length||it.kind==='pharm')r
 const statusChip=it=>{const h=HT();const o=openState(it.start,it.end);return o==null?`<span class="mstat closed"><span class="dot"></span>${h.noHours}</span>`:o?`<span class="mstat open"><span class="dot"></span>${h.openUntil(hm(it.end>2400?it.end-2400:it.end))}</span>`:`<span class="mstat closed"><span class="dot"></span>${h.closed}</span>`;};
 function medAll(){const m=st.med;return [...(m.hosp||[]),...(m.pharm||[])].sort((a,b)=>(a.dist??1e9)-(b.dist??1e9));}
 function medList(){const m=st.med;if(m.tab==='pharm')return m.pharm||[];if(m.tab==='open')return medAll().filter(x=>openState(x.start,x.end)===true);if(m.tab==='lang')return (m.hosp||[]).filter(langOk);return medAll();}
+/* 한글 → 로마자 (국어의 로마자 표기법 기본 규칙: 연음·비음화·유음화 일부). 외국인이 간판 이름을 읽고 말할 수 있게 */
+const RR_I=['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'];
+const RR_V=['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'];
+// 받침: [단독 발음, 뒤에 ㅇ이 올 때 넘어가는 소리]
+const RR_F=[['',''],['k','g'],['k','kk'],['k','gs'],['n','n'],['n','nj'],['n','nh'],['t','d'],['l','r'],['k','lg'],['m','lm'],['p','lb'],['t','ls'],['t','lt'],['p','lp'],['l','lh'],['m','m'],['p','b'],['p','bs'],['t','s'],['t','ss'],['ng','ng'],['t','j'],['t','ch'],['k','k'],['t','t'],['p','p'],['t','h']];
+function roma(str){
+ const cs=[...String(str||'')];const syl=cs.map(c=>{const n=c.charCodeAt(0)-0xAC00;return n>=0&&n<11172?{i:Math.floor(n/588),v:Math.floor(n%588/28),f:n%28}:null;});
+ let out='';
+ for(let k=0;k<cs.length;k++){const s=syl[k];if(!s){out+=cs[k];continue;}
+  const prev=k>0?syl[k-1]:null;
+  let ini=RR_I[s.i];
+  if(prev){
+   const pf=prev.f;
+   if(s.i===11&&pf)ini=''; // 연음은 앞 받침 쪽에서 처리
+   else if(s.i===5&&pf===8)ini='l'; // ㄹ+ㄹ → ll
+   else if(s.i===5&&pf===4)ini='l';  // ㄴ+ㄹ → ll (신라 Silla)
+   else if(s.i===5&&[16,21,1,17].includes(pf))ini='n'; // ㅁ·ㅇ·ㄱ·ㅂ+ㄹ → n (종로 Jongno)
+   else if(s.i===2&&pf===8)ini='l'; // ㄹ+ㄴ → ll (설날 Seollal)
+  }
+  out+=ini+RR_V[s.v];
+  if(s.f){const next=syl[k+1];let f=RR_F[s.f][0];
+   if(next){
+    if(next.i===11)f=RR_F[s.f][1]; // 연음
+    else if(next.i===2||next.i===6||(next.i===5&&(f==='k'||f==='p'))){ if(f==='k')f='ng';else if(f==='p')f='m';else if(f==='t')f='n';} // 비음화
+    else if(next.i===5&&s.f===4)f='l'; // ㄴ+ㄹ
+   }
+   out+=f;}
+ }
+ return out.replace(/(^|[\s(·])([a-z])/g,(m,a,b)=>a+b.toUpperCase());
+}
+// 기관 이름: '…병원' 같은 끝말은 띄어서 읽기 쉽게 (에이스병원 → Eiseu Byeongwon)
+const NAME_TAIL=/(치과의원|치과병원|한방병원|한의원|요양병원|병원|의원|약국|보건소|정류장|역)$/;
+const romaName=s=>{const t=String(s||'').trim();if(!/[가-힣]/.test(t))return '';const m=t.match(NAME_TAIL);const stem=m&&m.index>0?t.slice(0,m.index):t;return (m&&m.index>0?roma(stem)+' '+roma(m[1]):roma(t)).replace(/\s+/g,' ');};
+/* 진료과목 번역 [en, vi, zh, ru, uz, mn] — 의료 용어는 원어민 검수 필요 (2026-11-13 초안) */
+const DEPT={
+'내과':['Internal medicine','Nội khoa','内科','Терапия','Ichki kasalliklar','Дотор'],
+'신경과':['Neurology','Thần kinh','神经科','Неврология','Nevrologiya','Мэдрэл'],
+'정신건강의학과':['Psychiatry','Tâm thần','精神科','Психиатрия','Psixiatriya','Сэтгэц'],
+'외과':['General surgery','Ngoại khoa','外科','Хирургия','Jarrohlik','Мэс засал'],
+'정형외과':['Orthopedics','Chấn thương chỉnh hình','骨科','Ортопедия','Ortopediya','Гэмтэл согог'],
+'신경외과':['Neurosurgery','Phẫu thuật thần kinh','神经外科','Нейрохирургия','Neyroxirurgiya','Мэдрэлийн мэс засал'],
+'심장혈관흉부외과':['Cardiothoracic surgery','Phẫu thuật tim – lồng ngực','心胸外科','Кардиоторакальная хирургия','Yurak-ko‘krak jarrohligi','Зүрх цээжний мэс засал'],
+'성형외과':['Plastic surgery','Phẫu thuật thẩm mỹ','整形外科','Пластическая хирургия','Plastik jarrohlik','Гоо сайхны мэс засал'],
+'마취통증의학과':['Anesthesiology & pain','Gây mê – giảm đau','麻醉疼痛科','Анестезиология и лечение боли','Anesteziologiya va og‘riq','Мэдээ алдуулалт, өвдөлт'],
+'산부인과':['Obstetrics & gynecology','Sản phụ khoa','妇产科','Акушерство и гинекология','Akusherlik va ginekologiya','Эх барих, эмэгтэйчүүд'],
+'소아청소년과':['Pediatrics','Nhi khoa','儿科','Педиатрия','Pediatriya','Хүүхэд'],
+'안과':['Ophthalmology (eyes)','Nhãn khoa (mắt)','眼科','Офтальмология (глаза)','Ko‘z kasalliklari','Нүд'],
+'이비인후과':['Ear, nose & throat','Tai mũi họng','耳鼻喉科','ЛОР (ухо, горло, нос)','Quloq, burun, tomoq','Чих хамар хоолой'],
+'피부과':['Dermatology (skin)','Da liễu','皮肤科','Дерматология (кожа)','Teri kasalliklari','Арьс'],
+'비뇨의학과':['Urology','Tiết niệu','泌尿外科','Урология','Urologiya','Шээс бэлгийн замын'],
+'영상의학과':['Radiology (X-ray, CT)','Chẩn đoán hình ảnh','放射科','Радиология','Radiologiya','Дүрс оношилгоо'],
+'방사선종양학과':['Radiation oncology','Xạ trị ung thư','放射肿瘤科','Радиационная онкология','Radiatsion onkologiya','Цацрагийн хавдар'],
+'병리과':['Pathology','Giải phẫu bệnh','病理科','Патология','Patologiya','Эмгэг судлал'],
+'진단검사의학과':['Laboratory medicine','Xét nghiệm','检验科','Лабораторная диагностика','Laboratoriya tashxisi','Лабораторийн оношилгоо'],
+'재활의학과':['Rehabilitation','Phục hồi chức năng','康复科','Реабилитация','Reabilitatsiya','Нөхөн сэргээх'],
+'핵의학과':['Nuclear medicine','Y học hạt nhân','核医学科','Ядерная медицина','Yadro tibbiyoti','Цөмийн анагаах'],
+'가정의학과':['Family medicine','Y học gia đình','家庭医学科','Семейная медицина','Oilaviy tibbiyot','Өрхийн анагаах'],
+'응급의학과':['Emergency medicine','Cấp cứu','急诊科','Неотложная помощь','Shoshilinch tibbiy yordam','Яаралтай тусламж'],
+'직업환경의학과':['Occupational medicine','Y học lao động','职业环境医学科','Профпатология','Kasb kasalliklari','Хөдөлмөрийн эрүүл мэнд'],
+'결핵과':['Tuberculosis','Lao','结核科','Фтизиатрия','Sil kasalligi','Сүрьеэ'],
+'예방의학과':['Preventive medicine','Y học dự phòng','预防医学科','Профилактическая медицина','Profilaktik tibbiyot','Урьдчилан сэргийлэх'],
+'일반의':['General practice','Đa khoa','全科','Общая практика','Umumiy amaliyot','Ерөнхий эмч'],
+'치과':['Dentistry','Nha khoa','牙科','Стоматология','Stomatologiya','Шүд'],
+'통합치의학과':['General dentistry','Nha khoa tổng quát','综合牙科','Общая стоматология','Umumiy stomatologiya','Ерөнхий шүд'],
+'구강악안면외과':['Oral & maxillofacial surgery','Phẫu thuật hàm mặt','口腔颌面外科','Челюстно-лицевая хирургия','Yuz-jag‘ jarrohligi','Ам эрүү нүүрний мэс засал'],
+'치과보철과':['Prosthodontics (crowns, dentures)','Phục hình răng','口腔修复科','Ортопедическая стоматология','Tish protezlash','Шүдний протез'],
+'치과교정과':['Orthodontics (braces)','Chỉnh nha','口腔正畸科','Ортодонтия','Ortodontiya','Шүдний гажиг засал'],
+'소아치과':['Pediatric dentistry','Nha khoa trẻ em','儿童牙科','Детская стоматология','Bolalar stomatologiyasi','Хүүхдийн шүд'],
+'치주과':['Periodontics (gums)','Nha chu','牙周科','Пародонтология','Parodontologiya','Буйл'],
+'치과보존과':['Conservative dentistry','Chữa răng – nội nha','牙体牙髓科','Терапевтическая стоматология','Terapevtik stomatologiya','Шүдний эмчилгээ'],
+'구강내과':['Oral medicine','Nội khoa răng miệng','口腔内科','Заболевания полости рта','Og‘iz bo‘shlig‘i kasalliklari','Амны хөндийн дотор'],
+'영상치의학과':['Dental radiology','Chẩn đoán hình ảnh răng','口腔影像科','Стоматологическая рентгенология','Stomatologik rentgenologiya','Шүдний дүрс оношилгоо'],
+'구강병리과':['Oral pathology','Bệnh học răng miệng','口腔病理科','Патология полости рта','Og‘iz patologiyasi','Амны хөндийн эмгэг'],
+'예방치과':['Preventive dentistry','Nha khoa dự phòng','预防牙科','Профилактическая стоматология','Profilaktik stomatologiya','Шүдний урьдчилан сэргийлэх'],
+'한방내과':['Korean medicine · internal','Đông y · nội khoa','韩医内科','Корейская медицина · терапия','Koreys tabobati · ichki','Солонгос уламжлалт · дотор'],
+'한방부인과':['Korean medicine · women','Đông y · phụ khoa','韩医妇科','Корейская медицина · гинекология','Koreys tabobati · ayollar','Солонгос уламжлалт · эмэгтэйчүүд'],
+'한방소아과':['Korean medicine · children','Đông y · nhi','韩医儿科','Корейская медицина · педиатрия','Koreys tabobati · bolalar','Солонгос уламжлалт · хүүхэд'],
+'한방안이비인후피부과':['Korean medicine · eye, ENT, skin','Đông y · mắt, TMH, da','韩医眼耳鼻喉皮肤科','Корейская медицина · глаза, ЛОР, кожа','Koreys tabobati · ko‘z, LOR, teri','Солонгос уламжлалт · нүд, ЧХХ, арьс'],
+'한방신경정신과':['Korean medicine · mental health','Đông y · thần kinh – tâm thần','韩医神经精神科','Корейская медицина · психоневрология','Koreys tabobati · asab va ruhiyat','Солонгос уламжлалт · мэдрэл сэтгэц'],
+'침구과':['Acupuncture & moxibustion','Châm cứu','针灸科','Иглоукалывание','Igna bilan davolash','Зүү төөнө'],
+'한방재활의학과':['Korean medicine · rehabilitation','Đông y · phục hồi chức năng','韩医康复科','Корейская медицина · реабилитация','Koreys tabobati · reabilitatsiya','Солонгос уламжлалт · нөхөн сэргээх'],
+'사상체질과':['Sasang constitutional medicine','Y học thể chất Tứ tượng','四象体质科','Медицина Сасан','Sasang tabobati','Сасан эмчилгээ'],
+'한방응급':['Korean medicine · emergency','Đông y · cấp cứu','韩医急诊','Корейская медицина · неотложная','Koreys tabobati · shoshilinch','Солонгос уламжлалт · яаралтай']};
+const DEPT_ALIAS={'흉부외과':'심장혈관흉부외과','비뇨기과':'비뇨의학과','소아과':'소아청소년과','신경정신과':'정신건강의학과','정신과':'정신건강의학과','진단방사선과':'영상의학과','방사선과':'영상의학과','임상병리과':'진단검사의학과','해부병리과':'병리과','산업의학과':'직업환경의학과','한방안·이비인후·피부과':'한방안이비인후피부과'};
+const DEPT_LI={en:0,vi:1,zh:2,ru:3,uz:4,mn:5};
+const deptName=k=>{const c=String(k||'').replace(/\s+/g,'');const key=DEPT[c]?c:DEPT_ALIAS[c]||DEPT_ALIAS[c.replace(/·/g,'')]||c.replace(/·/g,'');const row=DEPT[key];return row&&DEPT_LI[st.lang]!=null?row[DEPT_LI[st.lang]]:'';};
+/* 외국어 화면에서만 한글 이름 밑에 로마자 */
+const romaSub=(name,cls='roma')=>{if(isKo())return '';const r=romaName(name);return r?`<small class="${cls}">${esc(r)}</small>`:'';};
 function medRow(it,i){const h=HT();const k=typeKey(it);const tel=String(it.tel||'').replace(/[^\d-]/g,'');
- return `<div class="mrow"><button class="nm" data-med="${i}"><b>${esc(it.name)}</b></button>
+ return `<div class="mrow"><button class="nm" data-med="${i}"><b>${esc(it.name)}${romaSub(it.name)}</b></button>
   <div class="ticket"><button class="col grow" style="gap:5px;text-align:left" data-med="${i}"><span class="row" style="gap:6px;flex-wrap:wrap"><span class="tag">${h.types[k]}</span>${!isKo()?`<span class="kr micro muted">${HS.ko.types[k]}</span>`:''}${langOk(it)?`<span class="tag" style="background:var(--accent-soft)">${h.langOk}</span>`:''}</span>${statusChip(it)}<span class="row tiny muted" style="gap:5px">${ic('spot',12,'#6E7472')}<span>${distTxt(it.dist)}</span></span></button>
   <span class="dash"></span><div class="macts">${tel?`<a class="idot fx" href="tel:${tel}" aria-label="${h.call} ${esc(it.name)}" style="background:#fff;box-shadow:inset 0 0 0 1px var(--hair)">${ic('phone',18,'#1E2221',2)}</a>`:''}<button class="idot" data-mnav="${i}" aria-label="${h.naver}" style="background:var(--accent)">${ic('map',18,'#fff',2)}</button></div></div></div>`;}
 function paintMed(){const box=document.getElementById('medlist');if(!box)return;const h=HT(),m=st.med;
@@ -1047,7 +1165,7 @@ async function loadMedDetail(){const it=st.med.sel;if(!it||!hasApi()||!it.id)ret
  try{let d=st.med.detail[it.id];if(!d){d=await api(`/med/detail?kind=${it.kind}&id=${enc(it.id)}`);st.med.detail[it.id]=d;}
   const hb=document.getElementById('mhrs');if(hb&&d.hours&&d.hours.some(x=>x&&x[0]!=null)){const today=new Date().getDay();
    const order=[1,2,3,4,5,6,0];hb.innerHTML=order.map(dw=>{const x=d.hours[dw===0?6:dw-1];return `<span class="${dw===today?'td':''}">${DAYLONG[st.lang][dw]}</span><span class="${dw===today?'td':''}">${x&&x[0]!=null?hm(x[0])+' – '+hm(x[1]):'—'}</span>`;}).join('')+(d.hours[7]&&d.hours[7][0]!=null?`<span>${h.holiday}</span><span>${hm(d.hours[7][0])} – ${hm(d.hours[7][1])}</span>`:'');hb.parentElement.hidden=false;}
-  const db=document.getElementById('mdept');if(db&&d.depts&&d.depts.length){db.innerHTML=d.depts.slice(0,16).map(x=>`<span class="tag kr" style="background:var(--bg)">${esc(x)}</span>`).join('');db.parentElement.hidden=false;}
+  const db=document.getElementById('mdept');if(db&&d.depts&&d.depts.length){db.innerHTML=d.depts.slice(0,16).map(x=>{const tr=isKo()?'':deptName(x);return tr?`<span class="tag dept" style="background:var(--bg)">${esc(tr)}<span class="kr">${esc(x)}</span></span>`:`<span class="tag kr" style="background:var(--bg)">${esc(x)}</span>`;}).join('');db.parentElement.hidden=false;}
   const er=document.getElementById('mer');if(er&&d.er&&it.kind!=='pharm')er.hidden=false;}
  catch(e){}}
 
@@ -1064,7 +1182,7 @@ SCR.hdetail=()=>{const t=T(),h=HT();const it=st.med.sel;if(!it)return SCR.hosp()
  <div class="nmap" data-map="hosp" style="height:250px;flex:none"><div class="live"></div><svg class="fallback" width="100%" height="100%" viewBox="0 0 390 250" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g stroke="#fff" stroke-linecap="round" fill="none"><path d="M-10 190 C 90 160,160 210,260 150 S 380 100,400 110" stroke-width="14"/><path d="M120 -10 L 170 260" stroke-width="10"/><path d="M-10 80 L 400 50" stroke-width="8"/><path d="M290 -10 L 250 260" stroke-width="6"/></g><g fill="#C9D8D9"><rect x="190" y="180" width="46" height="40" rx="6"/><rect x="20" y="110" width="60" height="44" rx="6"/><rect x="300" y="170" width="70" height="60" rx="6"/></g><path d="M195 135s16-15 16-27a16 16 0 0 0-32 0c0 12 16 27 16 27z" fill="#E45C4E"/><circle cx="195" cy="108" r="6" fill="#fff"/></svg>
   <button class="idot" data-act="back" aria-label="Back" style="position:absolute;z-index:3;left:24px;top:calc(48px + env(safe-area-inset-top,0px));width:44px;height:44px;background:#fff">${ic('back',20)}</button></div>
  <div class="sheet" style="border-top-right-radius:40px;border-top-left-radius:40px;margin-top:-36px;position:relative">
-  <div class="col" style="gap:6px"><span class="h1 ko" style="font-size:22px;line-height:1.3">${esc(it.name)}</span><span class="row small muted" style="gap:6px;flex-wrap:wrap"><span>${h.types[k]}</span>${!isKo()?`<span class="kr">${HS.ko.types[k]}</span>`:''}<span>·</span><span>${distTxt(it.dist)}</span></span>
+  <div class="col" style="gap:6px"><span class="h1 ko" style="font-size:22px;line-height:1.3">${esc(it.name)}</span>${romaSub(it.name,'roma big')}<span class="row small muted" style="gap:6px;flex-wrap:wrap"><span>${h.types[k]}</span>${!isKo()?`<span class="kr">${HS.ko.types[k]}</span>`:''}<span>·</span><span>${distTxt(it.dist)}</span></span>
    <span class="row" style="gap:6px;flex-wrap:wrap">${statusChip(it)}<span class="tag" id="mer" style="background:var(--accent-soft)" ${d.er&&it.kind!=='pharm'?'':'hidden'}>${h.er}</span>${langOk(it)?`<span class="tag" style="background:var(--accent-soft)">${h.langOk}</span>`:''}</span></div>
   <div>${[['clock',h.today,it.start!=null?`${hm(it.start)} – ${hm(it.end)}`:h.noHours],['spot',t.addr,esc(it.addr||'')],['phone',t.tel,tel?`<a href="tel:${tel}" style="text-decoration:underline">${esc(it.tel)}</a>`:'—']].map(([i,kk,v])=>`<div class="row" style="padding:11px 0;border-bottom:1px solid rgba(30,34,33,.12);align-items:flex-start">${ic(i,16,'#6E7472')}<span class="small muted" style="flex:none">${kk}</span><span class="grow b kr" style="text-align:right;font-size:13px;user-select:all">${v}</span></div>`).join('')}</div>
   <div class="col" style="gap:10px" hidden>${h2(h.hoursT)}<div class="hrs" id="mhrs"></div></div>
@@ -1146,7 +1264,7 @@ async function homeLL(){if(st.addr.lat)return {lat:st.addr.lat,lng:st.addr.lng};
 async function loadStops(){const box=document.getElementById('stops');if(!box)return;const t=T();
  try{const key=st.addr.full;if(!st.stops||st.stops.key!==key){const ll=await homeLL();if(!ll)throw new Error('coords');const j=await api(`/bus/stops?lat=${ll.lat}&lng=${ll.lng}`);if(st.addr.full!==key)return;st.stops={key,list:j.stops||[]};}
   if(!document.body.contains(box))return;
-  box.innerHTML=st.stops.list.length?`<span class="livetag">${t.live}</span>${st.stops.list.slice(0,3).map((x,i)=>`<button class="card row fixh" style="text-align:left" data-stop="${i}">${dotI('bus','#fff','#1E2221',36)}<span class="col grow"><span class="serif" style="font-size:15px">${esc(x.name)}</span><span class="tiny muted">${x.no?esc(x.no)+' · ':''}${x.dist!=null?x.dist+' m':''}</span></span>${ic('arrow',16,'#6E7472')}</button>`).join('')}`:`<span class="small muted">${t.noStops}</span>`;tagFx(box);const nm=app.querySelector('.nmap[data-map="near"]');if(nm)mountMaps(nm);}
+  box.innerHTML=st.stops.list.length?`<span class="livetag">${t.live}</span>${st.stops.list.slice(0,3).map((x,i)=>`<button class="card row fixh" style="text-align:left" data-stop="${i}">${dotI('bus','#fff','#1E2221',36)}<span class="col grow"><span class="serif" style="font-size:15px">${esc(x.name)}</span><span class="tiny muted">${isKo()?'':esc(romaName(x.name))+' · '}${x.no?esc(x.no)+' · ':''}${x.dist!=null?x.dist+' m':''}</span></span>${ic('arrow',16,'#6E7472')}</button>`).join('')}`:`<span class="small muted">${t.noStops}</span>`;tagFx(box);const nm=app.querySelector('.nmap[data-map="near"]');if(nm)mountMaps(nm);}
  catch(e){/* keep the sample card */}}
 // 좌석형(직행좌석·좌석·광역급행·경기순환 등)만 빈자리 수가 의미 있음. 일반 시내버스는 0 으로 와서 '빈자리 0'이 잘못 보였음
 const SEAT_BUS=new Set([11,12,14,16,17,21,22]);
@@ -1156,7 +1274,7 @@ async function loadArr(){const box=document.getElementById('arrs');if(!box||!st.
  try{const j=await api(`/bus/arrivals?stationId=${enc(st.stop.id)}`);if(!document.body.contains(box))return;st.arr=j;
   const rows=j.arrivals||[];
   box.innerHTML=`<span class="row tiny muted" style="gap:6px"><span class="livetag">${t.live}</span>${ic('refresh',13,'#6E7472')}${fmtTime(new Date(j.at||Date.now()))}</span>`+
-   (rows.length?rows.map((r,i)=>{const b=r.buses[0],b2=r.buses[1];return `<div class="row" style="border-radius:18px;padding:12px 14px;background:${i?'var(--bg)':'#fff'};${i?'':'box-shadow:inset 0 0 0 1.5px var(--accent)'}"><span class="col grow" style="gap:4px"><span class="row" style="gap:6px"><span class="badge" style="background:${r.ended||!b?'var(--walk)':'var(--bus)'}">${esc(r.route)}</span>${r.dest?`<span class="tiny muted">→ ${esc(r.dest)}</span>`:''}</span><span class="micro muted">${r.ended?t.ended:!b?t.noInfo:[b.stops!=null?t.stopsAway(b.stops):'',crowdTxt(t,b,r.type)].filter(Boolean).join(' · ')}</span></span>${r.ended||!b?'<span class="serif">—</span>':`<span class="col" style="align-items:flex-end"><span>${b.min<=1?`<span class="b accent">${t.arrSoon}</span>`:`<span class="serif ${i?'':'accent'}" style="font-size:22px">${b.min}</span> <span class="tiny muted">${t.min}</span>`}</span>${b2?`<span class="micro muted">${t.next} ${b2.min} ${t.min}</span>`:''}</span>`}</div>`}).join(''):`<p class="small muted">${t.ended}</p>`);
+   (rows.length?rows.map((r,i)=>{const b=r.buses[0],b2=r.buses[1];return `<div class="row" style="border-radius:18px;padding:12px 14px;background:${i?'var(--bg)':'#fff'};${i?'':'box-shadow:inset 0 0 0 1.5px var(--accent)'}"><span class="col grow" style="gap:4px"><span class="row" style="gap:6px"><span class="badge" style="background:${r.ended||!b?'var(--walk)':'var(--bus)'}">${esc(r.route)}</span>${r.dest?`<span class="tiny muted">→ ${esc(r.dest)}${isKo()?'':` <span class="roma-in">${esc(romaName(r.dest))}</span>`}</span>`:''}</span><span class="micro muted">${r.ended?t.ended:!b?t.noInfo:[b.stops!=null?t.stopsAway(b.stops):'',crowdTxt(t,b,r.type)].filter(Boolean).join(' · ')}</span></span>${r.ended||!b?'<span class="serif">—</span>':`<span class="col" style="align-items:flex-end"><span>${b.min<=1?`<span class="b accent">${t.arrSoon}</span>`:`<span class="serif ${i?'':'accent'}" style="font-size:22px">${b.min}</span> <span class="tiny muted">${t.min}</span>`}</span>${b2?`<span class="micro muted">${t.next} ${b2.min} ${t.min}</span>`:''}</span>`}</div>`}).join(''):`<p class="small muted">${t.ended}</p>`);
   again();}
  catch(e){if(document.body.contains(box)){const n=document.getElementById('arrerr');const real=st.arr&&String(st.arr.stationId)===String(st.stop.id);if(!real){if(n)n.hidden=false;box.innerHTML=box.dataset.sample||'';}again();}}}
 
@@ -1324,12 +1442,13 @@ function locSheet(){const t=T();const o=document.createElement('div');o.classNam
 /* ---------- render + behaviors ---------- */
 let bgTimer=null,scanTimer=null;
 /* 휴대폰 뒤로가기: 화면 이동을 브라우저 기록과 맞춤 (앱 화면 깊이 = 기록 깊이) */
-let hDepth=0,hSkip=0;
-function syncHist(){const want=st.stack.length-1;const d=want-hDepth;
+let hDepth=0,hSkip=0,hPend=false;
+function syncHist(){if(hSkip){hPend=true;return;} // 뒤로 가는 중이면 끝난 뒤에 맞춤
+ const want=st.stack.length-1;const d=want-hDepth;
  if(d>0){for(let i=0;i<d;i++)history.pushState({al:hDepth+i+1},'');}
  else if(d<0){hSkip++;history.go(d);}
  hDepth=want;}
-addEventListener('popstate',()=>{if(hSkip){hSkip--;return;}
+addEventListener('popstate',()=>{if(hSkip){hSkip--;if(!hSkip&&hPend){hPend=false;syncHist();}return;}
  const ov=document.querySelector('.sheetover');
  if(ov){ov.remove();history.pushState({al:hDepth},'');return;} // 열린 시트부터 닫기
  if(st.stack.length>1){st.stack.pop();hDepth=st.stack.length-1;render();}});
