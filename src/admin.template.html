@@ -139,7 +139,7 @@ function loginView(msg=''){
   <div class="fld"><label for="pw">비밀번호</label><input class="in" id="pw" type="password" autocomplete="current-password" required></div>
   <div class="err" id="le" role="alert">${esc(msg)}</div>
   <button class="btn dark" type="submit">로그인</button>
-  <p class="hint">관리자 계정은 Supabase 대시보드에서 만들고 관리자로 등록해야 해요. (supabase/README.md)</p></form></div>`;
+  <p class="hint">관리자 계정이 필요하면 운영 담당자에게 요청해 주세요.</p></form></div>`;
  $('#lf').addEventListener('submit',async e=>{e.preventDefault();const b=e.target.querySelector('button[type=submit]');b.disabled=true;$('#le').textContent='';
   const {error}=await sb.auth.signInWithPassword({email:$('#em').value.trim(),password:$('#pw').value});
   b.disabled=false;if(error){$('#le').textContent=error.message.includes('Invalid')?'이메일이나 비밀번호가 맞지 않아요.':'로그인하지 못했어요: '+error.message;return;}

@@ -313,6 +313,11 @@ a{color:inherit;text-decoration:none}
 
 /* live map (Naver Maps JS v3) */
 .nmap{position:relative;overflow:hidden;background:#DCE6E7}
+/* 병원 상세: 아래로 내려도 뒤로가기가 보이게 (스크롤 영역 .scr 맨 위에 붙음) */
+.stickyback{position:sticky;top:0;height:0;z-index:6;flex:none}
+.stickyback .idot{position:absolute;left:24px;top:calc(48px + env(safe-area-inset-top,0px));width:44px;height:44px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+/* 지도 불러오는 동안: 회색 빈 상자 대신 반짝이는 로딩 표시 */
+.nmap.loading:not(.ready)::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,transparent 0,rgba(255,255,255,.55) 50%,transparent 100%);background-size:200% 100%;animation:sk 1.2s linear infinite;pointer-events:none}
 .nmap.mini{height:170px;border-radius:20px;flex:none}
 .nmap .live{position:absolute!important;inset:0;width:100%;height:100%;opacity:0;transition:opacity .4s} /* 네이버 지도가 컨테이너를 relative 로 바꿔 높이가 0이 되는 것 방지 */
 .nmap.ready .live{opacity:1}
@@ -408,11 +413,11 @@ en:{cont:'Continue',contSub:'다음 단계로',menu:'Menu',welcome:'Welcome to A
  openNaver:'Open in Naver Map',guideApp:'Guide me in this app',
  chooseT:'Open this in',naverApp:'Naver Map app',naverAppS:'Opens the app. Best for walking directions and live arrivals.',rec2:'RECOMMENDED',naverWeb:'Naver Map on the web',naverWebS:'Opens in a new window — no app needed.',always:'Always open this way',langTip:'Naver Map speaks your language',langTipS:'Switch it to English, 中文 or 日本語 in Naver Map settings.',
  notInst:'Naver Map isn’t installed?',notInstS:'Install it once and places will open straight in the app next time. Or keep going on the web.',install:'Install Naver Map',onWeb:'Open on the web instead',
- stopT:'Bus stop',updated:'Updated just now',notify:'Notify me 2 stops before',crowd:['crowd: low','crowd: medium','crowd: high'],next:'next',nightNote:'Night: transfers allowed within 60 min (21:00–07:00)',lastBus:'Finished today',
+ stopT:'Bus stop',updated:'Updated just now',notify:'Notify me 2 stops before',crowd:['crowd: low','crowd: medium','crowd: high'],next:'next',nightNote:'Night: transfers allowed within 60 min (21:00–07:00)',dayNote:'Transfers allowed within 30 min (60 min at night, 21:00–07:00)',lastBus:'Finished today',
  onboard:'On board',stopsLeft:'stops left',getOffAt:'Get off at your stop · about 6 min',whenOff:'When you get off',offSteps:['Press the red stop button','Exit by the back door','Tap your card on the way out'],showDriver:'Show the driver',
  faresT:'Card & fares',needCard:'YOU NEED',tmoney:'T-money or transit card',tmoneyS:'Buy and top up at convenience stores, with cash',fares:'Fares',adult:'adult card',cityBus:'Gyeonggi city bus',subway:'Subway · base fare',cashNote:'Cash costs more. Longer subway trips add distance fare.',freeTr:'Free transfers',trRules:[['30','min','daytime'],['60','min','21:00–07:00'],['4','times','max per trip']],tapWarn:'Always tap when you get off',asOf:'Fares as of Oct 2025 · check for updates',
  hospT:'Hospitals',near:'Near you',emerg:'Emergency? Call 119',emergS:'Interpretation is available on the line',more:'More places will be added',univ:'Korea University Ansan Hospital',univS:'University hospital · ER',hours:'Hours',addr:'Address',tel:'Phone',checkHours:'Check before visiting',staff:'SHOW THIS TO STAFF',staffEn:'I need an interpreter. Can you help me in English?',
- offT:'Public offices',offS:'Tap a place to open it in Naver Map',offices:[['Ansan City Hall','안산시청','City services · certificates'],['Foreign Residents Support Center','안산시 외국인주민지원본부','Counseling · multilingual help'],['Immigration Office, Ansan','출입국·외국인청 안산출장소','Visa · alien registration · book ahead']],
+ offT:'Public offices',offS:'Tap a place to open it in Naver Map',offices:[['Ansan City Hall','안산시청','City services · certificates'],['Foreign Residents Support Center','안산시 외국인주민지원본부','Counseling · multilingual help'],['Immigration Office, Ansan','안산출입국·외국인사무소','Visa · alien registration · book ahead']],
  newsT:'News & Events',official:'OFFICIAL · ANSAN CITY',sample:'Sample',newsItems:[['Free Korean class for residents','Sample notice · translated from Korean'],['Weekend health check for workers','Sample event · location and time will show here']],
  survT:'Surveys',survS:'Share your voice, get rewards',newB:'NEW',survF:'Getting to work in Ansan',survFS:'How do you commute? Help the city plan better routes.',time:'TIME',qs:'QUESTIONS',reward:'REWARD',start:'Start survey',anon:'Anonymous. We never share your name or visa details.',
  sq:[['How do you usually get to work?','출근할 때 주로 어떻게 가나요?',[['van','Company shuttle','회사 통근버스'],['bus','City bus','시내버스'],['walk','Walk or bicycle','걷기 · 자전거'],['dots','Other','기타']]],['How long is your commute?','출근 시간은 얼마나 걸리나요?',[['clock','Under 20 min','20분 미만'],['clock','20–40 min','20–40분'],['clock','40–60 min','40–60분'],['clock','Over an hour','1시간 이상']]],['What is hardest about the bus?','버스 이용에서 가장 어려운 점은?',[['speak','Language','언어'],['clock','Waiting time','대기 시간'],['map','Finding the stop','정류장 찾기'],['dots','Other','기타']]]],
@@ -445,11 +450,11 @@ vi:{cont:'Tiếp tục',contSub:'다음 단계로',menu:'Menu',welcome:'Chào m�
  openNaver:'Mở bằng Naver Map',guideApp:'Hướng dẫn trong ứng dụng này',
  chooseT:'Mở bằng',naverApp:'Ứng dụng Naver Map',naverAppS:'Mở ứng dụng. Tốt nhất để chỉ đường và xem xe đến.',rec2:'KHUYÊN DÙNG',naverWeb:'Naver Map trên web',naverWebS:'Mở trong cửa sổ mới — không cần ứng dụng.',always:'Luôn mở theo cách này',langTip:'Naver Map có tiếng Anh',langTipS:'Chọn English, 中文 hoặc 日本語 trong cài đặt Naver Map.',
  notInst:'Chưa cài Naver Map?',notInstS:'Cài một lần, lần sau sẽ mở thẳng trong ứng dụng. Hoặc tiếp tục trên web.',install:'Cài Naver Map',onWeb:'Mở trên web',
- stopT:'Trạm xe buýt',updated:'Vừa cập nhật',notify:'Báo tôi trước 2 trạm',crowd:['vắng','vừa','đông'],next:'chuyến sau',nightNote:'Ban đêm: được chuyển trong 60 phút (21:00–07:00)',lastBus:'Hết chuyến hôm nay',
+ stopT:'Trạm xe buýt',updated:'Vừa cập nhật',notify:'Báo tôi trước 2 trạm',crowd:['vắng','vừa','đông'],next:'chuyến sau',nightNote:'Ban đêm: được chuyển trong 60 phút (21:00–07:00)',dayNote:'Được chuyển trong 30 phút (ban đêm 21:00–07:00: 60 phút)',lastBus:'Hết chuyến hôm nay',
  onboard:'Trên xe',stopsLeft:'trạm nữa',getOffAt:'Xuống ở trạm của bạn · khoảng 6 phút',whenOff:'Khi xuống xe',offSteps:['Bấm nút đỏ báo xuống','Xuống bằng cửa sau','Quẹt thẻ khi xuống'],showDriver:'Cho tài xế xem',
  faresT:'Thẻ & giá vé',needCard:'BẠN CẦN',tmoney:'Thẻ T-money hoặc thẻ giao thông',tmoneyS:'Mua và nạp ở cửa hàng tiện lợi, bằng tiền mặt',fares:'Giá vé',adult:'thẻ người lớn',cityBus:'Xe buýt nội thành Gyeonggi',subway:'Tàu điện · giá cơ bản',cashNote:'Trả tiền mặt đắt hơn. Đi tàu xa sẽ tính thêm.',freeTr:'Chuyển miễn phí',trRules:[['30','phút','ban ngày'],['60','phút','21:00–07:00'],['4','lần','tối đa']],tapWarn:'Luôn quẹt thẻ khi xuống xe',asOf:'Giá vé tính đến 10/2025 · hãy kiểm tra cập nhật',
  hospT:'Bệnh viện',near:'Gần bạn',emerg:'Cấp cứu? Gọi 119',emergS:'Có phiên dịch qua điện thoại',more:'Sẽ thêm nhiều nơi khác',univ:'Bệnh viện ĐH Korea Ansan',univS:'Bệnh viện đại học · cấp cứu',hours:'Giờ',addr:'Địa chỉ',tel:'Điện thoại',checkHours:'Kiểm tra trước khi đến',staff:'CHO NHÂN VIÊN XEM',staffEn:'Tôi cần phiên dịch. Có thể giúp tôi bằng tiếng Anh không?',
- offT:'Cơ quan',offS:'Chạm để mở trong Naver Map',offices:[['Tòa thị chính Ansan','안산시청','Hành chính · giấy tờ'],['Trung tâm hỗ trợ cư dân nước ngoài','안산시 외국인주민지원본부','Tư vấn · đa ngôn ngữ'],['Văn phòng xuất nhập cảnh Ansan','출입국·외국인청 안산출장소','Visa · đăng ký người nước ngoài · đặt hẹn']],
+ offT:'Cơ quan',offS:'Chạm để mở trong Naver Map',offices:[['Tòa thị chính Ansan','안산시청','Hành chính · giấy tờ'],['Trung tâm hỗ trợ cư dân nước ngoài','안산시 외국인주민지원본부','Tư vấn · đa ngôn ngữ'],['Văn phòng xuất nhập cảnh Ansan','안산출입국·외국인사무소','Visa · đăng ký người nước ngoài · đặt hẹn']],
  newsT:'Tin tức & sự kiện',official:'CHÍNH THỨC · TP ANSAN',sample:'Mẫu',newsItems:[['Lớp tiếng Hàn miễn phí cho cư dân','Thông báo mẫu · dịch từ tiếng Hàn'],['Khám sức khỏe cuối tuần cho người lao động','Sự kiện mẫu · thời gian, địa điểm sẽ hiện ở đây']],
  survT:'Khảo sát',survS:'Chia sẻ ý kiến, nhận quà',newB:'MỚI',survF:'Đi làm ở Ansan',survFS:'Bạn đi làm bằng gì? Giúp thành phố cải thiện tuyến xe.',time:'THỜI GIAN',qs:'CÂU HỎI',reward:'QUÀ',start:'Bắt đầu',anon:'Ẩn danh. Không chia sẻ tên hay thông tin visa của bạn.',
  sq:[['Bạn thường đi làm bằng gì?','출근할 때 주로 어떻게 가나요?',[['van','Xe đưa đón công ty','회사 통근버스'],['bus','Xe buýt','시내버스'],['walk','Đi bộ, xe đạp','걷기 · 자전거'],['dots','Khác','기타']]],['Đi làm mất bao lâu?','출근 시간은 얼마나 걸리나요?',[['clock','Dưới 20 phút','20분 미만'],['clock','20–40 phút','20–40분'],['clock','40–60 phút','40–60분'],['clock','Hơn 1 tiếng','1시간 이상']]],['Điều gì khó nhất khi đi xe buýt?','버스 이용에서 가장 어려운 점은?',[['speak','Ngôn ngữ','언어'],['clock','Chờ lâu','대기 시간'],['map','Tìm trạm','정류장 찾기'],['dots','Khác','기타']]]],
@@ -482,11 +487,11 @@ ko:{cont:'다음',contSub:'안산살이 시작하기',menu:'메뉴',welcome:'Wel
  openNaver:'네이버지도로 열기',guideApp:'앱에서 안내받기',
  chooseT:'어디서 열까요?',naverApp:'네이버지도 앱',naverAppS:'앱에서 바로 열려요. 길찾기와 실시간 도착 정보에 좋아요.',rec2:'추천',naverWeb:'웹 네이버지도',naverWebS:'새 창에서 열려요. 앱이 없어도 돼요.',always:'항상 이 방법으로 열기',langTip:'네이버지도는 외국어를 지원해요',langTipS:'설정에서 English, 中文, 日本語로 바꿀 수 있어요.',
  notInst:'네이버지도 앱이 없나요?',notInstS:'한 번 설치하면 다음부터 앱으로 바로 열려요. 웹에서 계속 볼 수도 있어요.',install:'네이버지도 설치',onWeb:'웹으로 보기',
- stopT:'정류장',updated:'방금 업데이트',notify:'2정류장 전에 알림',crowd:['여유','보통','혼잡'],next:'다음',nightNote:'밤 9시~아침 7시는 60분 이내 환승 가능',lastBus:'운행 종료',
+ stopT:'정류장',updated:'방금 업데이트',notify:'2정류장 전에 알림',crowd:['여유','보통','혼잡'],next:'다음',nightNote:'밤 9시~아침 7시는 60분 이내 환승 가능',dayNote:'30분 이내 환승 가능 (밤 9시~아침 7시는 60분)',lastBus:'운행 종료',
  onboard:'승차 중',stopsLeft:'정류장 남음',getOffAt:'내릴 정류장까지 약 6분',whenOff:'내릴 때',offSteps:['빨간 하차벨 누르기','뒷문으로 내리기','내리면서 카드 태그'],showDriver:'기사님께 보여주기',
  faresT:'요금 · 카드',needCard:'필요한 것',tmoney:'티머니 등 교통카드',tmoneyS:'편의점에서 사고 현금으로 충전해요',fares:'요금',adult:'교통카드 · 성인',cityBus:'경기 시내버스 (일반형)',subway:'수도권 지하철 기본요금',cashNote:'현금은 더 비싸요. 지하철은 거리에 따라 추가 요금이 붙어요.',freeTr:'환승 할인',trRules:[['30','분','낮 시간'],['60','분','21:00–07:00'],['4','회','최대']],tapWarn:'내릴 때 꼭 카드를 찍어요',asOf:'2025년 10월 기준 요금 · 변경 여부를 확인하세요',
  hospT:'병원·약국',near:'내 주변',emerg:'응급 상황이면 119',emergS:'전화 통역이 가능해요',more:'다른 병원은 곧 추가돼요',univ:'고려대학교 안산병원',univS:'대학병원 · 응급의료',hours:'진료시간',addr:'주소',tel:'대표전화',checkHours:'방문 전 확인하세요',staff:'직원에게 보여주기',staffEn:'I need an interpreter. Can you help me in English?',
- offT:'관공서',offS:'누르면 네이버지도에서 열려요',offices:[['안산시청','Ansan City Hall','민원 · 증명서'],['안산시 외국인주민지원본부','Foreign Residents Support','상담 · 다국어 지원'],['출입국·외국인청 안산출장소','Immigration Office','비자 · 외국인등록 · 예약 필요']],
+ offT:'관공서',offS:'누르면 네이버지도에서 열려요',offices:[['안산시청','Ansan City Hall','민원 · 증명서'],['안산시 외국인주민지원본부','Foreign Residents Support','상담 · 다국어 지원'],['안산출입국·외국인사무소','Immigration Office','비자 · 외국인등록 · 예약 필요']],
  newsT:'공지·행사',official:'공식 · 안산시',sample:'예시',newsItems:[['외국인 주민 무료 한국어 교실','예시 공지 · 한국어 원문에서 번역'],['근로자 주말 건강검진','예시 행사 · 장소와 시간이 여기에 나와요']],
  survT:'설문 참여',survS:'의견을 나누고 보상을 받아요',newB:'NEW',survF:'안산 출근길 설문',survFS:'어떻게 출근하나요? 시가 더 나은 노선을 만드는 데 쓰여요.',time:'시간',qs:'문항',reward:'보상',start:'설문 시작',anon:'익명이에요. 이름이나 비자 정보는 공유하지 않아요.',
  sq:[['출근할 때 주로 어떻게 가나요?','How do you usually get to work?',[['van','회사 통근버스','Company shuttle'],['bus','시내버스','City bus'],['walk','걷기 · 자전거','Walk or bicycle'],['dots','기타','Other']]],['출근 시간은 얼마나 걸리나요?','How long is your commute?',[['clock','20분 미만','Under 20 min'],['clock','20–40분','20–40 min'],['clock','40–60분','40–60 min'],['clock','1시간 이상','Over an hour']]],['버스 이용에서 가장 어려운 점은?','What is hardest about the bus?',[['speak','언어','Language'],['clock','대기 시간','Waiting time'],['map','정류장 찾기','Finding the stop'],['dots','기타','Other']]]],
@@ -519,11 +524,11 @@ zh:{cont:'继续',contSub:'다음 단계로',menu:'菜单',welcome:'欢迎来到
  openNaver:'用Naver地图打开',guideApp:'在本应用内导航',
  chooseT:'用什么打开',naverApp:'Naver地图应用',naverAppS:'打开应用。最适合步行导航和实时到站。',rec2:'推荐',naverWeb:'网页版Naver地图',naverWebS:'在新窗口打开，无需安装应用。',always:'以后都这样打开',langTip:'Naver地图支持你的语言',langTipS:'在Naver地图设置中切换为English、中文或日本語。',
  notInst:'没有安装Naver地图？',notInstS:'安装一次，下次就能直接在应用中打开。也可以继续用网页版。',install:'安装Naver地图',onWeb:'改用网页版打开',
- stopT:'公交站',updated:'刚刚更新',notify:'提前2站提醒我',crowd:['拥挤度：低','拥挤度：中','拥挤度：高'],next:'下一班',nightNote:'夜间（21:00–07:00）60分钟内可换乘',lastBus:'今日已停运',
+ stopT:'公交站',updated:'刚刚更新',notify:'提前2站提醒我',crowd:['拥挤度：低','拥挤度：中','拥挤度：高'],next:'下一班',nightNote:'夜间（21:00–07:00）60分钟内可换乘',dayNote:'30分钟内可换乘（夜间21:00–07:00为60分钟）',lastBus:'今日已停运',
  onboard:'乘车中',stopsLeft:'站后下车',getOffAt:'在目的站下车 · 约6分钟',whenOff:'下车时',offSteps:['按红色下车铃','从后门下车','下车时刷卡'],showDriver:'给司机看',
  faresT:'交通卡·票价',needCard:'你需要',tmoney:'T-money或交通卡',tmoneyS:'在便利店购买，用现金充值',fares:'票价',adult:'成人·刷卡',cityBus:'京畿市内公交',subway:'地铁 · 基本票价',cashNote:'付现金更贵。地铁坐得远会加收距离费。',freeTr:'免费换乘',trRules:[['30','分钟','白天'],['60','分钟','21:00–07:00'],['4','次','每次出行最多']],tapWarn:'下车时一定要刷卡',asOf:'票价为2025年10月标准 · 请留意更新',
  hospT:'医院',near:'你附近',emerg:'紧急情况？拨打119',emergS:'电话中可提供翻译',more:'将陆续添加更多地点',univ:'高丽大学安山医院',univS:'大学医院 · 急诊',hours:'营业时间',addr:'地址',tel:'电话',checkHours:'就诊前请先确认',staff:'请出示给工作人员',staffEn:'I need an interpreter. Can you help me in English?',
- offT:'政府机关',offS:'点击地点，在Naver地图中打开',offices:[['安山市政府','안산시청','市政服务 · 证明文件'],['外国人居民支援中心','안산시 외국인주민지원본부','咨询 · 多语言帮助'],['出入境管理事务所 安山办事处','출입국·외국인청 안산출장소','签证 · 外国人登录 · 需预约']],
+ offT:'政府机关',offS:'点击地点，在Naver地图中打开',offices:[['安山市政府','안산시청','市政服务 · 证明文件'],['外国人居民支援中心','안산시 외국인주민지원본부','咨询 · 多语言帮助'],['安山出入境·外国人事务所','안산출입국·외국인사무소','签证 · 外国人登录 · 需预约']],
  newsT:'新闻·活动',official:'官方 · 安山市',sample:'示例',newsItems:[['面向居民的免费韩语课','示例通知 · 译自韩语'],['工人周末健康检查','示例活动 · 地点和时间将显示在这里']],
  survT:'问卷调查',survS:'说出你的想法，领取奖励',newB:'新',survF:'在安山上班的通勤方式',survFS:'你怎么上班？帮助市政府规划更好的路线。',time:'用时',qs:'题数',reward:'奖励',start:'开始答题',anon:'匿名填写。我们绝不会公开你的姓名或签证信息。',
  sq:[['你平时怎么去上班？','출근할 때 주로 어떻게 가나요?',[['van','公司班车','회사 통근버스'],['bus','市内公交','시내버스'],['walk','步行或骑自行车','걷기 · 자전거'],['dots','其他','기타']]],['你上班路上要多久？','출근 시간은 얼마나 걸리나요?',[['clock','20分钟以内','20분 미만'],['clock','20–40分钟','20–40분'],['clock','40–60分钟','40–60분'],['clock','1小时以上','1시간 이상']]],['坐公交最难的是什么？','버스 이용에서 가장 어려운 점은?',[['speak','语言','언어'],['clock','等车时间','대기 시간'],['map','找公交站','정류장 찾기'],['dots','其他','기타']]]],
@@ -571,7 +576,7 @@ langTip:'Naver Map говорит на вашем языке',langTipS:'Вклю
 notInst:'Naver Map не установлен?',notInstS:'Установите один раз — и в следующий раз места откроются прямо в приложении. Или продолжайте в браузере.',
 install:'Установить Naver Map',onWeb:'Открыть в браузере',
 stopT:'Остановка',updated:'Только что обновлено',notify:'Сообщить за 2 остановки',
-crowd:['мало людей','средне','много людей'],next:'след.',nightNote:'Ночью: пересадка в течение 60 мин (21:00–07:00)',
+crowd:['мало людей','средне','много людей'],next:'след.',nightNote:'Ночью: пересадка в течение 60 мин (21:00–07:00)',dayNote:'Пересадка в течение 30 мин (ночью 21:00–07:00 — 60 мин)',
 lastBus:'На сегодня всё',onboard:'В автобусе',stopsLeft:'остановок осталось',getOffAt:'Выход на вашей остановке · около 6 мин',
 whenOff:'Когда выходите',offSteps:['Нажмите красную кнопку','Выходите через заднюю дверь','Приложите карту при выходе'],
 showDriver:'Показать водителю',faresT:'Карта и тарифы',needCard:'ВАМ НУЖНА',tmoney:'T-money или транспортная карта',
@@ -583,7 +588,7 @@ hospT:'Больницы',near:'Рядом с вами',emerg:'Срочно? Зв
 univ:'Больница Университета Корё в Ансане',univS:'Университетская больница · скорая помощь',hours:'Часы работы',addr:'Адрес',tel:'Телефон',
 checkHours:'Уточните перед визитом',staff:'ПОКАЖИТЕ ПЕРСОНАЛУ',staffEn:'I need an interpreter. Can you help me in English?',
 offT:'Госучреждения',offS:'Нажмите на место, чтобы открыть в Naver Map',
-offices:[['Мэрия Ансана','안산시청','Городские услуги · справки'],['Центр поддержки иностранных жителей','안산시 외국인주민지원본부','Консультации · помощь на разных языках'],['Миграционная служба, Ансан','출입국·외국인청 안산출장소','Виза · регистрация иностранца · по записи']],
+offices:[['Мэрия Ансана','안산시청','Городские услуги · справки'],['Центр поддержки иностранных жителей','안산시 외국인주민지원본부','Консультации · помощь на разных языках'],['Миграционная служба, Ансан','안산출입국·외국인사무소','Виза · регистрация иностранца · по записи']],
 newsT:'Новости и события',official:'ОФИЦИАЛЬНО · ГОРОД АНСАН',sample:'Пример',
 newsItems:[['Бесплатные курсы корейского для жителей','Пример объявления · перевод с корейского'],['Медосмотр для работников в выходные','Пример события · здесь будут место и время']],
 survT:'Опросы',survS:'Поделитесь мнением и получите награду',newB:'НОВОЕ',survF:'Дорога на работу в Ансане',
@@ -634,11 +639,11 @@ uz:{cont:`Davom etish`,contSub:'다음 단계로',menu:`Menyu`,welcome:`Ansanga 
  openNaver:`Naver Map da ochish`,guideApp:`Shu ilovada yo‘l ko‘rsatish`,
  chooseT:`Qayerda ochilsin`,naverApp:`Naver Map ilovasi`,naverAppS:`Ilovani ochadi. Piyoda yo‘l va jonli kelish vaqti uchun eng qulay.`,rec2:`TAVSIYA ETILADI`,naverWeb:`Naver Map veb-saytda`,naverWebS:`Yangi oynada ochiladi — ilova shart emas.`,always:`Doim shunday ochilsin`,langTip:`Naver Map sizning tilingizda`,langTipS:`Naver Map sozlamalarida English, 中文 yoki 日本語 ni tanlang.`,
  notInst:`Naver Map o‘rnatilmaganmi?`,notInstS:`Bir marta o‘rnating, keyingi safar joylar to‘g‘ridan-to‘g‘ri ilovada ochiladi. Yoki veb-saytda davom eting.`,install:`Naver Map ni o‘rnatish`,onWeb:`Veb-saytda ochish`,
- stopT:`Avtobus bekati`,updated:`Hozirgina yangilandi`,notify:`2 bekat oldin xabar berish`,crowd:[`odam: kam`,`odam: o‘rtacha`,`odam: ko‘p`],next:`keyingi`,nightNote:`Tunda: 60 daqiqa ichida almashish mumkin (21:00–07:00)`,lastBus:`Bugun tugadi`,
+ stopT:`Avtobus bekati`,updated:`Hozirgina yangilandi`,notify:`2 bekat oldin xabar berish`,crowd:[`odam: kam`,`odam: o‘rtacha`,`odam: ko‘p`],next:`keyingi`,nightNote:`Tunda: 60 daqiqa ichida almashish mumkin (21:00–07:00)`,dayNote:`30 daqiqa ichida almashish mumkin (tunda 21:00–07:00 — 60 daqiqa)`,lastBus:`Bugun tugadi`,
  onboard:`Avtobusda`,stopsLeft:`bekat qoldi`,getOffAt:`Bekatingizda tushing · taxminan 6 daqiqa`,whenOff:`Tushayotganda`,offSteps:[`Qizil tugmani bosing`,`Orqa eshikdan chiqing`,`Chiqishda kartani tegizing`],showDriver:`Haydovchiga ko‘rsatish`,
  faresT:`Karta va narxlar`,needCard:`SIZGA KERAK`,tmoney:`T-money yoki transport kartasi`,tmoneyS:`Do‘konlarda (convenience store) naqd pulga sotib olinadi va to‘ldiriladi`,fares:`Narxlar`,adult:`kattalar kartasi`,cityBus:`Gyeonggi shahar avtobusi`,subway:`Metro · asosiy narx`,cashNote:`Naqd pulda qimmatroq. Metroda uzoq yo‘lga masofa haqi qo‘shiladi.`,freeTr:`Bepul almashish`,trRules:[['30',`daq`,`kunduzi`],['60',`daq`,'21:00–07:00'],['4',`marta`,`bir safarda ko‘pi bilan`]],tapWarn:`Tushayotganda doim kartani tegizing`,asOf:`Narxlar 2025-yil oktabr holatiga · yangilanishlarni tekshiring`,
  hospT:`Shifoxonalar`,near:`Yaqin atrofda`,emerg:`Shoshilinchmi? 119 ga qo‘ng‘iroq qiling`,emergS:`Telefonda tarjimon xizmati bor`,more:`Yana joylar qo‘shiladi`,univ:`Korea University Ansan shifoxonasi`,univS:`Universitet shifoxonasi · tez yordam`,hours:`Ish vaqti`,addr:`Manzil`,tel:`Telefon`,checkHours:`Borishdan oldin tekshiring`,staff:`XODIMGA KO‘RSATING`,staffEn:`I need an interpreter. Can you help me in English?`,
- offT:`Davlat idoralari`,offS:`Naver Map da ochish uchun joyni bosing`,offices:[[`Ansan shahar hokimiyati`,'안산시청',`Shahar xizmatlari · ma'lumotnomalar`],[`Xorijiy rezidentlarni qo‘llab-quvvatlash markazi`,'안산시 외국인주민지원본부',`Maslahat · ko‘p tilli yordam`],[`Immigratsiya idorasi, Ansan`,'출입국·외국인청 안산출장소',`Viza · chet ellik ro‘yxati · oldindan yoziling`]],
+ offT:`Davlat idoralari`,offS:`Naver Map da ochish uchun joyni bosing`,offices:[[`Ansan shahar hokimiyati`,'안산시청',`Shahar xizmatlari · ma'lumotnomalar`],[`Xorijiy rezidentlarni qo‘llab-quvvatlash markazi`,'안산시 외국인주민지원본부',`Maslahat · ko‘p tilli yordam`],[`Immigratsiya idorasi, Ansan`,'안산출입국·외국인사무소',`Viza · chet ellik ro‘yxati · oldindan yoziling`]],
  newsT:`Yangiliklar va tadbirlar`,official:`RASMIY · ANSAN SHAHRI`,sample:`Namuna`,newsItems:[[`Aholi uchun bepul koreys tili kursi`,`Namuna e'lon · koreys tilidan tarjima`],[`Ishchilar uchun dam olish kunlari tibbiy ko‘rik`,`Namuna tadbir · joy va vaqt shu yerda ko‘rsatiladi`]],
  survT:`So‘rovnomalar`,survS:`Fikringizni bildiring, sovg‘a oling`,newB:`YANGI`,survF:`Ansanda ishga borish`,survFS:`Ishga qanday borasiz? Shaharga yaxshiroq yo‘nalishlar rejalashtirishga yordam bering.`,time:`VAQT`,qs:`SAVOLLAR`,reward:`SOVG‘A`,start:`Boshlash`,anon:`Anonim. Ismingiz va viza ma'lumotlaringiz hech kimga berilmaydi.`,
  sq:[[`Odatda ishga qanday borasiz?`,'출근할 때 주로 어떻게 가나요?',[['van',`Kompaniya avtobusi`,'회사 통근버스'],['bus',`Shahar avtobusi`,'시내버스'],['walk',`Piyoda yoki velosipedda`,'걷기 · 자전거'],['dots',`Boshqa`,'기타']]],[`Ishga borish qancha vaqt oladi?`,'출근 시간은 얼마나 걸리나요?',[['clock',`20 daqiqadan kam`,'20분 미만'],['clock',`20–40 daqiqa`,'20–40분'],['clock',`40–60 daqiqa`,'40–60분'],['clock',`Bir soatdan ko‘p`,'1시간 이상']]],[`Avtobusda eng qiyini nima?`,'버스 이용에서 가장 어려운 점은?',[['speak',`Til`,'언어'],['clock',`Kutish vaqti`,'대기 시간'],['map',`Bekatni topish`,'정류장 찾기'],['dots',`Boshqa`,'기타']]]],
@@ -671,11 +676,11 @@ mn:{cont:'Үргэлжлүүлэх',contSub:'다음 단계로',menu:'Цэс',wel
  openNaver:'Naver Map-д нээх',guideApp:'Энэ апп-аар чиглүүлэх',
  chooseT:'Хаана нээх вэ',naverApp:'Naver Map апп',naverAppS:'Апп нээгдэнэ. Алхах чиглэл, шууд ирэх цагт хамгийн тохиромжтой.',rec2:'САНАЛ БОЛГОХ',naverWeb:'Вэб дэх Naver Map',naverWebS:'Шинэ цонхонд нээгдэнэ — апп хэрэггүй.',always:'Үргэлж ингэж нээх',langTip:'Naver Map таны хэлээр ярьдаг',langTipS:'Naver Map-ийн тохиргоонд English, 中文 эсвэл 日本語 болгож солино уу.',
  notInst:'Naver Map суугаагүй юу?',notInstS:'Нэг удаа суулгавал дараа нь газрууд шууд апп-д нээгдэнэ. Эсвэл вэбээр үргэлжлүүлээрэй.',install:'Naver Map суулгах',onWeb:'Вэбээр нээх',
- stopT:'Автобусны буудал',updated:'Дөнгөж шинэчлэгдсэн',notify:'2 буудлын өмнө сануулах',crowd:['хүн: цөөн','хүн: дунд','хүн: олон'],next:'дараах',nightNote:'Шөнө: 60 минутын дотор шилжиж болно (21:00–07:00)',lastBus:'Өнөөдөр дууссан',
+ stopT:'Автобусны буудал',updated:'Дөнгөж шинэчлэгдсэн',notify:'2 буудлын өмнө сануулах',crowd:['хүн: цөөн','хүн: дунд','хүн: олон'],next:'дараах',nightNote:'Шөнө: 60 минутын дотор шилжиж болно (21:00–07:00)',dayNote:'30 минутын дотор шилжиж болно (шөнө 21:00–07:00 — 60 минут)',lastBus:'Өнөөдөр дууссан',
  onboard:'Автобусанд',stopsLeft:'буудал үлдсэн',getOffAt:'Буудал дээрээ буух · ойролцоогоор 6 мин',whenOff:'Буухдаа',offSteps:['Улаан товчийг дарна','Хойд хаалгаар буух','Гарахдаа картаа уншуулна'],showDriver:'Жолоочид үзүүлэх',
  faresT:'Карт ба үнэ',needCard:'ТАНД ХЭРЭГТЭЙ',tmoney:'T-money эсвэл тээврийн карт',tmoneyS:'Дэлгүүрт (convenience store) бэлнээр худалдаж аваад цэнэглэнэ',fares:'Үнэ',adult:'том хүн, картаар',cityBus:'Кёнгидогийн хотын автобус',subway:'Метро · үндсэн үнэ',cashNote:'Бэлнээр үнэтэй. Метрогоор хол явбал зайн нэмэгдэл төлнө.',freeTr:'Үнэгүй шилжилт',trRules:[['30','мин','өдөр'],['60','мин','21:00–07:00'],['4','удаа','нэг аялалд дээд тал нь']],tapWarn:'Буухдаа заавал картаа уншуулаарай',asOf:'2025 оны 10-р сарын үнэ · шинэчлэлтийг шалгана уу',
  hospT:'Эмнэлэг',near:'Таны ойролцоо',emerg:'Яаралтай юу? 119 руу залга',emergS:'Утсаар орчуулга авах боломжтой',more:'Илүү олон газар нэмэгдэнэ',univ:'Корё их сургуулийн Ансан эмнэлэг',univS:'Их сургуулийн эмнэлэг · Яаралтай тусламж',hours:'Цагийн хуваарь',addr:'Хаяг',tel:'Утас',checkHours:'Очихоосоо өмнө шалгаарай',staff:'АЖИЛТАНД ҮЗҮҮЛЭХ',staffEn:'I need an interpreter. Can you help me in English?',
- offT:'Төрийн байгууллага',offS:'Газар дээр дарж Naver Map-д нээнэ үү',offices:[['Ансан хотын захиргаа','안산시청','Хотын үйлчилгээ · тодорхойлолт'],['Гадаад иргэдийг дэмжих төв','안산시 외국인주민지원본부','Зөвлөгөө · олон хэлний тусламж'],['Цагаачлалын алба, Ансан','출입국·외국인청 안산출장소','Виз · гадаад иргэний бүртгэл · урьдчилан цаг ав']],
+ offT:'Төрийн байгууллага',offS:'Газар дээр дарж Naver Map-д нээнэ үү',offices:[['Ансан хотын захиргаа','안산시청','Хотын үйлчилгээ · тодорхойлолт'],['Гадаад иргэдийг дэмжих төв','안산시 외국인주민지원본부','Зөвлөгөө · олон хэлний тусламж'],['Цагаачлалын алба, Ансан','안산출입국·외국인사무소','Виз · гадаад иргэний бүртгэл · урьдчилан цаг ав']],
  newsT:'Мэдээ ба арга хэмжээ',official:'АЛБАН ЁСНЫ · АНСАН ХОТ',sample:'Жишээ',newsItems:[['Оршин суугчдад үнэгүй солонгос хэлний анги','Жишээ мэдэгдэл · солонгос хэлнээс орчуулсан'],['Ажилчдад амралтын өдрийн эрүүл мэндийн үзлэг','Жишээ арга хэмжээ · газар, цаг энд харагдана']],
  survT:'Санал асуулга',survS:'Саналаа хэлж, шагнал аваарай',newB:'ШИНЭ',survF:'Ансанд ажилдаа явах нь',survFS:'Та ажилдаа яаж явдаг вэ? Хотод илүү сайн чиглэл төлөвлөхөд туслаарай.',time:'ХУГАЦАА',qs:'АСУУЛТ',reward:'ШАГНАЛ',start:'Эхлэх',anon:'Нэргүй. Таны нэр, визийн мэдээллийг бид хэзээ ч хуваалцахгүй.',
  sq:[['Та ихэвчлэн ажилдаа яаж явдаг вэ?','출근할 때 주로 어떻게 가나요?',[['van','Компанийн автобус','회사 통근버스'],['bus','Хотын автобус','시내버스'],['walk','Алхах эсвэл дугуй','걷기 · 자전거'],['dots','Бусад','기타']]],['Ажилдаа явахад хэр удаан вэ?','출근 시간은 얼마나 걸리나요?',[['clock','20 минутаас бага','20분 미만'],['clock','20–40 мин','20–40분'],['clock','40–60 мин','40–60분'],['clock','1 цагаас илүү','1시간 이상']]],['Автобусанд юу хамгийн хэцүү вэ?','버스 이용에서 가장 어려운 점은?',[['speak','Хэл','언어'],['clock','Хүлээх хугацаа','대기 시간'],['map','Буудлаа олох','정류장 찾기'],['dots','Бусад','기타']]]],
@@ -760,7 +765,13 @@ const MAPS={
  medlist:()=>{const m=st.med;if(!m||!m.pos||!m.hosp)return null;const all=medAll();const l0=medList();const near=l0.filter(x=>x.dist!=null&&x.dist<=3000);const list=(near.length>=5?near:l0.slice(0,5)).slice(0,15); // 먼 곳까지 넣으면 지도가 인천~수원까지 축소됨
   return {zoom:15,pts:[{lat:m.pos.lat,lng:m.pos.lng,label:esc(HT().you),home:true},...list.filter(x=>x.lat!=null).map(x=>({lat:x.lat,lng:x.lng,dot:true,pharm:x.kind==='pharm',title:x.name,med:'a'+all.indexOf(x)}))]};},
  near:()=>{const list=st.stops&&st.stops.key===st.addr.full?st.stops.list.slice(0,3).filter(x=>x.lat!=null):[];return {zoom:16,pts:[{label:esc(T().home),home:true},...list.map(x=>({lat:x.lat,lng:x.lng,label:esc(x.name)}))]};}, // 집 + 실제 주변 정류장
- offices:{zoom:14,pts:[{addr:'경기도 안산시 단원구 원포공원1로 59',label:'Home',home:true},{addr:'경기도 안산시 단원구 화랑로 387',label:'안산시청'}]}};
+ offices:()=>({zoom:14,pts:[{label:esc(T().home),home:true},...OFFICE_INFO.map(o=>({addr:o.geo,label:o.pin}))]})}; // 집 + 관공서 3곳 (QA 10)
+/* 관공서 정보 — 확인 2026-11-13. 시청·외국인주민지원본부: 안산시 누리집(ansan.go.kr), 출입국: 법무부 소속기관 현황 인용 자료(2026-10 기준)·1345 안내.
+   2025년 안산출장소가 '안산출입국·외국인사무소'로 승격. 방문 전 1345·하이코리아로 다시 확인 권장 */
+const OFFICE_INFO=[
+ {pin:'안산시청',geo:'경기도 안산시 단원구 화랑로 387',addr:'경기도 안산시 단원구 화랑로 387',tel:'1666-1234'},
+ {pin:'외국인주민지원본부',geo:'경기도 안산시 단원구 부부로 43',addr:'경기도 안산시 단원구 부부로 43 (원곡동)',tel:'1666-1234'},
+ {pin:'출입국·외국인사무소',geo:'경기도 안산시 단원구 광덕4로 96',addr:'경기도 안산시 단원구 광덕4로 96, 2층 종합민원센터',tel:'1345'}];
 const miniMap=k=>`<div class="nmap mini" data-map="${k}"><div class="live"></div><svg class="fallback" viewBox="0 0 342 170" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g stroke="#fff" stroke-linecap="round" fill="none"><path d="M-10 120 C 80 100,150 140,230 95 S 330 60,350 70" stroke-width="12"/><path d="M110 -10 L 150 180" stroke-width="8"/><path d="M-10 50 L 350 30" stroke-width="6"/><path d="M260 -10 L 230 180" stroke-width="5"/></g><path d="M171 92s12-11 12-20a12 12 0 0 0-24 0c0 9 12 20 12 20z" fill="#E45C4E"/><circle cx="171" cy="72" r="4.5" fill="#fff"/></svg><span class="maptag">MAP</span></div>`;
 /* 지도: 네이버 지도 키가 있으면 네이버, 없거나 인증 실패면 구글 지도(GMAPS_KEY), 둘 다 없으면 그림 지도 */
 const GMAPS_KEY='';
@@ -789,20 +800,20 @@ const PROV={
   draw(el,spec,pts){let map=el._map;if(!map){map=el._map=new N.maps.Map(el.querySelector('.live'),{center:pts[pts.length-1].ll,zoom:spec.zoom,scaleControl:false,mapDataControl:false,logoControlOptions:{position:N.maps.Position.BOTTOM_RIGHT},draggable:false,pinchZoom:false,scrollWheel:false,keyboardShortcuts:false,disableDoubleTapZoom:true,disableDoubleClickZoom:true,disableTwoFingerTapZoom:true});el._ctl={pan:(dx,dy)=>map.panBy(new N.maps.Point(-dx,-dy)),zoom:d=>map.setZoom(map.getZoom()+d,true)};}
    (el._pins||[]).forEach(m=>m.setMap(null));
    el._pins=pts.map((p,i)=>{const mk=new N.maps.Marker({position:p.ll,map,icon:{content:pinHtml(p,i),anchor:new N.maps.Point(0,0)}});if(p.med)N.maps.Event.addListener(mk,'click',()=>openMed(p.med));return mk;});
-   if(pts.length>1){const b=new N.maps.LatLngBounds(pts[0].ll,pts[0].ll);pts.forEach(p=>b.extend(p.ll));map.fitBounds(b,{top:50,right:40,bottom:30,left:40});}else map.setCenter(pts[0].ll);}}),
+   if(pts.length>1){const b=new N.maps.LatLngBounds(pts[0].ll,pts[0].ll);pts.forEach(p=>b.extend(p.ll));map.fitBounds(b,{top:84,right:44,bottom:30,left:44});const cap=()=>{if(map.getZoom()>17)map.setZoom(17)};cap();N.maps.Event.once(map,'idle',cap);}else map.setCenter(pts[0].ll);}}), /* 위쪽 84px: 핀+이름표가 잘리지 않게. 17: 두 곳이 같은 주소여도 최대 확대 방지 */
  google:G=>({ll:(a,b)=>new G.maps.LatLng(a,b),
   geocode:addr=>geoCache[addr]||(geoCache[addr]=new Promise(res=>{try{new G.maps.Geocoder().geocode({address:addr,region:'KR'},(r,s)=>{const ok=s==='OK'&&r[0];if(!ok)delete geoCache[addr];res(ok?r[0].geometry.location:null);});}catch(e){delete geoCache[addr];res(null)}})),
   draw(el,spec,pts){let map=el._map;if(!map){map=el._map=new G.maps.Map(el.querySelector('.live'),{center:pts[pts.length-1].ll,zoom:spec.zoom,disableDefaultUI:true,clickableIcons:false,gestureHandling:'none',keyboardShortcuts:false,styles:GSTYLE,backgroundColor:'#DCE6E7'});el._ctl={pan:(dx,dy)=>map.panBy(-dx,-dy),zoom:d=>map.setZoom(map.getZoom()+d)};}
    (el._pins||[]).forEach(m=>m.setMap(null));const P=gPinClass(G);
    el._pins=pts.map((p,i)=>{const o=new P(p.ll,p,i);o.setMap(map);return o;});
-   if(pts.length>1){const b=new G.maps.LatLngBounds();pts.forEach(p=>b.extend(p.ll));map.fitBounds(b,{top:50,right:40,bottom:30,left:40});const z=G.maps.event.addListenerOnce(map,'idle',()=>{if(map.getZoom()>17)map.setZoom(17);});}else{map.setCenter(pts[0].ll);map.setZoom(spec.zoom);}}})};
+   if(pts.length>1){const b=new G.maps.LatLngBounds();pts.forEach(p=>b.extend(p.ll));map.fitBounds(b,{top:84,right:44,bottom:30,left:44});const z=G.maps.event.addListenerOnce(map,'idle',()=>{if(map.getZoom()>17)map.setZoom(17);});}else{map.setCenter(pts[0].ll);map.setZoom(spec.zoom);}}})};
 function geocode(N,addr){return PROV.naver(N).geocode(addr);}
 let provP=null;
 function mapProv(){return provP||(provP=(async()=>{const N=await loadNaver();if(N)return PROV.naver(N);const G=await loadGoogle();return G?PROV.google(G):null;})());}
-async function mountMaps(only){const els=only?[only]:[...app.querySelectorAll('.nmap[data-map]')];if(!els.length)return;const P=await mapProv();if(!P)return;
- for(const el of els){if(!el.isConnected)continue;const sp0=MAPS[el.dataset.map];const spec=typeof sp0==='function'?sp0():sp0;if(!spec)continue;
+async function mountMaps(only){const els=only?[only]:[...app.querySelectorAll('.nmap[data-map]')];if(!els.length)return;if(hasMapKey())els.forEach(el=>el.classList.add('loading'));const P=await mapProv();if(!P){els.forEach(el=>el.classList.remove('loading'));return;}
+ for(const el of els){if(!el.isConnected)continue;const sp0=MAPS[el.dataset.map];const spec=typeof sp0==='function'?sp0():sp0;if(!spec){el.classList.remove('loading');continue;}
   const ll=await Promise.all(spec.pts.map(p=>p.lat!=null?P.ll(p.lat,p.lng):p.home&&st.addr.lat?P.ll(st.addr.lat,st.addr.lng):P.geocode(p.home?st.addr.full:p.addr)));
-  const pts=spec.pts.map((p,i)=>({...p,ll:ll[i]})).filter(p=>p.ll);if(!pts.length||!el.isConnected)continue;
+  const pts=spec.pts.map((p,i)=>({...p,ll:ll[i]})).filter(p=>p.ll);if(!pts.length||!el.isConnected){el.classList.remove('loading');continue;}
   try{P.draw(el,spec,pts);el._pts=pts;mapShield(el);el.classList.add('ready');}catch(e){}}}
 /* 지도 위 한 손가락은 페이지 스크롤, 두 손가락으로 지도 이동·확대 (QA 9번). 지도 자체 제스처는 끄고 투명한 막이 받아서 처리 */
 const MAPHINT={ko:'두 손가락으로 지도를 움직여요',en:'Use two fingers to move the map',vi:'Dùng hai ngón tay để di chuyển bản đồ',zh:'用两根手指移动地图',ru:'Двигайте карту двумя пальцами',uz:'Xaritani ikki barmoq bilan suring',mn:'Газрын зургийг хоёр хуруугаар хөдөлгөнө үү'};
@@ -997,7 +1008,7 @@ SCR.b4=()=>{const t=T();const rows=[['Bus A',2,5,0,true],['Bus B',6,14,1],['Bus 
   ${live?`<span id="arrerr" class="soft-accent small" hidden>${t.busErr}</span><div id="arrs" class="col" style="gap:10px" data-sample="${esc(sample)}"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>`:sample}
   <!-- 2정류장 전 알림: 푸시 알림을 만들 때까지 숨김 (QA 2026-11-13) -->
   <div class="spacer"></div>
-  <span class="row tiny muted" style="gap:6px">${ic('moon',13,'#6E7472')}${t.nightNote}</span>
+  ${(()=>{const hr=new Date().getHours(),night=hr>=21||hr<7;return `<span class="row tiny muted" style="gap:6px">${ic(night?'moon':'clock',13,'#6E7472')}${night?t.nightNote:t.dayNote}</span>`})()}<!-- 환승: 낮 30분 / 밤(21~07시) 60분 (QA 13) -->
  </div>${foot}</div>`;};
 SCR.b5=()=>{const t=T();return `<div class="scr board ${isKo()?'ko':''}" style="background:var(--deep)">${nav(t.onboard)}
  <div class="ttl" style="color:#fff"><span class="row small" style="gap:8px;opacity:.8"><span class="badge" style="background:var(--bus)">Bus</span>→ Banwol</span><div class="row" style="align-items:baseline;gap:10px"><span class="serif" style="font-size:72px;line-height:1">3</span><span class="col"><span class="it" style="font-size:20px">${t.stopsLeft}</span>${koSub('3정류장 남았어요')}</span></div><span class="small" style="opacity:.85">${t.getOffAt}</span></div>
@@ -1192,8 +1203,9 @@ SCR.hosp=()=>{const t=T(),h=HT();return `<div class="scr ${isKo()?'ko':''}">${na
  </div></div>`;};
 SCR.hdetail=()=>{const t=T(),h=HT();const it=st.med.sel;if(!it)return SCR.hosp();const k=typeKey(it);const tel=String(it.tel||'').replace(/[^\d-]/g,'');const d=st.med.detail[it.id]||{};
  return `<div class="scr ${isKo()?'ko':''}">
+ <div class="stickyback"><button class="idot" data-act="back" aria-label="Back">${ic('back',20)}</button></div>
  <div class="nmap" data-map="hosp" style="height:250px;flex:none"><div class="live"></div><svg class="fallback" width="100%" height="100%" viewBox="0 0 390 250" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g stroke="#fff" stroke-linecap="round" fill="none"><path d="M-10 190 C 90 160,160 210,260 150 S 380 100,400 110" stroke-width="14"/><path d="M120 -10 L 170 260" stroke-width="10"/><path d="M-10 80 L 400 50" stroke-width="8"/><path d="M290 -10 L 250 260" stroke-width="6"/></g><g fill="#C9D8D9"><rect x="190" y="180" width="46" height="40" rx="6"/><rect x="20" y="110" width="60" height="44" rx="6"/><rect x="300" y="170" width="70" height="60" rx="6"/></g><path d="M195 135s16-15 16-27a16 16 0 0 0-32 0c0 12 16 27 16 27z" fill="#E45C4E"/><circle cx="195" cy="108" r="6" fill="#fff"/></svg>
-  <button class="idot" data-act="back" aria-label="Back" style="position:absolute;z-index:3;left:24px;top:calc(48px + env(safe-area-inset-top,0px));width:44px;height:44px;background:#fff">${ic('back',20)}</button></div>
+</div>
  <div class="sheet" style="border-top-right-radius:40px;border-top-left-radius:40px;margin-top:-36px;position:relative">
   <div class="col" style="gap:6px"><span class="h1 ko" style="font-size:22px;line-height:1.3">${esc(it.name)}</span>${romaSub(it.name,'roma big')}<span class="row small muted" style="gap:6px;flex-wrap:wrap"><span>${h.types[k]}</span>${!isKo()?`<span class="kr">${HS.ko.types[k]}</span>`:''}<span>·</span><span>${distTxt(it.dist)}</span></span>
    <span class="row" style="gap:6px;flex-wrap:wrap">${statusChip(it)}<span class="tag" id="mer" style="background:var(--accent-soft)" ${d.er&&it.kind!=='pharm'?'':'hidden'}>${h.er}</span>${langOk(it)?`<span class="tag" style="background:var(--accent-soft)">${h.langOk}</span>`:''}</span></div>
@@ -1206,7 +1218,7 @@ SCR.hdetail=()=>{const t=T(),h=HT();const it=st.med.sel;if(!it)return SCR.hosp()
   <div class="acts">${tel?`<a class="btn line" href="tel:${tel}">${ic('phone',18)}${h.call}</a>`:''}<button class="btn dark" data-mnav="sel">${ic('map',18,'#fff')}${h.naver}${ic('ext',14,'#fff')}</button></div>
  </div></div>`;};
 SCR.offices=()=>{const t=T();return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)}${ttl(t.offT,`<span>${t.offS}</span>`,{pin:true})}
- <div class="sheet" style="gap:18px">${miniMap('offices')}${t.offices.map(([a,k,d],i)=>`<button class="col" style="gap:8px;text-align:left" data-naver="${S.ko.offices[i][0]}"><span class="row" style="gap:10px"><span style="width:16px;height:1.5px;background:var(--ink)"></span><span class="serif grow ${isKo()?'kr':''}" style="font-size:16px">${a}</span></span><span class="ticket" style="width:100%"><span class="col grow" style="gap:4px"><span class="tiny muted kr">${k}</span><span class="small">${d}</span></span><span class="dash"></span><span class="idot" style="background:var(--accent)">${ic('map',16,'#fff',2)}</span></span></button>`).join('')}<div class="spacer"></div></div>${foot}</div>`;};
+ <div class="sheet" style="gap:18px">${miniMap('offices')}${t.offices.map(([a,k,d],i)=>{const o=OFFICE_INFO[i]||{};return `<div class="col" style="gap:8px"><button class="col" style="gap:8px;text-align:left" data-naver="${S.ko.offices[i][0]}"><span class="row" style="gap:10px"><span style="width:16px;height:1.5px;background:var(--ink)"></span><span class="serif grow ${isKo()?'kr':''}" style="font-size:16px">${a}</span></span><span class="ticket" style="width:100%"><span class="col grow" style="gap:4px"><span class="tiny muted kr">${k}</span><span class="small">${d}</span>${o.addr?`<span class="micro muted kr" style="user-select:all">${esc(o.addr)}</span>`:''}</span><span class="dash"></span><span class="idot" style="background:var(--accent)">${ic('map',16,'#fff',2)}</span></span></button>${o.tel?`<a class="row small" href="tel:${o.tel.replace(/[^\d]/g,'')}" style="gap:8px;padding:2px 2px 0 26px">${ic('phone',15,'#6E7472')}<span class="muted">${t.tel}</span><span class="b" style="text-decoration:underline">${o.tel}</span></a>`:''}</div>`}).join('')}<div class="spacer"></div></div>${foot}</div>`;};
 SCR.news=()=>{const t=T();const cached=(hasApi()||hasSb())&&st.news[st.lang];return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)}${ttl(t.newsT,koSub('공지·행사'))}
  <div class="sheet" style="gap:20px"><div id="newslist" class="col" style="gap:20px">${cached?newsList(cached.notices||[]):t.newsItems.map(([a,b],i)=>`<div class="quote"><div class="col" style="gap:6px"><span class="row cap" style="gap:6px;color:var(--deep)">${ic(i?'cal':'shield',13,'#22393A',2)}${i?t.event:t.official} · ${t.sample}</span><span class="serif" style="font-size:17px">${a}</span><span class="small muted">${b}</span></div></div>`).join('')}</div>
  ${adSlot()}
@@ -1262,7 +1274,7 @@ const PLACES=()=>{const t=T();return [
  {n:t.offices[0][0],ko:'안산시청',q:'안산시청',addr:'경기도 안산시 단원구 화랑로 387',icon:'office'},
  {n:t.univ,ko:'고려대학교 안산병원',q:'고려대학교 안산병원',addr:'경기도 안산시 단원구 적금로 123',icon:'med'},
  {n:t.offices[1][0],ko:'안산시 외국인주민지원본부',q:'안산시 외국인주민지원본부',icon:'globe'},
- {n:t.offices[2][0],ko:'출입국·외국인청 안산출장소',q:'안산출입국외국인사무소',icon:'shield'}];};
+ {n:t.offices[2][0],ko:'안산출입국·외국인사무소',q:'안산출입국외국인사무소',icon:'shield'}];};
 async function routeTo(name,addr){const N=await loadNaver();
  if(N){const dest=addr?await geocode(N,addr):await geocode(N,name);const home=await homeLL();
   if(dest){const dl=typeof dest.lat==='function'?{lat:dest.lat(),lng:dest.lng()}:{lat:dest.y,lng:dest.x};
@@ -1315,9 +1327,10 @@ const directAd=a=>{const t=T();const img=a.image_url&&/^https:\/\//.test(a.image
  return a.url&&/^https:\/\//.test(a.url)?`<a class="card row adcard" href="${esc(a.url)}" target="_blank" rel="noopener sponsored">${inner}</a>`:`<div class="card row adcard">${inner}</div>`};
 const adsenseBox=()=>`<div id="adslot" class="card adcard" style="padding:8px"><ins class="adsbygoogle" style="display:block" data-ad-client="${ADS_CLIENT}" data-ad-slot="${ADS_SLOT}" data-ad-format="auto" data-full-width-responsive="true"></ins></div>`;
 /* 광고 순서: Supabase 직접 광고 → 애드센스 → (둘 다 없으면) 예시 광고 */
+const AD_PREVIEW=/[?&]adpreview\b/.test(location.search);
 function adSlot(){if(adFree())return adFreeRow();if(!hasSb())return hasAdsense()?adsenseBox():sampleAd();const a=st.ad[st.lang];
  if(a===undefined)return '<div id="adslot"></div>';if(a)return directAd(a);
- return hasAdsense()?adsenseBox():sampleAd();}
+ return hasAdsense()?adsenseBox():(AD_PREVIEW?sampleAd():'');} /* QA 6: 실제 운영에선 예시 광고 숨김(애드센스 승인 전). 디자인 확인은 주소에 ?adpreview */
 const pickAd=list=>{const tot=list.reduce((n,a)=>n+(a.weight||1),0);let r=Math.random()*tot;for(const a of list){r-=a.weight||1;if(r<=0)return a}return list[0]||null};
 let adsenseLoaded=false;
 function mountAdsense(){if(!document.querySelector('ins.adsbygoogle:not([data-adsbygoogle-status])'))return;
@@ -1470,6 +1483,7 @@ function render(){syncHist();clearInterval(bgTimer);clearTimeout(scanTimer);clea
  if(n==='intro')bindIntro();
  if(n==='w3')runScan();
  if(n==='home'||n==='news')loadAd();
+ if(n==='home'&&okKey(NAVER_KEY)){const pre=()=>loadNaver();window.requestIdleCallback?requestIdleCallback(pre,{timeout:3000}):setTimeout(pre,1500);} // 지도 스크립트 미리 받아 두기 (병원·버스 지도 첫 표시 4~5초 → 단축)
  if(n==='b2'){const f=document.getElementById('destf');f&&f.addEventListener('submit',e=>{e.preventDefault();const v=document.getElementById('dest').value.trim().slice(0,80);if(v)routeTo(v,/(로|길|동|구)\s*\d/.test(v)?(/안산/.test(v)?v:'경기도 안산시 '+v):null);});}
  if(n==='news'&&(hasApi()||hasSb()))loadNews();
  if(hasApi()){if(n==='b1')loadStops();if(n==='b4')loadArr();}
