@@ -142,9 +142,15 @@ a{color:inherit;text-decoration:none}
 .toprule{display:flex;align-items:center;gap:10px;padding:0 32px}
 .toprule i{display:block;width:120px;height:1px;background:var(--deep);opacity:.55}
 .welcome{padding:24px 32px 0}
+.instcard{position:relative;background:#fff;border:1px solid var(--hair);padding:14px 30px 14px 14px;gap:12px}
+.instcard .appic{width:44px;height:44px;border-radius:12px;flex:none;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.instcard .grow{padding-right:4px}
+.instbtn{width:38px;height:38px;border-radius:50%;background:var(--deep);display:grid;place-items:center;flex:none}
+.instx{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center}
+.instx:hover{background:rgba(0,0,0,.05)}
 .welcome .w{font-family:var(--serif);font-style:italic;font-size:20px;opacity:.85}
 .welcome .t{font-family:var(--serif-ko);font-weight:700;font-size:48px;letter-spacing:-1px;line-height:1.2}
-.welcome .s{font-size:12px;font-weight:600;letter-spacing:4px;opacity:.8;display:flex;gap:8px;align-items:center}
+.welcome .s{margin-top:8px;font-size:12px;font-weight:600;letter-spacing:4px;opacity:.8;display:flex;gap:8px;align-items:center}
 .welcome .s em{font-family:var(--serif);letter-spacing:0;font-size:13px}
 .q{padding:22px 32px 0}
 .q i{display:block;width:28px;height:1.5px;background:var(--deep);margin-bottom:14px}
@@ -408,7 +414,7 @@ en:{cont:'Continue',contSub:'다음 단계로',menu:'Menu',welcome:'Welcome to A
  survNote:'Ad-free for a day when you take part',adFreeShort:'24h ad-free',adFreeOn:u=>`Ad-free until ${u}`,adFreeS:'Thanks for taking a survey',adFreeTomorrow:u=>`No ads until ${u}`,
  myRules:'My building’s days',myRulesS:'Set this if your building has its own rules',rulesT:'Collection days',rulesS:'Tap the days each type can go out',timeFrom:'From',timeTo:'Until',cityDefault:'Use Ansan city default',rulesSaved:'Collection days saved',myBldg:'MY BUILDING',cityNote:'Based on Ansan city public data · your building may differ',
  live:'LIVE',busErr:'Couldn’t load live times · showing a sample',noStops:'No bus stops found nearby',arrSoon:'Arriving soon',stopsAway:n=>n===1?'1 stop away':`${n} stops away`,seats:n=>`${n} seats`,ended:'Service ended',noInfo:'No arrival info right now',pickStop:'Nearby stops',yourStop:'Your stop',stopN:n=>`Stop ${n}`,event:'EVENT',tomorrow:t=>`${t} tomorrow`,
- origView:'View original (Korean)',transView:'View translation',autoTr:'Auto-translated · may contain errors',readMore:'Read more',addHome:'Add to home screen',addHomeS:'Open it like an app, even offline',iosHome:'Tap Share, then “Add to Home Screen”',offline:'You’re offline · showing saved info',photoConsent:'Photos are used only to identify the item and are not stored.',locConsent:'Your location is used only to find your address (via Naver Maps) and is not saved on our server.',
+ origView:'View original (Korean)',transView:'View translation',autoTr:'Auto-translated · may contain errors',readMore:'Read more',addHome:'Add Ansan Life to home screen',addHomeS:'Open it like an app, even offline',iosHome:'Tap Share, then “Add to Home Screen”',offline:'You’re offline · showing saved info',photoConsent:'Photos are used only to identify the item and are not stored.',locConsent:'Your location is used only to find your address (via Naver Maps) and is not saved on our server.',
  destPh:'Search a place or address',routeNote:'Directions open in Naver Map with bus and subway times.',adLbl:'SPONSORED',lang:'EN'},
 vi:{cont:'Tiếp tục',contSub:'다음 단계로',menu:'Menu',welcome:'Chào mừng đến Ansan',homeT:'Cuộc sống ở Ansan',
  items:['Phân loại rác','Xe buýt','Cơ quan','Bệnh viện','Tin tức & sự kiện','Khảo sát'],
@@ -445,7 +451,7 @@ vi:{cont:'Tiếp tục',contSub:'다음 단계로',menu:'Menu',welcome:'Chào m�
  anaFail:'Không phân tích được ảnh này.',tryAgain:'Chụp lại',demoNote:'Kết quả mẫu · phiên bản này chưa phân tích ảnh thật',resultLbl:'Kết quả',batNote:'Thùng thu pin · ngày nào cũng được',bulkyNote:'Đăng ký trước · thu gom Thứ Hai & Thứ Năm',unknownNote:'Chưa chắc chắn — hãy xem danh sách đồ vật',camOff:'Không dùng được camera ở đây · hãy chọn ảnh',maybe:'Có phải một trong số này?',
  myRules:'Lịch của tòa nhà tôi',myRulesS:'Cài đặt nếu tòa nhà có quy định riêng',rulesT:'Ngày thu gom',rulesS:'Chạm vào ngày có thể bỏ từng loại rác',timeFrom:'Từ',timeTo:'Đến',cityDefault:'Dùng mặc định của TP Ansan',rulesSaved:'Đã lưu lịch thu gom',myBldg:'TÒA NHÀ CỦA TÔI',cityNote:'Theo dữ liệu công của TP Ansan · tòa nhà của bạn có thể khác',
  live:'TRỰC TIẾP',busErr:'Không tải được giờ xe thực tế · đang hiện mẫu',noStops:'Không tìm thấy trạm gần đây',arrSoon:'Sắp đến',stopsAway:n=>`còn ${n} trạm`,seats:n=>`${n} ghế trống`,ended:'Hết chuyến',noInfo:'Chưa có thông tin xe đến',pickStop:'Trạm gần đây',yourStop:'Trạm xuống',stopN:n=>`Trạm ${n}`,event:'SỰ KIỆN',tomorrow:t=>`${t} ngày mai`,
- origView:'Xem bản gốc (tiếng Hàn)',transView:'Xem bản dịch',autoTr:'Dịch tự động · có thể có lỗi',readMore:'Xem thêm',addHome:'Thêm vào màn hình chính',addHomeS:'Mở như ứng dụng, kể cả khi không có mạng',iosHome:'Nhấn Chia sẻ, rồi “Thêm vào MH chính”',offline:'Đang ngoại tuyến · hiện thông tin đã lưu',photoConsent:'Ảnh chỉ dùng để nhận diện đồ vật và không được lưu.',locConsent:'Vị trí chỉ dùng để tìm địa chỉ (qua Naver Maps) và không được lưu trên máy chủ của chúng tôi.',
+ origView:'Xem bản gốc (tiếng Hàn)',transView:'Xem bản dịch',autoTr:'Dịch tự động · có thể có lỗi',readMore:'Xem thêm',addHome:'Thêm Ansan Life vào màn hình chính',addHomeS:'Mở như ứng dụng, kể cả khi không có mạng',iosHome:'Nhấn Chia sẻ, rồi “Thêm vào MH chính”',offline:'Đang ngoại tuyến · hiện thông tin đã lưu',photoConsent:'Ảnh chỉ dùng để nhận diện đồ vật và không được lưu.',locConsent:'Vị trí chỉ dùng để tìm địa chỉ (qua Naver Maps) và không được lưu trên máy chủ của chúng tôi.',
  destPh:'Tìm địa điểm hoặc địa chỉ',routeNote:'Chỉ đường mở trong Naver Map, có giờ xe buýt và tàu điện.',adLbl:'QUẢNG CÁO',lang:'VI'},
 ko:{cont:'다음',contSub:'안산살이 시작하기',menu:'메뉴',welcome:'Welcome to Ansan',homeT:'안산 생활 안내',
  items:['분리배출','버스·교통','관공서','병원·약국','공지·행사','설문 참여'],
@@ -482,7 +488,7 @@ ko:{cont:'다음',contSub:'안산살이 시작하기',menu:'메뉴',welcome:'Wel
  anaFail:'사진을 분석하지 못했어요.',tryAgain:'다시 찍기',demoNote:'예시 결과 · 이 버전에서는 실제 사진 분석을 하지 않아요',resultLbl:'결과',batNote:'건전지 수거함 · 요일 상관없음',bulkyNote:'사전 신고 · 월·목 수거',unknownNote:'확실하지 않아요 — 품목 목록에서 확인하세요',camOff:'여기서는 카메라를 쓸 수 없어요 · 사진을 골라주세요',maybe:'혹시 이 중 하나인가요?',
  myRules:'우리 단지 배출 요일',myRulesS:'단지 자체 규칙이 있으면 설정하세요',rulesT:'배출 요일 설정',rulesS:'종류별로 내놓을 수 있는 요일을 누르세요',timeFrom:'시작',timeTo:'종료',cityDefault:'안산시 기본값 사용',rulesSaved:'배출 요일을 저장했어요',myBldg:'우리 단지',cityNote:'안산시 생활쓰레기 배출 공공데이터 기준 · 단지별 규칙이 다를 수 있어요',
  live:'실시간',busErr:'실시간 정보를 불러오지 못해 예시를 보여드려요',noStops:'주변에 정류장이 없어요',arrSoon:'곧 도착',stopsAway:n=>`${n}정류장 전`,seats:n=>`빈자리 ${n}`,ended:'운행 종료',noInfo:'도착 정보 없음',pickStop:'주변 정류장',yourStop:'내릴 정류장',stopN:n=>`정류장 ${n}`,event:'행사',tomorrow:t=>`내일 ${t}`,
- origView:'원문 보기',transView:'번역 보기',autoTr:'',readMore:'자세히 보기',addHome:'홈 화면에 추가',addHomeS:'앱처럼 열고 오프라인에서도 볼 수 있어요',iosHome:'공유 버튼 → "홈 화면에 추가"를 누르세요',offline:'오프라인 상태예요 · 저장된 정보를 보여드려요',photoConsent:'사진은 품목 판별에만 쓰이고 저장하지 않아요.',locConsent:'위치는 주소를 찾는 데만 쓰이고(네이버 지도) 저희 서버에 저장하지 않아요.',
+ origView:'원문 보기',transView:'번역 보기',autoTr:'',readMore:'자세히 보기',addHome:'안산살이 홈 화면에 추가',addHomeS:'앱처럼 열고 오프라인에서도 볼 수 있어요',iosHome:'공유 버튼 → "홈 화면에 추가"를 누르세요',offline:'오프라인 상태예요 · 저장된 정보를 보여드려요',photoConsent:'사진은 품목 판별에만 쓰이고 저장하지 않아요.',locConsent:'위치는 주소를 찾는 데만 쓰이고(네이버 지도) 저희 서버에 저장하지 않아요.',
  destPh:'장소나 주소 검색',routeNote:'길찾기는 네이버지도에서 버스·지하철 시간과 함께 열려요.',adLbl:'광고',lang:'KO'},
 zh:{cont:'继续',contSub:'다음 단계로',menu:'菜单',welcome:'欢迎来到安山',homeT:'安山生活',
  items:['垃圾分类','公交·交通','政府机关','医院','新闻·活动','问卷调查'],
@@ -519,7 +525,7 @@ zh:{cont:'继续',contSub:'다음 단계로',menu:'菜单',welcome:'欢迎来到
  survNote:'参与即可一天无广告',adFreeShort:'24小时无广告',adFreeOn:u=>`${u}前无广告`,adFreeS:'感谢你参与问卷',adFreeTomorrow:u=>`${u}前不显示广告`,
  myRules:'我家楼的收集日',myRulesS:'如果你的楼有自己的规定，请在这里设置',rulesT:'收集日',rulesS:'点击每种垃圾可以扔的日子',timeFrom:'从',timeTo:'到',cityDefault:'使用安山市默认设置',rulesSaved:'收集日已保存',myBldg:'我家楼',cityNote:'依据安山市公共数据 · 你的楼可能有所不同',
  live:'实时',busErr:'无法加载实时信息 · 显示示例',noStops:'附近没有找到公交站',arrSoon:'即将到站',stopsAway:n=>`还有${n}站`,seats:n=>`${n}个空座`,ended:'已停运',noInfo:'暂无到站信息',pickStop:'附近的公交站',yourStop:'你的车站',stopN:n=>`车站 ${n}`,event:'活动',tomorrow:t=>`明天 ${t}`,
- origView:'查看原文（韩语）',transView:'查看翻译',autoTr:'自动翻译 · 可能有误',readMore:'查看详情',addHome:'添加到主屏幕',addHomeS:'像应用一样打开，离线也能用',iosHome:'点击“分享”，再点“添加到主屏幕”',offline:'当前离线 · 显示已保存的信息',photoConsent:'照片仅用于识别物品，不会被保存。',locConsent:'你的位置仅用于（通过Naver地图）查找地址，不会保存在我们的服务器上。',
+ origView:'查看原文（韩语）',transView:'查看翻译',autoTr:'自动翻译 · 可能有误',readMore:'查看详情',addHome:'将安山生活添加到主屏幕',addHomeS:'像应用一样打开，离线也能用',iosHome:'点击“分享”，再点“添加到主屏幕”',offline:'当前离线 · 显示已保存的信息',photoConsent:'照片仅用于识别物品，不会被保存。',locConsent:'你的位置仅用于（通过Naver地图）查找地址，不会保存在我们的服务器上。',
  destPh:'搜索地点或地址',routeNote:'路线将在Naver地图中打开，可查看公交和地铁时间。',adLbl:'广告',lang:'ZH'},
 ru:{
 cont:'Продолжить',contSub:'다음 단계로',menu:'Меню',welcome:'Добро пожаловать в Ансан',homeT:'Жизнь в Ансане',
@@ -593,7 +599,7 @@ rulesSaved:'Дни вывоза сохранены',myBldg:'МОЙ ДОМ',cityN
 live:'ОНЛАЙН',busErr:'Не удалось загрузить время · показан пример',noStops:'Рядом остановок не найдено',arrSoon:'Скоро прибудет',
 stopsAway:n=>`Остановок: ${n}`,seats:n=>`Мест: ${n}`,ended:'Рейсы закончились',noInfo:'Нет данных о прибытии',pickStop:'Остановки рядом',yourStop:'Ваша остановка',
 stopN:n=>`Остановка ${n}`,event:'СОБЫТИЕ',tomorrow:t=>`Завтра в ${t}`,origView:'Оригинал (корейский)',transView:'Показать перевод',
-autoTr:'Автоперевод · возможны ошибки',readMore:'Подробнее',addHome:'На главный экран',addHomeS:'Открывайте как приложение, даже без интернета',
+autoTr:'Автоперевод · возможны ошибки',readMore:'Подробнее',addHome:'Добавить «Жизнь в Ансане» на главный экран',addHomeS:'Открывайте как приложение, даже без интернета',
 iosHome:'Нажмите «Поделиться», затем «На экран „Домой“»',offline:'Нет интернета · показаны сохранённые данные',
 photoConsent:'Фото используются только для определения предмета и не сохраняются.',
 locConsent:'Местоположение используется только для поиска адреса (через Naver Maps) и не сохраняется на нашем сервере.',
@@ -634,7 +640,7 @@ uz:{cont:`Davom etish`,contSub:'다음 단계로',menu:`Menyu`,welcome:`Ansanga 
  survNote:`Qatnashsangiz, bir kun reklamasiz`,adFreeShort:`24 soat reklamasiz`,adFreeOn:u=>`${u} gacha reklamasiz`,adFreeS:`So‘rovnomada qatnashganingiz uchun rahmat`,adFreeTomorrow:u=>`${u} gacha reklama yo‘q`,
  myRules:`Binomning kunlari`,myRulesS:`Binongizda o‘z qoidalari bo‘lsa, shuni sozlang`,rulesT:`Yig‘ish kunlari`,rulesS:`Har bir tur chiqariladigan kunlarni bosing`,timeFrom:`Dan`,timeTo:`Gacha`,cityDefault:`Ansan shahri standartini ishlatish`,rulesSaved:`Yig‘ish kunlari saqlandi`,myBldg:`MENING BINOM`,cityNote:`Ansan shahri ochiq ma'lumotlari asosida · binongizda farq qilishi mumkin`,
  live:`JONLI`,busErr:`Jonli vaqtni yuklab bo‘lmadi · namuna ko‘rsatilmoqda`,noStops:`Yaqin atrofda bekat topilmadi`,arrSoon:`Hozir keladi`,stopsAway:n=>`${n} bekat qoldi`,seats:n=>`${n} o‘rin`,ended:`Qatnov tugadi`,noInfo:`Hozircha kelish ma'lumoti yo‘q`,pickStop:`Yaqin bekatlar`,yourStop:`Sizning bekatingiz`,stopN:n=>`${n}-bekat`,event:`TADBIR`,tomorrow:t=>`Ertaga ${t}`,
- origView:`Asl matn (koreyscha)`,transView:`Tarjimani ko‘rish`,autoTr:`Avtomatik tarjima · xato bo‘lishi mumkin`,readMore:`Batafsil`,addHome:`Bosh ekranga qo‘shish`,addHomeS:`Ilova kabi oching, internetsiz ham`,iosHome:`“Ulashish” ni, keyin “Bosh ekranga qo‘shish” ni bosing`,offline:`Internet yo‘q · saqlangan ma'lumot ko‘rsatilmoqda`,photoConsent:`Rasmlar faqat buyumni aniqlash uchun ishlatiladi va saqlanmaydi.`,locConsent:`Joylashuvingiz faqat manzilingizni topish uchun (Naver Maps orqali) ishlatiladi va serverimizda saqlanmaydi.`,
+ origView:`Asl matn (koreyscha)`,transView:`Tarjimani ko‘rish`,autoTr:`Avtomatik tarjima · xato bo‘lishi mumkin`,readMore:`Batafsil`,addHome:`Ansan Life’ni bosh ekranga qo‘shish`,addHomeS:`Ilova kabi oching, internetsiz ham`,iosHome:`“Ulashish” ni, keyin “Bosh ekranga qo‘shish” ni bosing`,offline:`Internet yo‘q · saqlangan ma'lumot ko‘rsatilmoqda`,photoConsent:`Rasmlar faqat buyumni aniqlash uchun ishlatiladi va saqlanmaydi.`,locConsent:`Joylashuvingiz faqat manzilingizni topish uchun (Naver Maps orqali) ishlatiladi va serverimizda saqlanmaydi.`,
  destPh:'Joy yoki manzilni qidiring',routeNote:'Yo‘nalish Naver Map ilovasida avtobus va metro vaqtlari bilan ochiladi.',adLbl:'REKLAMA',lang:'UZ'},
 mn:{cont:'Үргэлжлүүлэх',contSub:'다음 단계로',menu:'Цэс',welcome:'Ансанд тавтай морил',homeT:'Ансан дахь амьдрал',
  items:['Хог ангилах','Автобус ба тээвэр','Төрийн байгууллага','Эмнэлэг','Мэдээ ба арга хэмжээ','Санал асуулга'],
@@ -671,7 +677,7 @@ mn:{cont:'Үргэлжлүүлэх',contSub:'다음 단계로',menu:'Цэс',wel
  survNote:'Оролцвол нэг өдөр зар харагдахгүй',adFreeShort:'24 цаг заргүй',adFreeOn:u=>`${u} хүртэл заргүй`,adFreeS:'Санал асуулгад оролцсонд баярлалаа',adFreeTomorrow:u=>`${u} хүртэл зар харагдахгүй`,
  myRules:'Манай байрны өдрүүд',myRulesS:'Байр тань өөрийн дүрэмтэй бол тохируулна уу',rulesT:'Хог ачих өдрүүд',rulesS:'Төрөл бүрийг гаргах өдрүүдийг дарна уу',timeFrom:'Эхлэх',timeTo:'Дуусах',cityDefault:'Ансан хотын үндсэн тохиргоо',rulesSaved:'Хог ачих өдрүүд хадгалагдлаа',myBldg:'МАНАЙ БАЙР',cityNote:'Ансан хотын нээлттэй мэдээлэлд үндэслэсэн · таны байр өөр байж болно',
  live:'ШУУД',busErr:'Шууд цагийг ачаалж чадсангүй · жишээ харуулж байна',noStops:'Ойролцоо автобусны буудал олдсонгүй',arrSoon:'Удахгүй ирнэ',stopsAway:n=>`${n} буудлын цаана`,seats:n=>`${n} суудал`,ended:'Үйлчилгээ дууссан',noInfo:'Одоогоор ирэх мэдээлэл алга',pickStop:'Ойрын буудлууд',yourStop:'Таны буудал',stopN:n=>`Буудал ${n}`,event:'АРГА ХЭМЖЭЭ',tomorrow:t=>`Маргааш ${t}`,
- origView:'Эх хувийг харах (солонгос)',transView:'Орчуулгыг харах',autoTr:'Автомат орчуулга · алдаатай байж болно',readMore:'Дэлгэрэнгүй',addHome:'Нүүр дэлгэцэнд нэмэх',addHomeS:'Апп шиг нээгээрэй, офлайн ч болно',iosHome:'Share дээр дараад “Add to Home Screen”-г сонгоно уу',offline:'Офлайн байна · хадгалсан мэдээллийг харуулж байна',photoConsent:'Зургийг зөвхөн юмыг таних зорилгоор ашиглах ба хадгалахгүй.',locConsent:'Таны байршлыг зөвхөн хаягийг тань олоход (Naver Maps-аар) ашиглах ба манай серверт хадгалахгүй.',
+ origView:'Эх хувийг харах (солонгос)',transView:'Орчуулгыг харах',autoTr:'Автомат орчуулга · алдаатай байж болно',readMore:'Дэлгэрэнгүй',addHome:'Ansan Life-ийг нүүр дэлгэцэнд нэмэх',addHomeS:'Апп шиг нээгээрэй, офлайн ч болно',iosHome:'Share дээр дараад “Add to Home Screen”-г сонгоно уу',offline:'Офлайн байна · хадгалсан мэдээллийг харуулж байна',photoConsent:'Зургийг зөвхөн юмыг таних зорилгоор ашиглах ба хадгалахгүй.',locConsent:'Таны байршлыг зөвхөн хаягийг тань олоход (Naver Maps-аар) ашиглах ба манай серверт хадгалахгүй.',
  destPh:'Газар эсвэл хаяг хайх',routeNote:'Чиглэл Naver Map-д автобус, метроны цагтай нээгдэнэ.',adLbl:'СУРТАЛЧИЛГАА',lang:'MN'}};
 
 /* ---------- state ---------- */
@@ -1218,7 +1224,7 @@ const isIOS=()=>/iPhone|iPad|iPod/i.test(navigator.userAgent);
 const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const installDismissed=()=>{try{return localStorage.getItem('al_inst')==='1'}catch(e){return false}};
 const installCard=()=>{if(standalone()||installDismissed()||!(installEvt||isIOS()))return '';const t=T();
- return `<div class="card row" style="background:#fff;border:1px solid var(--hair)">${dotI('download','var(--deep)','#fff',36)}<span class="col grow"><span class="b" style="font-size:13px">${t.addHome}</span><span class="tiny muted">${installEvt?t.addHomeS:t.iosHome}</span></span>${installEvt?`<button class="b small accent" data-act="install">${t.install}</button>`:''}<button class="ibtn" data-act="instx" aria-label="Close" style="margin:0 -8px 0 0">${ic('x',16,'#6E7472')}</button></div>`;};
+ return `<div class="card row instcard"><img class="appic" src="assets/icon-192.png" alt="" width="44" height="44"><span class="col grow"><span class="b" style="font-size:13px">${t.addHome}</span><span class="tiny muted">${installEvt?t.addHomeS:t.iosHome}</span></span>${installEvt?`<button class="instbtn" data-act="install" aria-label="${t.addHome}">${ic('download',18,'#fff')}</button>`:''}<button class="instx" data-act="instx" aria-label="Close">${ic('x',11,'#6E7472')}</button></div>`;};
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;if(cur()==='home')render();});
 addEventListener('offline',()=>toast(T().offline));
 setTimeout(flushSurvey,3000);
