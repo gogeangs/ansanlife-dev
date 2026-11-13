@@ -1046,10 +1046,15 @@ function openState(s,e){if(s==null||e==null)return null;const d=new Date(),now=d
  if(e===s)return null;if(e>2400)return now>=s||now<e-2400;if(e<=s)return now>=s||now<e;return now>=s&&now<e;}
 const distTxt=m=>m==null?'':m<1000?`${m} m`:`${(m/1000).toFixed(1)} km`;
 const normName=s=>String(s||'').replace(/\(.*?\)|\s|주식회사|의료법인|재단법인|학교법인|사회복지법인/g,'').toLowerCase();
-function langOk(it){const L=st.med.langSet;if(!L||!L.length||it.kind==='pharm')return false;const n=normName(it.name);return L.some(x=>x.n&&(n===x.n||(x.n.length>=4&&(n.includes(x.n)||x.n.includes(n)))));}
+function langEntry(it){const L=st.med.langSet;if(!L||!L.length||it.kind==='pharm')return null;const n=normName(it.name);return L.find(x=>x.n&&(n===x.n||(x.n.length>=4&&(n.includes(x.n)||x.n.includes(n)))))||null;}
+function langOk(it){const e=langEntry(it);return !!e&&e.langs.includes('en');}
+/* 사용자 언어(베트남어·몽골어 등)로 진료 안내가 되는 병원 — KHIDI '외국인 자주 찾는 병원 언어종류' */
+const NATIVE={vi:'Tiếng Việt',zh:'中文',ru:'Русский',uz:'O‘zbekcha',mn:'Монгол хэл'};
+function langMine(it){const e=langEntry(it);return !!e&&!!NATIVE[st.lang]&&e.langs.includes(st.lang);}
+const mineTag=it=>langMine(it)?`<span class="tag" style="background:var(--accent-soft)">${NATIVE[st.lang]} ✓</span>`:'';
 const statusChip=it=>{const h=HT();const o=openState(it.start,it.end);return o==null?`<span class="mstat closed"><span class="dot"></span>${h.noHours}</span>`:o?`<span class="mstat open"><span class="dot"></span>${h.openUntil(hm(it.end>2400?it.end-2400:it.end))}</span>`:`<span class="mstat closed"><span class="dot"></span>${h.closed}</span>`;};
 function medAll(){const m=st.med;return [...(m.hosp||[]),...(m.pharm||[])].sort((a,b)=>(a.dist??1e9)-(b.dist??1e9));}
-function medList(){const m=st.med;if(m.tab==='pharm')return m.pharm||[];if(m.tab==='open')return medAll().filter(x=>openState(x.start,x.end)===true);if(m.tab==='lang')return (m.hosp||[]).filter(langOk);return medAll();}
+function medList(){const m=st.med;if(m.tab==='pharm')return m.pharm||[];if(m.tab==='open')return medAll().filter(x=>openState(x.start,x.end)===true);if(m.tab==='lang')return (m.hosp||[]).filter(x=>langOk(x)||langMine(x));return medAll();}
 /* 한글 → 로마자 (국어의 로마자 표기법 기본 규칙: 연음·비음화·유음화 일부). 외국인이 간판 이름을 읽고 말할 수 있게 */
 const RR_I=['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'];
 const RR_V=['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'];
@@ -1140,7 +1145,7 @@ const deptName=k=>{const c=String(k||'').replace(/\s+/g,'');const key=DEPT[c]?c:
 const romaSub=(name,cls='roma')=>{if(isKo())return '';const r=romaName(name);return r?`<small class="${cls}">${esc(r)}</small>`:'';};
 function medRow(it,i){const h=HT();const k=typeKey(it);const tel=String(it.tel||'').replace(/[^\d-]/g,'');
  return `<div class="mrow"><button class="nm" data-med="${i}"><b>${esc(it.name)}${romaSub(it.name)}</b></button>
-  <div class="ticket"><button class="col grow" style="gap:5px;text-align:left" data-med="${i}"><span class="row" style="gap:6px;flex-wrap:wrap"><span class="tag">${h.types[k]}</span>${!isKo()?`<span class="kr micro muted">${HS.ko.types[k]}</span>`:''}${langOk(it)?`<span class="tag" style="background:var(--accent-soft)">${h.langOk}</span>`:''}</span>${statusChip(it)}<span class="row tiny muted" style="gap:5px">${ic('spot',12,'#6E7472')}<span>${distTxt(it.dist)}</span></span></button>
+  <div class="ticket"><button class="col grow" style="gap:5px;text-align:left" data-med="${i}"><span class="row" style="gap:6px;flex-wrap:wrap"><span class="tag">${h.types[k]}</span>${!isKo()?`<span class="kr micro muted">${HS.ko.types[k]}</span>`:''}${langOk(it)?`<span class="tag" style="background:var(--accent-soft)">${h.langOk}</span>`:''}${mineTag(it)}</span>${statusChip(it)}<span class="row tiny muted" style="gap:5px">${ic('spot',12,'#6E7472')}<span>${distTxt(it.dist)}</span></span></button>
   <span class="dash"></span><div class="macts">${tel?`<a class="idot fx" href="tel:${tel}" aria-label="${h.call} ${esc(it.name)}" style="background:#fff;box-shadow:inset 0 0 0 1px var(--hair)">${ic('phone',18,'#1E2221',2)}</a>`:''}<button class="idot" data-mnav="${i}" aria-label="${h.naver}" style="background:var(--accent)">${ic('map',18,'#fff',2)}</button></div></div></div>`;}
 function paintMed(){const box=document.getElementById('medlist');if(!box)return;const h=HT(),m=st.med;
  const tabs=document.getElementById('medtabs');if(tabs){const counts=[medAll().length,medAll().filter(x=>openState(x.start,x.end)===true).length,(m.pharm||[]).length,(m.hosp||[]).filter(langOk).length];
@@ -1156,7 +1161,7 @@ function paintMed(){const box=document.getElementById('medlist');if(!box)return;
  tagFx(box);if(tabs)tagFx(tabs);const mm=app.querySelector('.nmap[data-map="medlist"]');if(mm&&m.hosp)mountMaps(mm);}
 async function getPos(){if(window.isSecureContext&&navigator.geolocation){try{const p=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:false,timeout:9000,maximumAge:300000}));return {lat:p.coords.latitude,lng:p.coords.longitude,src:'gps'};}catch(e){}}
  const ll=await homeLL();return ll?{...ll,src:'home'}:null;}
-async function loadLangSet(){if(st.med.langSet)return;try{const r=await fetch('data/lang_hospitals.json',{cache:'no-cache'});const j=await r.json();st.med.langSet=(j.hospitals||[]).filter(x=>(x.langs||[]).includes('en')).map(x=>({n:normName(x.name)}));}catch(e){st.med.langSet=[];}}
+async function loadLangSet(){if(st.med.langSet)return;try{const r=await fetch('data/lang_hospitals.json',{cache:'no-cache'});const j=await r.json();st.med.langSet=(j.hospitals||[]).map(x=>({n:normName(x.name),langs:x.langs||[]}));}catch(e){st.med.langSet=[];}}
 async function loadMed(force){const m=st.med;if(!document.getElementById('medlist'))return;
  if(!hasApi()){m.err='noapi';paintMed();return;}
  if(!force&&m.hosp&&Date.now()-m.at<300000){paintMed();return;}
@@ -1195,7 +1200,7 @@ SCR.hdetail=()=>{const t=T(),h=HT();const it=st.med.sel;if(!it)return SCR.hosp()
 </div>
  <div class="sheet" style="border-top-right-radius:40px;border-top-left-radius:40px;margin-top:-36px;position:relative">
   <div class="col" style="gap:6px"><span class="h1 ko" style="font-size:22px;line-height:1.3">${esc(it.name)}</span>${romaSub(it.name,'roma big')}<span class="row small muted" style="gap:6px;flex-wrap:wrap"><span>${h.types[k]}</span>${!isKo()?`<span class="kr">${HS.ko.types[k]}</span>`:''}<span>·</span><span>${distTxt(it.dist)}</span></span>
-   <span class="row" style="gap:6px;flex-wrap:wrap">${statusChip(it)}<span class="tag" id="mer" style="background:var(--accent-soft)" ${d.er&&it.kind!=='pharm'?'':'hidden'}>${h.er}</span>${langOk(it)?`<span class="tag" style="background:var(--accent-soft)">${h.langOk}</span>`:''}</span></div>
+   <span class="row" style="gap:6px;flex-wrap:wrap">${statusChip(it)}<span class="tag" id="mer" style="background:var(--accent-soft)" ${d.er&&it.kind!=='pharm'?'':'hidden'}>${h.er}</span>${langOk(it)?`<span class="tag" style="background:var(--accent-soft)">${h.langOk}</span>`:''}${mineTag(it)}</span></div>
   <div>${[['clock',h.today,it.start!=null?`${hm(it.start)} – ${hm(it.end)}`:h.noHours],['spot',t.addr,esc(it.addr||'')],['phone',t.tel,tel?`<a href="tel:${tel}" style="text-decoration:underline">${esc(it.tel)}</a>`:'—']].map(([i,kk,v])=>`<div class="row" style="padding:11px 0;border-bottom:1px solid rgba(30,34,33,.12);align-items:flex-start">${ic(i,16,'#6E7472')}<span class="small muted" style="flex:none">${kk}</span><span class="grow b kr" style="text-align:right;font-size:13px;user-select:all">${v}</span></div>`).join('')}</div>
   <div class="col" style="gap:10px" hidden>${h2(h.hoursT)}<div class="hrs" id="mhrs"></div></div>
   <div class="col" style="gap:10px" hidden>${h2(h.deptsT)}<div class="chips" id="mdept"></div></div>
