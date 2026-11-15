@@ -52,6 +52,7 @@
 ## 4. 운영 정리 (2026-11-15)
 
 - `supabase/hardening.sql` 실행됨: Security Advisor 경고 정리(함수 search_path 고정, `is_admin()` 은 로그인 사용자만, Supabase 기본 `rls_auto_enable()` 비공개)
+- `supabase/location_log.sql` 실행됨(2026-11-15): 위치정보 이용사실 확인자료(위치정보법 제16조). API 서버가 버스·병원·약국 조회 때 시각·기능만 `location_log` 에 기록(좌표·IP 없음), 매일 정리 작업이 1년 지난 기록 삭제
 - 매일 03:23(KST) `cleanup_edge_tables()` 자동 실행 (pg_cron 작업 `ansanlife-cleanup`) — 만료된 번역 캐시·하루 지난 접속 횟수 기록 삭제
 - 남겨 둔 Advisor 항목(의도): 설문 익명 insert 정책, `kv_cache`·`rate_hits` 정책 없음(API 서버 전용), 유출 비밀번호 차단(Pro 기능)
 
