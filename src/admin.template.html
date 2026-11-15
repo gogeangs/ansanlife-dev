@@ -129,7 +129,10 @@ const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,s
 
 const LIMIT={title:300,body:4000};
 const st={user:null,list:[],sel:null,filter:'all',draft:null,dirty:false,confirmDel:false,busy:false};
-const blank=()=>({id:null,type:'official',title:'',body:'',date:'',url:'',published:true,sample:false,sort:0});
+const blank=()=>({id:null,type:'official',title:'',body:'',date:'',url:'',region:'경기도 안산시',published:true,sample:false,sort:0});
+/* 공지 지역: 비우면 전국. '경기도 안산시' · '서울특별시' 처럼 시·도 + 시·군 (서울·광역시는 시·도만) */
+const REGIONS=['경기도 안산시','경기도 수원시','경기도 화성시','경기도 시흥시','경기도 평택시','경기도 김포시','경기도 부천시','경기도 안양시','경기도 용인시','경기도 성남시','경기도 고양시','서울특별시','인천광역시','부산광역시','대구광역시','대전광역시','광주광역시','울산광역시','세종특별자치시','충청남도 천안시','충청북도 청주시','경상남도 김해시','경상남도 창원시','제주특별자치도 제주시'];
+const regionOk=v=>!v||/^[가-힣]+(특별시|광역시|특별자치시)$|^[가-힣]+(도|특별자치도) [가-힣]+[시군]$/.test(v);
 const header=()=>`<header class="top"><img class="logo" src="assets/icon-192.png" alt=""><div><h1>안산살이 관리</h1><div class="sub">공지·행사</div></div><span class="sp"></span>${st.user?`<span class="who">${esc(st.user.email)}</span><button class="lnk" id="out">로그아웃</button>`:''}</header>`;
 
 /* ---------- login ---------- */
@@ -159,7 +162,7 @@ function bindOut(){const o=$('#out');o&&o.addEventListener('click',logout);}
 
 /* ---------- data ---------- */
 async function load(keepId){
- const {data,error}=await sb.from('notices').select('id,type,title,body,date,url,published,sample,sort,created_at,updated_at').order('sort',{ascending:false}).order('created_at',{ascending:false});
+ const {data,error}=await sb.from('notices').select('id,type,title,body,date,url,region,published,sample,sort,created_at,updated_at').order('sort',{ascending:false}).order('created_at',{ascending:false});
  if(error){toast('목록을 불러오지 못했어요');return;}
  st.list=data||[];
  if(keepId){const n=st.list.find(x=>x.id===keepId);if(n){st.sel=n.id;st.draft={...n,date:n.date||'',url:n.url||''};}}
@@ -193,7 +196,7 @@ function renderList(){
  if(!rows.length){box.innerHTML=`<p class="empty">${st.list.length?'이 보기에는 공지가 없어요.':'아직 공지가 없어요. 오른쪽 위 "+ 새 공지"로 시작하세요.'}</p>`;return;}
  box.innerHTML=rows.map(n=>`<div class="item ${n.id===st.sel?'sel':''} ${n.published?'':'off'}" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(n.title)} 편집">
   <div class="ord"><button data-up="${n.id}" aria-label="위로" title="위로">▲</button><button data-down="${n.id}" aria-label="아래로" title="아래로">▼</button></div>
-  <div class="body"><span class="t">${esc(n.title)}</span><span class="meta"><span class="badge ${n.type==='event'?'b-ev':'b-off'}">${n.type==='event'?'행사':'공지'}</span><span class="badge ${n.published?'b-live':'b-hid'}">${n.published?'게시 중':'숨김'}</span>${n.sample?'<span class="badge b-sm">예시</span>':''}${n.date?`<span>${esc(n.date)}</span>`:''}</span></div>
+  <div class="body"><span class="t">${esc(n.title)}</span><span class="meta"><span class="badge ${n.type==='event'?'b-ev':'b-off'}">${n.type==='event'?'행사':'공지'}</span><span class="badge ${n.published?'b-live':'b-hid'}">${n.published?'게시 중':'숨김'}</span>${n.sample?'<span class="badge b-sm">예시</span>':''}<span>${n.region?esc(n.region.replace(/^[가-힣]+도 /,'')):'전국'}</span>${n.date?`<span>${esc(n.date)}</span>`:''}</span></div>
   <label class="sw" title="게시" onclick="event.stopPropagation()"><input type="checkbox" data-pub="${n.id}" ${n.published?'checked':''} aria-label="게시"><span class="tr"></span></label></div>`).join('');
  box.querySelectorAll('.item').forEach(el=>{const open=()=>guard(()=>{const n=st.list.find(x=>x.id===el.dataset.id);if(n)edit(n)});el.addEventListener('click',e=>{if(e.target.closest('[data-up],[data-down],.sw'))return;open()});el.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target===el)open()});});
  box.querySelectorAll('[data-pub]').forEach(cb=>cb.addEventListener('change',()=>togglePub(cb.dataset.pub,cb.checked,cb)));
@@ -231,18 +234,19 @@ function renderEditor(){
   <div class="fld"><label for="f-body">내용</label><textarea class="in" id="f-body" maxlength="${LIMIT.body}" placeholder="누가, 언제, 어디서, 무엇을, 어떻게 신청하는지 짧은 문장으로 적어 주세요.&#10;&#10;예)&#10;일시: 11월 8일(토) 오후 2시&#10;장소: 안산시 외국인주민지원본부 3층&#10;신청: 전화 031-000-0000">${esc(d.body)}</textarea><div class="cnt" id="c-body"></div></div>
   <div class="grid2"><div class="fld"><label for="f-date">날짜 (선택)</label><input class="in" id="f-date" type="date" value="${esc(d.date)}"></div>
    <div class="fld"><label for="f-url">자세히 보기 링크 (선택)</label><input class="in" id="f-url" type="url" inputmode="url" value="${esc(d.url)}" placeholder="https://www.ansan.go.kr/…"></div></div>
+  <div class="fld"><label for="f-region">보여줄 지역</label><input class="in" id="f-region" list="regions" value="${esc(d.region||'')}" placeholder="비우면 전국 (예: 경기도 안산시, 서울특별시)"><datalist id="regions">${REGIONS.map(r=>`<option value="${r}">`).join('')}</datalist><div class="cnt">비우면 모든 지역에 보여요. 시·도와 시·군을 띄어 써 주세요 (서울·광역시는 시 이름만).</div></div>
   <p class="hint">번역이 잘 되도록 <b>짧은 문장</b>으로, 날짜·시간·장소·전화번호는 <b>숫자 그대로</b> 적어 주세요. 줄을 바꾸면 앱에서도 줄이 바뀌어요.</p>
   <div class="err" id="fe" role="alert"></div>
   <div id="del-area"></div>
   <div class="acts"><button class="btn dark grow" type="submit" id="save">${isNew?'공지 올리기':'저장'}</button>${isNew?'':`<button class="btn line" type="button" id="dup">복사해서 새로</button><button class="btn danger" type="button" id="del">삭제</button>`}</div>
  </form>`;
  const f=$('#ef');
- const sync=()=>{d.title=$('#f-title').value;d.body=$('#f-body').value;d.date=$('#f-date').value;d.url=$('#f-url').value.trim();d.published=$('#f-pub').checked;st.dirty=true;counts();renderPreview();};
- ['#f-title','#f-body','#f-date','#f-url'].forEach(s=>$(s).addEventListener('input',sync));$('#f-pub').addEventListener('change',sync);
+ const sync=()=>{d.title=$('#f-title').value;d.body=$('#f-body').value;d.date=$('#f-date').value;d.url=$('#f-url').value.trim();d.region=$('#f-region').value.trim();d.published=$('#f-pub').checked;st.dirty=true;counts();renderPreview();};
+ ['#f-title','#f-body','#f-date','#f-url','#f-region'].forEach(s=>$(s).addEventListener('input',sync));$('#f-pub').addEventListener('change',sync);
  f.querySelectorAll('[data-type]').forEach(b=>b.addEventListener('click',()=>{d.type=b.dataset.type;f.querySelectorAll('[data-type]').forEach(x=>x.setAttribute('aria-pressed',x===b));st.dirty=true;renderPreview();}));
  f.addEventListener('submit',e=>{e.preventDefault();save();});
  if(!isNew){$('#del').addEventListener('click',()=>{st.confirmDel=true;renderDel();});
-  $('#dup').addEventListener('click',()=>guard(()=>{const c={...blank(),type:d.type,title:d.title,body:d.body,date:d.date,url:d.url,published:false};st.sel=null;st.draft=c;st.dirty=true;renderEditor();renderList();toast('복사했어요. 고친 뒤 올리세요');}));}
+  $('#dup').addEventListener('click',()=>guard(()=>{const c={...blank(),type:d.type,title:d.title,body:d.body,date:d.date,url:d.url,region:d.region,published:false};st.sel=null;st.draft=c;st.dirty=true;renderEditor();renderList();toast('복사했어요. 고친 뒤 올리세요');}));}
  counts();renderPreview();
 }
 function renderDel(){const a=$('#del-area');if(!a)return;a.innerHTML=st.confirmDel?`<div class="confirm" role="alertdialog" aria-label="삭제 확인"><span style="flex:1">이 공지를 지울까요? 지우면 되돌릴 수 없어요. 잠시 내리려면 "앱에 게시"를 끄세요.</span><button class="btn sm line" type="button" id="dno">취소</button><button class="btn sm danger" type="button" id="dyes">지우기</button></div>`:'';
@@ -253,12 +257,13 @@ function validate(d){
  if([...d.title].length>LIMIT.title)return `제목은 ${LIMIT.title}자까지예요.`;
  if([...d.body].length>LIMIT.body)return `내용은 ${LIMIT.body.toLocaleString()}자까지예요.`;
  if(d.url&&!/^https:\/\/[^\s]+\.[^\s]+/.test(d.url))return '링크는 https:// 로 시작하는 주소만 넣을 수 있어요.';
+ if(!regionOk((d.region||'').trim()))return '지역은 "경기도 안산시"처럼 시·도와 시·군을 띄어 쓰거나, 서울·광역시는 "서울특별시"처럼 적어 주세요. 비우면 전국이에요.';
  return '';
 }
 async function save(){
  if(st.busy)return;const d=st.draft;d.title=d.title.trim();const msg=validate(d);$('#fe').textContent=msg;if(msg)return;
  st.busy=true;const btn=$('#save');btn.disabled=true;
- const row={type:d.type,title:d.title,body:d.body,date:d.date||null,url:d.url||null,published:d.published};
+ const row={type:d.type,title:d.title,body:d.body,date:d.date||null,url:d.url||null,region:(d.region||'').trim()||null,published:d.published};
  let res;
  if(d.id)res=await sb.from('notices').update(row).eq('id',d.id).select().single();
  else res=await sb.from('notices').insert({...row,sort:nextSort()}).select().single();

@@ -4,7 +4,7 @@
  *   POST /analyze            사진 → 배출 분류 (Claude API 이미지 입력). POST / 도 같음
  *   GET  /bus/stops?lat&lng  주변 정류장 (경기도 정류소 조회 v2)
  *   GET  /bus/arrivals?stationId=  정류장 도착 정보 (경기도 버스도착정보 v2)
- *   GET  /notices?lang=vi    NOTICES_URL 의 공지(한국어)를 번역해 돌려줌. 번역은 내용이 바뀔 때만 다시 함
+ *   GET  /notices?lang=vi&region=경기도 안산시   NOTICES_URL 의 공지(한국어)를 번역해 돌려줌. region 이 빈 공지(전국)+그 지역 공지. 번역은 내용이 바뀔 때만 다시 함
  *   GET  /med/nearby?kind=hosp|pharm&lat&lng  주변 병·의원 / 약국 (국립중앙의료원, 거리순 + 오늘 진료시간)
  *   GET  /med/detail?kind=hosp|pharm&id=HPID   요일별 진료시간, 진료과목, 응급실 운영 여부
  *
@@ -367,7 +367,11 @@ async function noticesRoute(url, env, h) {
   // NOTICES_URL: Supabase REST(…/rest/v1/notices?select=…&published=is.true&order=sort.desc) 또는 정적 JSON
   const nh = env.NOTICES_KEY ? { apikey: env.NOTICES_KEY, authorization: `Bearer ${env.NOTICES_KEY}` } : {};
   try { const r = await fetch(env.NOTICES_URL, { headers: nh, cf: { cacheTtl: 300 } }); if (!r.ok) throw new Error(); list = await r.json(); } catch { return json({ error: 'notices' }, 502, h); }
-  list = (Array.isArray(list) ? list : []).slice(0, 30).map(n => ({ ...n, id: String(n.id), title: String(n.title || '').slice(0, 300), body: String(n.body || '').slice(0, 4000) }));
+  // 지역 공지: region 이 비어 있으면 전국 공지, 있으면 그 지역(예: '경기도 안산시')에서만 보임. 앱이 지금 지역을 보냄
+  const region = (url.searchParams.get('region') || '').trim();
+  const okRegion = /^[가-힣 ]{2,40}$/.test(region) ? region : '';
+  list = (Array.isArray(list) ? list : []).filter(n => !n.region || (okRegion && n.region === okRegion));
+  list = list.slice(0, 30).map(({ region: _r, ...n }) => ({ ...n, id: String(n.id), title: String(n.title || '').slice(0, 300), body: String(n.body || '').slice(0, 4000) }));
   if (lang === 'ko' || !TR_LANG[lang] || !env.ANTHROPIC_API_KEY) return json({ lang: 'ko', notices: list }, 200, { ...h, 'cache-control': 'max-age=300' });
 
   // 저장된 번역부터 찾고, 없는 공지만 4건씩 번역 (새 공지·고친 공지만 비용이 듦)

@@ -715,7 +715,7 @@ const isKo=()=>st.lang==='ko';
 const cur=()=>st.stack[st.stack.length-1];
 /* 언어 기억: 다시 들어오면 나라 선택 없이 홈으로 */
 try{const l=localStorage.getItem('al_lang');if(l&&COUNTRIES.some(c=>c.lang===l)){st.lang=l;st.stack=['home'];}}catch(e){}
-function go(n){if(!SURVEY_ON&&/^(surv|sq|sdone)$/.test(n))return;st.stack.push(n);render();}
+function go(n){if(!SURVEY_ON&&/^(surv|sq|sdone)$/.test(n))return;if(/^w\d$|^rules$/.test(n)&&!RD().waste)return;if(/^b[1-6]$/.test(n)&&!busOn())return;st.stack.push(n);render();}
 function back(){if(st.stack.length>1)st.stack.pop();render();}
 function home(){st.stack=['home'];render();}
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -724,6 +724,46 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 /* ---------- home address (분리배출·교통·지도 기준) ---------- */
 const ADDR0={road:'원포공원1로 59',dong:'초지동',full:'경기도 안산시 단원구 원포공원1로 59'};
 st.addr=ADDR0;try{const a=JSON.parse(localStorage.getItem('al_addr')||'null');if(a&&a.road)st.addr=a}catch(e){}
+/* ---------- 지역 (2026-11-15 전국 확장) ----------
+   저장된 집 주소에서 지역을 정함: 특별시·광역시·특별자치시는 시 단위(서울·부산·세종), 도는 시·군 단위(안산시·양평군).
+   지역 이름은 7개 언어로: 영어·베트남어·우즈베크어는 로마자, 러시아어·몽골어는 키릴, 중국어는 한자(표에 없으면 한글). */
+const CITY_EN={서울:'Seoul',부산:'Busan',대구:'Daegu',인천:'Incheon',광주:'Gwangju',대전:'Daejeon',울산:'Ulsan',세종:'Sejong',제주:'Jeju'};
+const CITY_RU={서울:'Сеул',부산:'Пусан',대구:'Тэгу',인천:'Инчхон',광주:'Кванджу',대전:'Тэджон',울산:'Ульсан',세종:'Сечжон',수원:'Сувон',안산:'Ансан',화성:'Хвасон',시흥:'Сихын',평택:'Пхёнтхэк',김포:'Кимпхо',용인:'Ёнъин',성남:'Соннам',고양:'Коян',부천:'Пучхон',안양:'Анян',제주:'Чеджу',천안:'Чхонан',청주:'Чхонджу',김해:'Кимхэ',창원:'Чханвон'};
+const CITY_ZH={서울:'首尔',부산:'釜山',대구:'大邱',인천:'仁川',광주:'光州',대전:'大田',울산:'蔚山',세종:'世宗',수원:'水原',안산:'安山',화성:'华城',시흥:'始兴',평택:'平泽',김포:'金浦',용인:'龙仁',성남:'城南',고양:'高阳',부천:'富川',안양:'安养',의정부:'议政府',파주:'坡州',포천:'抱川',이천:'利川',광명:'光明',군포:'军浦',오산:'乌山',하남:'河南',양주:'杨州',구리:'九里',남양주:'南杨州',안성:'安城',의왕:'义王',여주:'骊州',동두천:'东豆川',과천:'果川',양평:'杨平',가평:'加平',연천:'涟川',청주:'清州',천안:'天安',아산:'牙山',김해:'金海',창원:'昌原',거제:'巨济',구미:'龟尾',포항:'浦项',경주:'庆州',전주:'全州',익산:'益山',군산:'群山',제주:'济州',서귀포:'西归浦',춘천:'春川',원주:'原州',강릉:'江陵',진천:'镇川',음성:'阴城',당진:'唐津',서산:'瑞山',목포:'木浦',여수:'丽水',순천:'顺天',광양:'光阳',영암:'灵岩',양산:'梁山',진주:'晋州',통영:'统营',경산:'庆山',칠곡:'漆谷',김천:'金泉',영천:'永川',충주:'忠州',제천:'堤川',논산:'论山',공주:'公州',보령:'保宁'};
+// 한글 → 키릴(콘체비치 표기 간략판). 표에 없는 도시 이름에만 씀
+const CY_I=['к','кк','н','т','тт','р','м','п','пп','с','сс','','ч','чч','чх','кх','тх','пх','х'],CY_I2=['г','кк','н','д','тт','р','м','б','пп','с','сс','','дж','чч','чх','кх','тх','пх','х'];
+const CY_V=['а','э','я','йе','о','е','ё','йе','о','ва','вэ','ве','ё','у','во','ве','ви','ю','ы','ый','и'];
+const CY_F=['','к','к','к','н','н','н','т','ль','к','м','ль','ль','ль','п','ль','м','п','п','т','т','н','т','т','к','т','п','т'];
+const cyr=s=>{let o='',prevFinal=-1;for(const ch of s){const c=ch.charCodeAt(0)-0xAC00;if(c<0||c>11171){o+=ch;prevFinal=-1;continue}const i=Math.floor(c/588),v=Math.floor(c%588/28),f=c%28;
+ let ini=(o===''?CY_I:CY_I2)[i];if(prevFinal===8&&i===5)ini='л';o+=ini+CY_V[v]+(CY_F[f]||'');prevFinal=f;}
+ o=o.replace(/ль(?=[аэяеёоуыию])/g,'р');return o.charAt(0).toUpperCase()+o.slice(1);};
+const capWord=w=>w?w.charAt(0).toUpperCase()+w.slice(1):w;
+function regionOf(full){const tk=String(full||'').trim().split(/\s+/);const a1=tk[0]||'',a2=tk[1]||'';
+ const metro=/(특별시|광역시|특별자치시)$/.test(a1);const unit=metro?a1:a2;const ko=(metro?a1.replace(/(특별시|광역시|특별자치시)$/,''):a2.replace(/(시|군)$/,''))||'안산';
+ const koFull=metro?ko:(a2||'안산시');const key=metro?a1:`${a1} ${a2}`;const hall=metro?(/구$|군$/.test(a2)?`${a2}청`:`${a1}청`):`${a2||'안산시'}청`;
+ const en=CITY_EN[ko]||capWord(roma(ko).replace(/\s+/g,''));const ru=CITY_RU[ko]||cyr(ko);
+ return {key,a1,ko,koFull,unit,hall,en,ru,mn:ru,zh:CITY_ZH[ko]||ko,vi:en,uz:en};}
+const RG=()=>regionOf(st.addr&&st.addr.full);
+/* 지역별 자료: 확인된 지역만 분리배출·관공서·자주 가는 곳을 염. 나머지는 '준비 중' 또는 검색 기반 */
+const REGION_DATA={'경기도 안산시':{waste:true,offices:true,places:true}};
+const RD=()=>REGION_DATA[RG().key]||{};
+const BUS_ANY=false; // 전국 버스(TAGO) 연동되면 true
+const busOn=()=>RG().a1==='경기도'||BUS_ANY; // 경기 = 경기도 버스 API. 그 외 지역은 전국(TAGO) 연동 후
+const ruIn=n=>/[бвгджзклмнпрстфхцчшщ]$/i.test(n)?n+'е':/[ая]$/.test(n)?n.slice(0,-1)+'е':n; // 러시아어 전치격(в ...е) 간단 규칙
+const BRAND={ko:r=>`${r.ko}살이`,en:r=>`${r.en} Life`,vi:r=>`${r.en} Life`,zh:r=>`${r.zh}生活`,ru:r=>`«Жизнь в ${ruIn(r.ru)}»`,uz:r=>`${r.en} Life`,mn:r=>`${r.en} Life`};
+const brand=(l=st.lang||'ko')=>(BRAND[l]||BRAND.en)(RG());
+const RNAME=(l=st.lang||'en')=>{const r=RG();return l==='ko'?r.ko:r[l]||r.en;};
+/* 지역 이름이 들어가는 문구: 각 언어 S[lang] 의 해당 키를 지역에 따라 계산되는 값으로 바꿈 (호출하는 쪽은 그대로 t.homeT 등) */
+const REGION_TXT={
+ en:{welcome:r=>`Welcome to ${r.en}`,homeT:r=>`Life in ${r.en}`,st2:r=>`Checking ${r.en} rules`,cityDefault:r=>`Use ${r.en} default`,cityNote:r=>`Based on ${r.en} public data · your building may differ`,addHome:()=>`Add ${brand('en')} to home screen`,notOfficial:()=>`${brand('en')} is not an official government app. Each notice links to its original source.`,onlyAnsan:()=>'Only addresses in Korea are supported.'},
+ vi:{welcome:r=>`Chào mừng đến ${r.vi}`,homeT:r=>`Cuộc sống ở ${r.vi}`,st2:r=>`Kiểm tra quy định của ${r.vi}`,cityDefault:r=>`Dùng mặc định của ${r.vi}`,cityNote:r=>`Theo dữ liệu công của ${r.vi} · tòa nhà của bạn có thể khác`,addHome:()=>`Thêm ${brand('vi')} vào màn hình chính`,notOfficial:()=>`${brand('vi')} không phải ứng dụng chính thức của cơ quan nhà nước. Mỗi thông báo có liên kết đến nguồn gốc.`,onlyAnsan:()=>'Chỉ hỗ trợ địa chỉ tại Hàn Quốc.'},
+ ko:{welcome:r=>`Welcome to ${r.en}`,homeT:r=>`${r.ko} 생활 안내`,st2:r=>`${r.koFull} 배출 기준 확인`,cityDefault:r=>`${r.koFull} 기본값 사용`,cityNote:r=>`${r.koFull} 생활쓰레기 배출 공공데이터 기준 · 단지별 규칙이 다를 수 있어요`,addHome:()=>`${brand('ko')} 홈 화면에 추가`,notOfficial:()=>`${brand('ko')}는 정부·지자체 공식 앱이 아니에요. 공지마다 원문 출처를 함께 보여드려요.`,onlyAnsan:()=>'대한민국 주소만 지원해요.'},
+ zh:{welcome:r=>`欢迎来到${r.zh}`,homeT:r=>`${r.zh}生活`,st2:r=>`正在查询${r.zh}规定`,cityDefault:r=>`使用${r.zh}默认设置`,cityNote:r=>`依据${r.zh}公共数据 · 你的楼可能有所不同`,addHome:()=>`将${brand('zh')}添加到主屏幕`,notOfficial:()=>`${brand('zh')}不是政府官方应用。每条公告都附有原文出处。`,onlyAnsan:()=>'仅支持韩国境内的地址。'},
+ ru:{welcome:r=>`Добро пожаловать в ${r.ru}`,homeT:r=>`Жизнь в ${ruIn(r.ru)}`,st2:r=>`Проверяем правила: ${r.ru}`,cityDefault:r=>`Как принято: ${r.ru}`,cityNote:r=>`По открытым данным: ${r.ru} · в вашем доме может быть иначе`,addHome:()=>`Добавить ${brand('ru')} на главный экран`,notOfficial:()=>`${brand('ru')} — не официальное государственное приложение. У каждого объявления есть ссылка на источник.`,onlyAnsan:()=>'Поддерживаются только адреса в Корее.'},
+ uz:{welcome:r=>`${r.uz}ga xush kelibsiz`,homeT:r=>`${r.uz}da hayot`,st2:r=>`${r.uz} qoidalari tekshirilmoqda`,cityDefault:r=>`${r.uz} standartini ishlatish`,cityNote:r=>`${r.uz} ochiq ma'lumotlari asosida · binongizda farq qilishi mumkin`,addHome:()=>`${brand('uz')}’ni bosh ekranga qo‘shish`,notOfficial:()=>`${brand('uz')} — davlat idorasining rasmiy ilovasi emas. Har bir e’longa asl manba havolasi berilgan.`,onlyAnsan:()=>'Faqat Koreya manzillari qo‘llab-quvvatlanadi.'},
+ mn:{welcome:r=>`${r.mn}д тавтай морил`,homeT:r=>`${r.mn} дахь амьдрал`,st2:r=>`${r.mn}-ын дүрмийг шалгаж байна`,cityDefault:r=>`${r.mn} хотын үндсэн тохиргоо`,cityNote:r=>`${r.mn}-ын нээлттэй мэдээлэлд үндэслэсэн · таны байр өөр байж болно`,addHome:()=>`${brand('mn')}-ийг нүүр дэлгэцэнд нэмэх`,notOfficial:()=>`${brand('mn')} нь төрийн албан ёсны апп биш. Мэдээлэл бүрт эх сурвалжийн холбоос бий.`,onlyAnsan:()=>'Зөвхөн Солонгос дахь хаяг дэмжинэ.'}};
+for(const [l,o] of Object.entries(REGION_TXT))for(const [k,f] of Object.entries(o))if(S[l])Object.defineProperty(S[l],k,{get:()=>f(RG()),configurable:true,enumerable:true});
+Object.defineProperty(S.ko,'contSub',{get:()=>`${brand('ko')} 시작하기`,configurable:true,enumerable:true});
 const addrSaved=()=>{try{return !!localStorage.getItem('al_addr')}catch(e){return true}};
 // 집 주소를 아직 안 정했으면 예시 주소라는 걸 보여줌 (QA: 예시 주소가 내 주소처럼 보이던 문제)
 const addrLabel=()=>esc([st.addr.road,st.addr.dong].filter(Boolean).join(' · '))+(st.lang&&!addrSaved()?` · ${esc((T()||{}).sample||'')}`:'');
@@ -767,13 +807,22 @@ const MAPS={
  medlist:()=>{const m=st.med;if(!m||!m.pos||!m.hosp)return null;const all=medAll();const l0=medList();const near=l0.filter(x=>x.dist!=null&&x.dist<=3000);const list=(near.length>=5?near:l0.slice(0,5)).slice(0,15); // 먼 곳까지 넣으면 지도가 인천~수원까지 축소됨
   return {zoom:15,pts:[{lat:m.pos.lat,lng:m.pos.lng,label:esc(HT().you),home:true},...list.filter(x=>x.lat!=null).map(x=>({lat:x.lat,lng:x.lng,dot:true,pharm:x.kind==='pharm',title:x.name,med:'a'+all.indexOf(x)}))]};},
  near:()=>{const list=st.stops&&st.stops.key===st.addr.full?st.stops.list.slice(0,3).filter(x=>x.lat!=null):[];return {zoom:16,pts:[{label:esc(T().home),home:true},...list.map(x=>({lat:x.lat,lng:x.lng,label:esc(x.name)}))]};}, // 집 + 실제 주변 정류장
- offices:()=>({zoom:14,pts:[{label:esc(T().home),home:true},...OFFICE_INFO.map(o=>({addr:o.geo,label:o.pin}))]})}; // 집 + 관공서 3곳 (QA 10)
+ offices:()=>({zoom:14,pts:[{label:esc(T().home),home:true},...(RD().offices?OFFICE_INFO.map(o=>({addr:o.geo,label:o.pin})):[])]})}; // 집 + 관공서 3곳 (QA 10)
 /* 관공서 정보 — 확인 2026-11-13. 시청·외국인주민지원본부: 안산시 누리집(ansan.go.kr), 출입국: 법무부 소속기관 현황 인용 자료(2026-10 기준)·1345 안내.
    2025년 안산출장소가 '안산출입국·외국인사무소'로 승격. 방문 전 1345·하이코리아로 다시 확인 권장 */
 const OFFICE_INFO=[
  {pin:'안산시청',geo:'경기도 안산시 단원구 화랑로 387',addr:'경기도 안산시 단원구 화랑로 387',tel:'1666-1234'},
  {pin:'외국인주민지원본부',geo:'경기도 안산시 단원구 부부로 43',addr:'경기도 안산시 단원구 부부로 43 (원곡동)',tel:'1666-1234'},
  {pin:'출입국·외국인사무소',geo:'경기도 안산시 단원구 광덕4로 96',addr:'경기도 안산시 단원구 광덕4로 96, 2층 종합민원센터',tel:'1345'}];
+/* 분리배출·관공서 자료가 없는 지역의 관공서: 네이버지도 검색으로 안내 (시청·구청, 외국인 지원센터, 출입국 + 1345) */
+const OFF_GEN={en:[['City / district office','City services · certificates'],['Foreign residents support center','Counseling · multilingual help · search nearby'],['Immigration office','Visa · alien registration · call 1345 first']],
+ vi:[['UBND thành phố / quận','Hành chính · giấy tờ'],['Trung tâm hỗ trợ người nước ngoài','Tư vấn · đa ngôn ngữ · tìm gần bạn'],['Văn phòng xuất nhập cảnh','Visa · đăng ký người nước ngoài · gọi 1345 trước']],
+ ko:[['시청 · 구청','민원 · 증명서'],['외국인 지원센터','상담 · 다국어 지원 · 주변 검색'],['출입국·외국인 관서','비자 · 외국인등록 · 1345 먼저 문의']],
+ zh:[['市政府 / 区厅','市政服务 · 证明文件'],['外国人支援中心','咨询 · 多语言帮助 · 搜索附近'],['出入境·外国人事务所','签证 · 外国人登录 · 先拨打1345']],
+ ru:[['Мэрия / районная администрация','Городские услуги · справки'],['Центр поддержки иностранцев','Консультации · помощь на языках · поиск рядом'],['Миграционная служба','Виза · регистрация · сначала позвоните 1345']],
+ uz:[['Shahar / tuman hokimiyati','Shahar xizmatlari · ma’lumotnomalar'],['Xorijiylarni qo‘llab-quvvatlash markazi','Maslahat · ko‘p tilli yordam · yaqindan qidirish'],['Immigratsiya idorasi','Viza · ro‘yxatdan o‘tish · avval 1345 ga qo‘ng‘iroq qiling']],
+ mn:[['Хотын / дүүргийн захиргаа','Хотын үйлчилгээ · тодорхойлолт'],['Гадаад иргэдийг дэмжих төв','Зөвлөгөө · олон хэлний тусламж · ойролцоо хайх'],['Цагаачлалын алба','Виз · бүртгэл · эхлээд 1345 руу залгана уу']]};
+const offGen=()=>{const r=RG();const L=OFF_GEN[st.lang]||OFF_GEN.en;return [{n:L[0][0],d:L[0][1],ko:r.hall,q:r.hall},{n:L[1][0],d:L[1][1],ko:`${r.ko} 외국인 지원센터`,q:`${r.ko} 외국인지원센터`},{n:L[2][0],d:L[2][1],ko:'출입국·외국인관서',q:`${r.ko} 출입국외국인`,tel:'1345'}];};
 const miniMap=k=>`<div class="nmap mini" data-map="${k}"><div class="live"></div><svg class="fallback" viewBox="0 0 342 170" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g stroke="#fff" stroke-linecap="round" fill="none"><path d="M-10 120 C 80 100,150 140,230 95 S 330 60,350 70" stroke-width="12"/><path d="M110 -10 L 150 180" stroke-width="8"/><path d="M-10 50 L 350 30" stroke-width="6"/><path d="M260 -10 L 230 180" stroke-width="5"/></g><path d="M171 92s12-11 12-20a12 12 0 0 0-24 0c0 9 12 20 12 20z" fill="#E45C4E"/><circle cx="171" cy="72" r="4.5" fill="#fff"/></svg><span class="maptag">MAP</span></div>`;
 /* 지도: 네이버 지도 키가 있으면 네이버, 없거나 인증 실패면 구글 지도(GMAPS_KEY), 둘 다 없으면 그림 지도 */
 const GMAPS_KEY='';
@@ -871,12 +920,12 @@ SCR.intro=()=>{const t=st.lang?S[st.lang]:null;const sel=st.sel?COUNTRIES.find(c
   <div class="bgl" id="bgB" style="background-image:url(${BG.sky});opacity:0"></div>
   <div class="shade"></div>
   <div class="hero-in">
-   <div class="welcome"><div class="w">Welcome to</div><div class="t">안산살이</div><div class="s">ANSAN LIFE <span>·</span> <em>since 2026</em></div></div>
+   <div class="welcome"><div class="w">Welcome to</div><div class="t">${esc(brand('ko'))}</div><div class="s">${esc(RG().en.toUpperCase())} LIFE <span>·</span> <em>since 2026</em></div></div>
    <div class="q"><i></i><b>어디에서 오셨나요?</b><span>Where are you from?</span></div>
    <div class="rail" id="rail" role="group" aria-label="Choose your country">
     ${COUNTRIES.map((c,i)=>`<button class="cc" data-sel="${c.c}" aria-pressed="${st.sel===c.c}"><span class="fl">${flag(c.c,32)}</span><span class="chk">${ic('check',14,'#fff',3)}</span><span class="col"><span class="nm ${c.cls||''}">${c.name}</span><span class="kk">${c.ko}</span></span></button>`).join('')}
    </div>
-   <div class="locrow"><span class="row" style="gap:6px">${ic('spot',14,'#fff')}Gyeonggi-do, Ansan</span><span class="swipe">swipe <i><b id="swb"></b></i>${ic('arrowR',14,'#fff')}</span></div>
+   <div class="locrow"><span class="row" style="gap:6px">${ic('spot',14,'#fff')}${esc(RG().en)}, Korea</span><span class="swipe">swipe <i><b id="swb"></b></i>${ic('arrowR',14,'#fff')}</span></div>
   </div>
  </div>
  <div class="cont">
@@ -894,6 +943,8 @@ const PRIV={
  uz:{t:'Joriy joylashuvdan foydalanilsinmi?',lead:'Yaqin shifoxonalar va manzilingizni topish uchun ilova telefonning hozirgi joylashuvidan foydalanadi.',sent:'Yuboriladi: joriy joylashuv (kenglik, uzunlik)',to:'Kimga: Ansan Life serveri (yaqin shifoxonalar) va NAVER Cloud (manzil topish)',keep:'Saqlash: serverda saqlanmaydi. Faqat tanlangan manzil shu telefonda saqlanadi.',yes:'Roziman',no:'Keyinroq',noS:'Saqlangan manzil bo‘yicha ko‘rsatamiz.',pageT:'Joylashuv va maxfiylik',gpsT:'Joriy joylashuv',gpsS:'Yaqin shifoxonalar va manzilingizni topish uchun',on:'Yoqilgan',off:'O‘chirilgan',privacy:'Maxfiylik siyosati',terms:'Joylashuv xizmati shartlari',clear:'Telefondagi ma’lumotlarni o‘chirish',clearS:'Til, manzil, chiqindi kunlari va sozlamalar',cleared:'O‘chirildi. Qaytadan boshlaymiz.',kor:'Hujjatlar koreys tilida (asl matn). Huquqiy tekshiruvdagi qoralama.',row:'Joylashuv va maxfiylik'},
  mn:{t:'Одоогийн байршлыг ашиглах уу?',lead:'Ойролцоох эмнэлэг болон таны хаягийг олохын тулд утасны одоогийн байршлыг ашиглана.',sent:'Илгээх: одоогийн байршил (өргөрөг, уртраг)',to:'Хүлээн авагч: Ansan Life сервер (ойролцоох эмнэлэг), NAVER Cloud (хаяг хайх)',keep:'Хадгалах: серверт хадгалахгүй. Зөвхөн сонгосон хаяг энэ утсанд хадгалагдана.',yes:'Зөвшөөрөх',no:'Дараа',noS:'Хадгалсан хаягаар харуулна.',pageT:'Байршил ба нууцлал',gpsT:'Одоогийн байршил ашиглах',gpsS:'Ойролцоох эмнэлэг, таны хаягийг олоход',on:'Асаалттай',off:'Унтраалттай',privacy:'Нууцлалын бодлого',terms:'Байршлын үйлчилгээний нөхцөл',clear:'Энэ утсан дахь мэдээллийг устгах',clearS:'Хэл, хаяг, хог гаргах өдөр, тохиргоо',cleared:'Устгалаа. Дахин эхэлнэ.',kor:'Бодлого солонгос хэл дээр (эх хувь). Хууль зүйн хяналтад байгаа ноорог.',row:'Байршил ба нууцлал'}};
 const PT=()=>PRIV[st.lang]||PRIV.en;
+// 개인정보 안내의 '받는 곳'에 들어가는 서비스 이름도 지역 이름을 따름
+for(const [l,o] of Object.entries(PRIV)){const raw=o.to;Object.defineProperty(o,'to',{get:()=>raw.replace(/«Жизнь в Ансане»|안산살이|安山生活|Ansan Life/g,()=>brand(l)),configurable:true,enumerable:true});}
 const gpsPref=()=>{try{return localStorage.getItem('al_gps')}catch(e){return null}};
 const setGps=v=>{try{localStorage.setItem('al_gps',v)}catch(e){}};
 /* 위치를 쓰기 전에 한 번 묻기. on → 바로 true, off → false(자동 조회일 때), 처음이면 동의 시트 */
@@ -918,9 +969,9 @@ SCR.priv=()=>{const p=PT();const on=gpsPref()==='on';
 SCR.home=()=>{const t=T();const icons=['trash','bus','office','med','mega','survey'];const to=['w1','b1','offices','hosp','news','surv'];const ko=S.ko.items;
  return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu,{menu:true,right:langPill()})}
  ${ttl(t.homeT,`<span>${fmtDay(new Date())}</span>`,{eye:t.welcome})}
- <div class="sheet"><nav class="toc">${t.items.map((x,i)=>`<button ${i===5&&!SURVEY_ON?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:''}</span><span class="n">0${i+1}</span></button>`).join('')}</nav>
+ <div class="sheet"><nav class="toc">${t.items.map((x,i)=>{const off=(i===5&&!SURVEY_ON)||(i===0&&!RD().waste)||(i===1&&!busOn());return `<button ${off?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:off?`<em class="adnote">${(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중')} · ${esc(RNAME())}</em>`:''}</span><span class="n">0${i+1}</span></button>`}).join('')}</nav>
  <div style="margin-top:8px;display:flex;flex-direction:column;gap:12px">${installCard()}${adSlot()}</div>
- <div class="quote"><div class="col" style="gap:6px"><span class="serif" style="font-size:16px">${t.tipT}</span><span class="small muted" style="line-height:1.55">${t.tipB}</span></div></div>
+ ${RD().waste?`<div class="quote"><div class="col" style="gap:6px"><span class="serif" style="font-size:16px">${t.tipT}</span><span class="small muted" style="line-height:1.55">${t.tipB}</span></div></div>`:''}
  <button class="row tiny muted" data-go="priv" style="gap:6px;align-self:flex-start;padding:4px 0">${ic('lock',13,'#6E7472')}<span style="text-decoration:underline">${PT().row}</span></button>
  </div>${foot}</div>`;};
 
@@ -1198,7 +1249,7 @@ function paintMed(){const box=document.getElementById('medlist');if(!box)return;
  const tabs=document.getElementById('medtabs');if(tabs){const counts=[medAll().length,medAll().filter(x=>openState(x.start,x.end)===true).length,(m.pharm||[]).length,(m.hosp||[]).filter(langOk).length];
   tabs.innerHTML=MED_TABS.map((k,i)=>`<button class="mtab" role="tab" data-mtab="${k}" aria-selected="${m.tab===k}">${h.tabs[i]}${m.hosp&&!m.loading?`<sup>${counts[i]}</sup>`:''}<i></i></button>`).join('');}
  const sub=document.getElementById('medsub');if(sub){const tx=!hasApi()?'':m.loading&&!m.pos?esc(h.locating):m.pos?esc(m.pos.src==='gps'?h.nearGps:h.nearHome(st.addr.road)):'';sub.innerHTML=tx;if(sub.parentElement)sub.parentElement.style.visibility=tx?'':'hidden';}
- if(m.err==='noapi'){box.innerHTML=`<p class="small muted">${h.noApi}</p><button class="btn line" data-naver="안산 병원">${ic('map',18)}${h.searchNaver}</button>`;}
+ if(m.err==='noapi'){box.innerHTML=`<p class="small muted">${h.noApi}</p><button class="btn line" data-naver="${esc(RG().ko)} 병원">${ic('map',18)}${h.searchNaver}</button>`;}
  else if(m.loading&&!m.hosp){box.innerHTML='<div class="mskel"></div><div class="mskel"></div><div class="mskel"></div>';}
  else if(m.err&&!m.hosp){box.innerHTML=`<p class="small muted">${h.err}</p><button class="btn line" data-act="medretry">${ic('refresh',18)}${h.retry}</button>`;}
  else{const list=medList();const note=m.pos&&m.pos.src!=='gps'?`<span class="row tiny muted" style="gap:6px">${ic('spot',12,'#6E7472')}${h.gpsOff}</span>`:'';
@@ -1222,7 +1273,7 @@ async function loadMed(force){const m=st.med;if(!document.getElementById('medlis
  finally{m.loading=false;paintMed();}}
 function medNaver(it){const h=HT();const q=new URLSearchParams({dlat:it.lat,dlng:it.lng,dname:it.name,appname:appname()});
  if(st.med.pos){q.set('slat',st.med.pos.lat);q.set('slng',st.med.pos.lng);q.set('sname',h.you);}
- openNaver(`안산 ${it.name}`,it.lat!=null?'nmap://route/public?'+q.toString():null);}
+ openNaver(`${RG().ko} ${it.name}`,it.lat!=null?'nmap://route/public?'+q.toString():null);}
 const medPick=key=>{const i=+String(key).slice(1);return medAll()[i]||null;};
 async function loadMedDetail(){const it=st.med.sel;if(!it||!hasApi()||!it.id)return;const h=HT();
  try{let d=st.med.detail[it.id];if(!d){d=await api(`/med/detail?kind=${it.kind}&id=${enc(it.id)}`);st.med.detail[it.id]=d;}
@@ -1256,9 +1307,11 @@ SCR.hdetail=()=>{const t=T(),h=HT();const it=st.med.sel;if(!it)return SCR.hosp()
   <div class="spacer"></div>
   <div class="acts">${tel?`<a class="btn line" href="tel:${tel}">${ic('phone',18)}${h.call}</a>`:''}<button class="btn dark" data-mnav="sel">${ic('map',18,'#fff')}${h.naver}${ic('ext',14,'#fff')}</button></div>
  </div></div>`;};
-SCR.offices=()=>{const t=T();return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)}${ttl(t.offT,`<span>${t.offS}</span>`,{pin:true})}
+SCR.offices=()=>{const t=T();if(!RD().offices){return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)}${ttl(t.offT,`<span>${t.offS}</span>`,{pin:true})}
+ <div class="sheet" style="gap:18px">${miniMap('offices')}${offGen().map(o=>`<div class="col" style="gap:8px"><button class="col" style="gap:8px;text-align:left" data-naver="${esc(o.q)}"><span class="row" style="gap:10px"><span style="width:16px;height:1.5px;background:var(--ink)"></span><span class="serif grow ${isKo()?'kr':''}" style="font-size:16px">${esc(o.n)}</span></span><span class="ticket" style="width:100%"><span class="col grow" style="gap:4px"><span class="tiny muted kr">${esc(o.ko)}</span><span class="small">${esc(o.d)}</span></span><span class="dash"></span><span class="idot" style="background:var(--accent)">${ic('search',16,'#fff',2)}</span></span></button>${o.tel?`<a class="row small" href="tel:${o.tel}" style="gap:8px;padding:2px 2px 0 26px">${ic('phone',15,'#6E7472')}<span class="muted">${t.tel}</span><span class="b" style="text-decoration:underline">${o.tel}</span></a>`:''}</div>`).join('')}<div class="spacer"></div></div>${foot}</div>`;}
+ return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)}${ttl(t.offT,`<span>${t.offS}</span>`,{pin:true})}
  <div class="sheet" style="gap:18px">${miniMap('offices')}${t.offices.map(([a,k,d],i)=>{const o=OFFICE_INFO[i]||{};return `<div class="col" style="gap:8px"><button class="col" style="gap:8px;text-align:left" data-naver="${S.ko.offices[i][0]}"><span class="row" style="gap:10px"><span style="width:16px;height:1.5px;background:var(--ink)"></span><span class="serif grow ${isKo()?'kr':''}" style="font-size:16px">${a}</span></span><span class="ticket" style="width:100%"><span class="col grow" style="gap:4px"><span class="tiny muted kr">${k}</span><span class="small">${d}</span>${o.addr?`<span class="micro muted kr" style="user-select:all">${esc(o.addr)}</span>`:''}</span><span class="dash"></span><span class="idot" style="background:var(--accent)">${ic('map',16,'#fff',2)}</span></span></button>${o.tel?`<a class="row small" href="tel:${o.tel.replace(/[^\d]/g,'')}" style="gap:8px;padding:2px 2px 0 26px">${ic('phone',15,'#6E7472')}<span class="muted">${t.tel}</span><span class="b" style="text-decoration:underline">${o.tel}</span></a>`:''}</div>`}).join('')}<div class="spacer"></div></div>${foot}</div>`;};
-SCR.news=()=>{const t=T();const cached=(hasApi()||hasSb())&&st.news[st.lang];return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)}${ttl(t.newsT,koSub('공지·행사'))}
+SCR.news=()=>{const t=T();const cached=(hasApi()||hasSb())&&st.news[newsKey()];return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)}${ttl(t.newsT,koSub('공지·행사'))}
  <div class="sheet" style="gap:20px"><div id="newslist" class="col" style="gap:20px">${cached?newsList(cached.notices||[]):t.newsItems.map(([a,b],i)=>`<div class="quote"><div class="col" style="gap:6px"><span class="row cap" style="gap:6px;color:var(--deep)">${ic(i?'cal':'mega',13,'#22393A',2)}${i?t.event:t.official} · ${t.sample}</span><span class="serif" style="font-size:17px">${a}</span><span class="small muted">${b}</span></div></div>`).join('')}</div>
  <span class="micro muted" style="line-height:1.5">${t.notOfficial}</span>
  ${adSlot()}
@@ -1308,7 +1361,7 @@ SCR.rules=()=>{const t=T();const R=st.rulesDraft||(st.rulesDraft=JSON.parse(JSON
  </div>${foot}</div>`;};
 
 /* destinations for Naver Map transit directions (주소가 있는 곳은 좌표로 길찾기, 없으면 장소 검색) */
-const PLACES=()=>{const t=T();return [
+const PLACES=()=>{const t=T();if(!RD().places)return [];return [
  {n:t.toWork,ko:'반월국가산업단지',q:'반월국가산업단지',icon:'work'},
  {n:t.choji,ko:'초지역',q:'초지역',addr:'경기도 안산시 단원구 중앙대로 620',icon:'train'},
  {n:t.offices[0][0],ko:'안산시청',q:'안산시청',addr:'경기도 안산시 단원구 화랑로 387',icon:'office'},
@@ -1345,13 +1398,14 @@ async function loadArr(){const box=document.getElementById('arrs');if(!box||!st.
 
 /* notices: data/notices.json (Korean) → server translates for the viewer's language */
 st.news={};st.nsel=null;st.showOrig=false;
-async function loadNews(){const box=document.getElementById('newslist');if(!box)return;const lang=st.lang;
- try{if(!st.news[lang]||st.news[lang].retry){if(hasApi()){const j=await api(`/notices?lang=${lang}`,{},25000);st.news[lang]=(j.error||j.partial||j.lang!==lang)?{...j,retry:true}:j;}
-  else{/* 번역 서버 전: Supabase 한국어 원문 */const list=await sb('notices?select=id,type,title,body,date,url,sample&order=sort.desc,created_at.desc&limit=30');st.news[lang]={lang:'ko',notices:list||[]};}}if(!document.body.contains(box)||st.lang!==lang)return;box.innerHTML=newsList(st.news[lang].notices||[]);tagFx(box);}
+const newsKey=(l=st.lang)=>`${l}|${RG().key}`; // 공지는 언어·지역별로 따로 (지역 공지 + 전국 공지)
+async function loadNews(){const box=document.getElementById('newslist');if(!box)return;const lang=st.lang;const nk=newsKey(lang);
+ try{if(!st.news[nk]||st.news[nk].retry){if(hasApi()){const j=await api(`/notices?lang=${lang}&region=${enc(RG().key)}`,{},25000);st.news[nk]=(j.error||j.partial||j.lang!==lang)?{...j,retry:true}:j;}
+  else{/* 번역 서버 전: Supabase 한국어 원문 */const list=await sb(`notices?select=id,type,title,body,date,url,sample&or=(region.is.null,region.eq.${enc(RG().key)})&order=sort.desc,created_at.desc&limit=30`);st.news[nk]={lang:'ko',notices:list||[]};}}if(!document.body.contains(box)||st.lang!==lang)return;box.innerHTML=newsList(st.news[nk].notices||[]);tagFx(box);}
  catch(e){/* keep static sample list */}}
 const srcHost=u=>{try{return new URL(u).hostname.replace(/^www\./,'')}catch(e){return ''}};
 const newsList=list=>{const t=T();return list.map((n,i)=>`<button class="nitem" data-news="${i}"><span class="col" style="gap:6px"><span class="row cap" style="gap:6px;color:var(--deep)">${ic(n.type==='event'?'cal':'mega',13,'#22393A',2)}${n.type==='event'?t.event:t.official}${n.sample?` · ${t.sample}`:''}${n.date?` · ${esc(n.date)}`:''}${n.url&&srcHost(n.url)?` · ${esc(srcHost(n.url))}`:''}</span><span class="serif" style="font-size:17px">${esc(n.title)}</span><span class="small muted" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(n.body)}</span></span></button>`).join('')};
-SCR.ndetail=()=>{const t=T();const n=(st.news[st.lang]&&st.news[st.lang].notices||[])[st.nsel]||{};const tr=!isKo()&&n.title_ko;const o=tr&&st.showOrig;
+SCR.ndetail=()=>{const t=T();const n=(st.news[newsKey()]&&st.news[newsKey()].notices||[])[st.nsel]||{};const tr=!isKo()&&n.title_ko;const o=tr&&st.showOrig;
  return `<div class="scr ${isKo()||o?'ko':''}">${nav(t.newsT)}${ttl(esc(o?n.title_ko:n.title),`<span>${n.type==='event'?t.event:t.official}${n.sample?` · ${t.sample}`:''}${n.date?` · ${esc(n.date)}`:''}${n.url&&srcHost(n.url)?` · ${esc(srcHost(n.url))}`:''}</span>`)}
  <div class="sheet">
   ${tr?`<div class="row" style="justify-content:space-between"><span class="tiny muted">${o?'':t.autoTr}</span><button class="b small" data-act="orig">${ic('globe',14,'#22393A')} ${o?t.transView:t.origView}</button></div>`:''}
@@ -1460,14 +1514,14 @@ function showAnaErr(){const t=T();const b=app.querySelector('.bottomsheet');cons
  b.innerHTML=`<span class="h1 ${isKo()?'ko':''}" style="font-size:24px">${t.anaFail}</span>${koSub('사진을 분석하지 못했어요.')}<div class="acts"><button class="btn line" data-act="pick">${t.pickAgain}</button><button class="btn dark" data-act="retry">${ic('camera',18,'#fff')}${t.tryAgain}</button></div>`;tagFx(b);}
 
 /* ---------- home address: GPS → Naver reverse geocoding, or typed address ---------- */
-const inAnsanBox=(lat,lng)=>lat>37.20&&lat<37.38&&lng>126.36&&lng<126.95; // 대략적인 안산시 범위(대부도 포함). 키가 있으면 행정구역명으로 판정
+const inKoreaBox=(lat,lng)=>lat>33&&lat<38.7&&lng>124.5&&lng<131.9; // 키가 없을 때 대략적인 대한민국 범위
 function revGeo(N,lat,lng){return new Promise(res=>{try{N.maps.Service.reverseGeocode({coords:new N.maps.LatLng(lat,lng),orders:'admcode,roadaddr,addr'},(s,r)=>{
   if(s!==N.maps.Service.Status.OK||!r||!r.v2)return res(null);const R=r.v2.results||[];
   const adm=R.find(x=>x.name==='admcode'),road=R.find(x=>x.name==='roadaddr'),jib=R.find(x=>x.name==='addr');const base=road||jib||adm;if(!base)return res(null);
   const g=base.region,L=base.land,num=L?`${L.number1||''}${L.number2?'-'+L.number2:''}`:'';
   const short=road&&L?`${L.name} ${num}`.trim():jib&&L?`${g.area3.name} ${num}`.trim():g.area3.name;
   const A=r.v2.address||{};
-  res({inAnsan:/안산/.test(g.area2&&g.area2.name||''),road:short,dong:adm?adm.region.area3.name:g.area3.name,full:A.roadAddress||A.jibunAddress||`${g.area1.name} ${g.area2.name} ${short}`,lat,lng});});}catch(e){res(null)}});}
+  res({inKorea:!!(g.area1&&g.area1.name),road:short,dong:adm?adm.region.area3.name:g.area3.name,full:A.roadAddress||A.jibunAddress||`${g.area1.name} ${g.area2.name} ${short}`,lat,lng});});}catch(e){res(null)}});}
 function geoText(N,q){return new Promise(res=>{try{N.maps.Service.geocode({query:q},(s,r)=>res(s===N.maps.Service.Status.OK&&r&&r.v2&&r.v2.addresses&&r.v2.addresses[0]||null))}catch(e){res(null)}});}
 function locSheet(){const t=T();const o=document.createElement('div');o.className='sheetover';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label',t.locT);
  o.innerHTML=`<div class="bs"><span class="grab"></span><span class="eyebrow">${t.change}</span><span class="h1 ${isKo()?'ko':''}" style="font-size:26px">${t.locT}</span>${koSub('어디에 사세요?')}<span class="small muted">${t.locS}</span>
@@ -1479,7 +1533,7 @@ function locSheet(){const t=T();const o=document.createElement('div');o.classNam
   <div class="card row small" style="padding:10px 12px"><span class="dot" style="background:var(--accent)"></span><span class="col"><span class="cap">${t.locCur}</span><span class="kr b">${addrLabel()}</span></span></div></div>`;
  const msg=(m,err)=>{const e=o.querySelector('#lmsg');e.hidden=!m;e.textContent=m||'';e.classList.toggle('err',!!err)};
  const focusAddr=()=>{const i=o.querySelector('#laddr');try{i.focus()}catch(e){}};
- const done=a=>{saveAddr(a);o.remove();render();toast(T().locSaved);};
+ const done=a=>{saveAddr(a);o.remove();if((/^w\d$|^rules$/.test(cur())&&!RD().waste)||(/^b[1-6]$/.test(cur())&&!busOn()))st.stack=['home'];render();toast(T().locSaved);};
  o.querySelector('#lgps').addEventListener('click',async()=>{const t=T();
   if(!navigator.geolocation||!window.isSecureContext){msg(t.gpsDenied,1);focusAddr();return}
   if(!await askGps(true)){msg(PT().noS);focusAddr();return}
@@ -1488,21 +1542,20 @@ function locSheet(){const t=T();const o=document.createElement('div');o.classNam
   catch(e){msg(e&&e.code===1?t.gpsDenied:t.gpsFail,1);focusAddr();return}
   if(!o.isConnected)return;const lat=pos.coords.latitude,lng=pos.coords.longitude;
   const N=await loadNaver();
-  if(!N){if(!inAnsanBox(lat,lng)){msg(t.onlyAnsan,1);return}msg(t.gpsNoKey,1);focusAddr();return}
+  if(!N){if(!inKoreaBox(lat,lng)){msg(t.onlyAnsan,1);return}msg(t.gpsNoKey,1);focusAddr();return}
   const a=await revGeo(N,lat,lng);if(!o.isConnected)return;
   if(!a){msg(t.gpsFail,1);focusAddr();return}
-  if(!a.inAnsan){msg(t.onlyAnsan,1);return}
+  if(!a.inKorea){msg(t.onlyAnsan,1);return}
   done(a);});
  o.querySelector('#lform').addEventListener('submit',async e=>{e.preventDefault();const t=T();const v=o.querySelector('#laddr').value.trim().slice(0,80);if(!v){focusAddr();return}
-  // 다른 시·도 주소를 넣었으면 안산시를 붙이지 않음 (그래야 '안산만 지원' 안내가 맞게 나옴)
-  const q=/안산/.test(v)||/(특별시|광역시|특별자치|[가-힣]+도\s|[가-힣]{2,}시\s)/.test(v)?v:`경기도 안산시 ${v}`;const N=await loadNaver();
-  if(!N){done({road:v.replace(/^(경기도\s*)?안산시\s*((단원|상록)구\s*)?/,'')||v,dong:'',full:q});return}
-  msg(t.gpsWorking);const hit=await geoText(N,q);if(!o.isConnected)return;
+  // 전국 주소: 시·도나 시·군 이름이 없으면 지금 지역(예: 경기도 안산시)을 앞에 붙여 먼저 찾아보고, 없으면 입력 그대로
+  const hasArea=/(특별시|광역시|특별자치|[가-힣]+도(\s|$)|[가-힣]{1,}[시군](\s|$))/.test(v);const q=hasArea?v:`${RG().key} ${v}`;const N=await loadNaver();
+  if(!N){done({road:v.replace(/^([가-힣]+(특별시|광역시|특별자치시|특별자치도|도)\s*)?([가-힣]+[시군]\s*)?([가-힣]+구\s*)?/,'')||v,dong:'',full:q});return}
+  msg(t.gpsWorking);let hit=await geoText(N,q);if(!hit&&!hasArea)hit=await geoText(N,v);if(!o.isConnected)return;
   const full=hit&&(hit.roadAddress||hit.jibunAddress)||'';
-  if(!hit){msg(t.addrNF,1);focusAddr();return}
-  if(!/안산/.test(full)){msg(t.onlyAnsan,1);return}
+  if(!hit||!full){msg(t.addrNF,1);focusAddr();return}
   const a=await revGeo(N,+hit.y,+hit.x);
-  done(a&&a.inAnsan?a:{road:v,dong:'',full,lat:+hit.y,lng:+hit.x});});
+  done(a&&a.inKorea?a:{road:v,dong:'',full,lat:+hit.y,lng:+hit.x});});
  o.querySelector('#lkeep').addEventListener('click',()=>o.remove());
  o.addEventListener('click',e=>{if(e.target===o)o.remove()});
  app.appendChild(o);tagFx(o);}
@@ -1520,7 +1573,7 @@ addEventListener('popstate',()=>{if(hSkip){hSkip--;if(!hSkip&&hPend){hPend=false
  const ov=document.querySelector('.sheetover');
  if(ov){ov.remove();history.pushState({al:hDepth},'');return;} // 열린 시트부터 닫기
  if(st.stack.length>1){st.stack.pop();hDepth=st.stack.length-1;render();}});
-function render(){syncHist();clearInterval(bgTimer);clearTimeout(scanTimer);clearTimeout(arrTimer);scanSeq++;const n=cur();if(n!=='w2')stopCam();if(n!=='rules')st.rulesDraft=null;
+function render(){syncHist();syncBrand();clearInterval(bgTimer);clearTimeout(scanTimer);clearTimeout(arrTimer);scanSeq++;const n=cur();if(n!=='w2')stopCam();if(n!=='rules')st.rulesDraft=null;
  app.className='l-'+(st.lang||'en');document.documentElement.lang=st.lang||'ko';app.innerHTML=SCR[n]();
  if(n==='intro')bindIntro();
  if(n==='w3')runScan();
@@ -1614,7 +1667,8 @@ const ASIDE={ko:'안산살이는 휴대폰 화면에 맞춰 만들어졌어요.\
  uz:'Ansan Life telefon ekrani uchun yaratilgan.\nHozircha uni mobil o‘lchamda ko‘rsatamiz.',
  mn:'Ansan Life нь утасны дэлгэцэнд зориулагдсан.\nОдоохондоо гар утасны хэмжээгээр харуулъя.'};
 (()=>{const el=document.getElementById('asideLead');if(!el)return;const prefs=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||'en']).map(x=>String(x).toLowerCase().split('-')[0]);
- const l=prefs.find(x=>ASIDE[x])||'en';el.textContent=ASIDE[l];el.lang=l;})();
+ const l=prefs.find(x=>ASIDE[x])||'en';el.textContent=ASIDE[l].replace(/안산살이|Ansan Life|安山生活|«Жизнь в Ансане»/g,()=>brand(l));el.lang=l;})();
+function syncBrand(){try{document.title=`${brand('ko')} ${brand('en')}`;const h=document.querySelector('#aside h1');if(h)h.textContent=brand('ko');const b=document.querySelector('#aside .betatag');if(b&&b.firstChild)b.firstChild.nodeValue=`${RG().en.toUpperCase()} LIFE. `;}catch(e){}}
 render();
 })();
 </script>
