@@ -13,6 +13,14 @@
 - **언어:** 한국어 · 영어 · 베트남어 운영 / 중국어 · 러시아어 · 우즈베크어 · 몽골어는 "준비 중"
 - **배경:** 안산시 정부사업 수행 중. 급여·노동법 영역(어서와, 오퍼센트ai)은 이 서비스 범위에서 제외
 
+## 서비스 주소 (2026-11-15)
+
+- **https://sari.kr** — 자체 도메인(닷네임코리아 등록, 만료 2027-11-15). GitHub Pages(`gogeangs/ansanlife-dev`, 브랜치 `feature/camera-gps`, 루트의 `CNAME` 파일)로 연결
+- DNS(닷네임): A 4개(185.199.108~111.153), `www` CNAME → gogeangs.github.io. www.sari.kr·gogeangs.github.io/ansanlife-dev 는 sari.kr 로 자동 이동
+- 관리 페이지: https://sari.kr/admin.html · 처리방침: /privacy.html · 위치기반서비스 약관: /location-terms.html
+- 새 주소를 쓰려면 함께 바꿔야 하는 곳: Supabase Edge Function `ALLOWED_ORIGIN`(supabase/build_edge.py), 네이버 지도 Application 'ansanlife' Web 서비스 URL(현재 https://sari.kr, https://gogeangs.github.io)
+- sari.co.kr 도 보유 — 닷네임 '도메인 포워딩'으로 https://sari.kr 로 넘기면 됨(미설정)
+
 ## 결과물 위치
 
 | 결과물 | 위치 | 내용 |

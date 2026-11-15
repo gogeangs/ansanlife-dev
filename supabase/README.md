@@ -57,7 +57,7 @@
 ## 2. 공지 관리 페이지 (admin.html) — 추천
 
 앱과 같은 주소의 `admin.html` 에서 공지를 쓰고, 고치고, 게시를 켜고 끄고, 순서를 바꿀 수 있습니다. 오른쪽에 앱에서 보일 모습이 바로 나옵니다.
-시험 주소: https://gogeangs.github.io/ansanlife-dev/admin.html
+주소: https://sari.kr/admin.html (예전 gogeangs.github.io/ansanlife-dev 주소는 sari.kr 로 자동 이동)
 
 **처음 한 번: 관리자 계정 만들기**
 
