@@ -8,6 +8,7 @@
  *   GET  /bus/arrivals?stationId=  정류장 도착 정보 (경기도 버스도착정보 v2)
  *   GET  /notices?lang=vi&region=경기도 안산시   NOTICES_URL 의 공지(한국어)를 번역해 돌려줌. region 이 빈 공지(전국)+그 지역 공지. 번역은 내용이 바뀔 때만 다시 함
  *   GET  /med/nearby?kind=hosp|pharm&lat&lng  주변 병·의원 / 약국 (국립중앙의료원, 거리순 + 오늘 진료시간)
+ *   GET  /waste?sido=경기도&sgg=수원시  생활쓰레기 배출 요일·시간 (행정안전부 생활쓰레기배출정보, 하루 캐시)
  *   GET  /med/detail?kind=hosp|pharm&id=HPID   요일별 진료시간, 진료과목, 응급실 운영 여부
  *
  * [사진 분석]
@@ -460,14 +461,107 @@ async function trGet(env, key) {
     return hit ? await hit.json() : null;
   } catch { return null; }
 }
-async function trPut(env, key, value) {
+async function trPut(env, key, value, ttl = TR_TTL) {
   try {
-    if (env.TR_KV) return await env.TR_KV.put(key, JSON.stringify(value), { expirationTtl: TR_TTL });
+    if (env.TR_KV) return await env.TR_KV.put(key, JSON.stringify(value), { expirationTtl: ttl });
     const c = typeof caches !== 'undefined' ? caches.default : null;
-    if (c) await c.put(new Request(`https://cache.ansanlife/${key}`), new Response(JSON.stringify(value), { headers: { 'cache-control': `max-age=${TR_TTL}` } }));
+    if (c) await c.put(new Request(`https://cache.ansanlife/${key}`), new Response(JSON.stringify(value), { headers: { 'cache-control': `max-age=${ttl}` } }));
   } catch { /* 저장 실패는 다음에 다시 번역 */ }
 }
 const trOk = (n, t) => !!(t && t.title && (t.body || !n.body));
+
+/* ---------- 생활쓰레기 배출 정보: 행정안전부 생활쓰레기배출정보 (공공데이터 제공 표준, data.go.kr 15025450) ----------
+   지자체 담당자가 입력한 전국 자료(CSV, EUC-KR)를 하루 한 번 받아 지역별로 묶어 캐시(kv_cache 'waste/v1').
+   국내 IP 에서만 받아짐(해외 서버는 403) → Supabase 서울 리전에서 실행.
+   GET /waste?sido=경기도&sgg=수원시  → { region, total, date, entries:[{g,f,r,from,to,fft?,rft?,off,dept,tel,bulky,areas,n,date}] }
+   요일 0=일 … 6=토. 같은 시·군·구 안에서 동네마다 다르면 entries 가 여러 개(많이 쓰는 순) */
+const WASTE_SRC = 'https://file.localdata.go.kr';
+const WASTE_KEY = 'waste/v1';
+let wasteMem = null;
+export function csvRows(t) {
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(f); f = ''; }
+    else if (c === '\n') { row.push(f.replace(/\r$/, '')); rows.push(row); row = []; f = ''; }
+    else f += c;
+  }
+  if (f || row.length) { row.push(f); rows.push(row); }
+  return rows;
+}
+const WDAY = { 일: 0, 월: 1, 화: 2, 수: 3, 목: 4, 금: 5, 토: 6 };
+export const wasteDays = s => [...new Set(String(s ?? '').split(/[+,\s·/]/).map(x => WDAY[x.trim().replace(/요일$/, '')]).filter(x => x != null))].sort((a, b) => a - b);
+export function wTime(v) {
+  const m = String(v ?? '').trim().match(/^(\d{1,2}):?(\d{2})$/);
+  if (!m) return '';
+  const h = Number(m[1]) % 24, mi = Number(m[2]);
+  return mi < 60 ? `${String(h).padStart(2, '0')}:${String(mi).padStart(2, '0')}` : '';
+}
+export const sggKey = (sido, sgg) => `${String(sido).trim()} ${String(sgg).trim().replace(/(시|군|구)$/, '')}`;
+export function buildWaste(text) {
+  const R = csvRows(text); const H = R[0] || []; const ix = n => H.indexOf(n);
+  const I = Object.fromEntries(['시도명', '시군구명', '관리구역대상지역명', '생활쓰레기배출요일', '음식물쓰레기배출요일', '재활용품배출요일', '생활쓰레기배출시작시각', '생활쓰레기배출종료시각', '음식물쓰레기배출시작시각', '음식물쓰레기배출종료시각', '재활용품배출시작시각', '재활용품배출종료시각', '미수거일', '관리부서명', '관리부서전화번호', '일시적다량폐기물배출방법', '데이터기준일자'].map(n => [n, ix(n)]));
+  if (Object.values(I).some(v => v < 0)) throw new Error('waste columns');
+  const by = {};
+  for (const r of R.slice(1)) {
+    if (r.length !== H.length) continue;
+    const v = n => String(r[I[n]] ?? '').trim();
+    const e = { g: wasteDays(v('생활쓰레기배출요일')), f: wasteDays(v('음식물쓰레기배출요일')), r: wasteDays(v('재활용품배출요일')), from: wTime(v('생활쓰레기배출시작시각')), to: wTime(v('생활쓰레기배출종료시각')) };
+    if (!e.from || !e.to || !(e.g.length || e.r.length)) continue;
+    const ft = `${wTime(v('음식물쓰레기배출시작시각'))}-${wTime(v('음식물쓰레기배출종료시각'))}`, rt = `${wTime(v('재활용품배출시작시각'))}-${wTime(v('재활용품배출종료시각'))}`, gt = `${e.from}-${e.to}`;
+    const k = sggKey(v('시도명'), v('시군구명'));
+    const list = by[k] || (by[k] = []);
+    const sig = JSON.stringify([e.g, e.f, e.r, e.from, e.to]);
+    let x = list.find(y => y.sig === sig);
+    if (!x) {
+      x = { sig, ...e, off: v('미수거일').slice(0, 200), dept: v('관리부서명').slice(0, 40), tel: v('관리부서전화번호').slice(0, 20), bulky: v('일시적다량폐기물배출방법').slice(0, 200), date: v('데이터기준일자'), n: 0, areas: [] };
+      if (ft !== gt && ft !== '-') x.fft = ft;
+      if (rt !== gt && rt !== '-') x.rft = rt;
+      list.push(x);
+    }
+    x.n++;
+    const a = v('관리구역대상지역명');
+    if (a && a !== '없음') x.areas.push(a);
+    if (v('데이터기준일자') > x.date) x.date = v('데이터기준일자');
+  }
+  const out = {};
+  for (const [k, list] of Object.entries(by)) {
+    out[k] = list.sort((a, b) => b.n - a.n).slice(0, 30).map(({ sig, areas, ...x }) => ({ ...x, areas: areas.join(' / ').slice(0, 1500) }));
+  }
+  return out;
+}
+async function wasteFetch() {
+  const hd = { 'user-agent': 'Mozilla/5.0 (compatible; sari.kr)', referer: `${WASTE_SRC}/file/household_waste_info/info` };
+  const v = await fetch(`${WASTE_SRC}/file/validate/download-count`, { headers: hd });
+  const cookie = (v.headers.get('set-cookie') || '').split(/,(?=\s*\w+=)/).map(c => c.split(';')[0].trim()).filter(Boolean).join('; ');
+  const r = await fetch(`${WASTE_SRC}/file/download/household_waste_info/info`, { headers: cookie ? { ...hd, cookie } : hd });
+  if (!r.ok) throw new Error('waste http ' + r.status);
+  const text = new TextDecoder('euc-kr').decode(await r.arrayBuffer());
+  if (!text.startsWith('개방자치단체코드')) throw new Error('waste format');
+  return buildWaste(text);
+}
+async function wasteData(env) {
+  if (wasteMem && Date.now() - wasteMem.at < 6 * 3600e3) return wasteMem.map;
+  let map = await trGet(env, WASTE_KEY);
+  if (!map || typeof map !== 'object') { map = await wasteFetch(); await trPut(env, WASTE_KEY, map, 60 * 60 * 24); }
+  wasteMem = { at: Date.now(), map };
+  return map;
+}
+// 2026-07 인천 행정체제 개편 전 이름으로 저장된 주소도 찾게
+const WASTE_ALIAS = { '인천광역시 중': '인천광역시 영종', '인천광역시 동': '인천광역시 제물포', '인천광역시 서': '인천광역시 서해' };
+async function wasteRoute(url, env, h) {
+  const sido = (url.searchParams.get('sido') || '').trim(), sgg = (url.searchParams.get('sgg') || '').trim();
+  if (!/^[가-힣]{2,12}$/.test(sido) || !/^[가-힣]{1,12}$/.test(sgg)) return json({ error: 'region' }, 400, h);
+  try {
+    const map = await wasteData(env);
+    let k = sggKey(sido, sgg);
+    if (!map[k] && WASTE_ALIAS[k]) k = WASTE_ALIAS[k];
+    const entries = map[k] || [];
+    return json({ region: k, total: entries.reduce((a, b) => a + b.n, 0), entries }, 200, { ...h, 'cache-control': 'max-age=3600' });
+  } catch (e) { return upstreamErr('waste', e, h); }
+}
 
 async function noticesRoute(url, env, h) {
   if (!env.NOTICES_URL) return json({ error: 'config' }, 503, h);
@@ -522,6 +616,7 @@ export default {
     if (url.pathname === '/bus/arrivals' || url.pathname === '/bus/stops') return busRoute(url, env, h);
     if (url.pathname === '/notices') return noticesRoute(url, env, h);
     if (url.pathname === '/med/nearby' || url.pathname === '/med/detail') return medRoute(url, env, h);
+    if (url.pathname === '/waste') return wasteRoute(url, env, h);
     return json({ error: 'not_found' }, 404, h);
   },
 };
