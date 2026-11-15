@@ -278,8 +278,8 @@ async function remove(){
 function renderPreview(){
  const d=st.draft,box=$('#pv');if(!box)return;
  box.innerHTML=`<div class="phone"><div class="ph-top">‹ <span>공지·행사</span><i></i></div>
-  <div class="ph-ttl"><h3>${esc(d.title||'제목이 여기에 나와요')}</h3><span>${d.type==='event'?'행사':'공식 · 안산시'}${d.date?' · '+esc(d.date):''}${d.published?'':' · 숨김(앱에 안 보임)'}</span></div>
-  <div class="ph-sheet"><span class="cap">${d.type==='event'?'EVENT':'OFFICIAL · ANSAN CITY'}</span><div class="ph-body">${esc(d.body||'내용이 여기에 나와요.')}</div>${d.url?'<div class="ph-link">자세히 보기 ↗</div>':''}</div>
+  <div class="ph-ttl"><h3>${esc(d.title||'제목이 여기에 나와요')}</h3><span>${d.type==='event'?'행사':'공지'}${d.date?' · '+esc(d.date):''}${d.published?'':' · 숨김(앱에 안 보임)'}</span></div>
+  <div class="ph-sheet"><span class="cap">${d.type==='event'?'EVENT':'NOTICE'}</span><div class="ph-body">${esc(d.body||'내용이 여기에 나와요.')}</div>${d.url?'<div class="ph-link">자세히 보기 ↗</div>':''}</div>
   <div class="ph-foot">ansan life · Gyeonggi-do, Ansan</div></div>`;
 }
 
