@@ -49,6 +49,13 @@ const LIMITER = SB_URL && SB_SERVICE ? {
   },
 } : undefined;
 
+// 위치정보 이용사실 확인자료 (위치정보법 제16조) → public.location_log
+const LOC_LOG = SB_URL && SB_SERVICE ? {
+  async record(service) {
+    await fetch(`${SB_URL}/rest/v1/location_log`, { method: 'POST', headers: { ...svc, prefer: 'return=minimal' }, body: JSON.stringify({ service }) });
+  },
+} : undefined;
+
 const DEFAULTS = {
   ALLOWED_ORIGIN: 'https://sari.kr,https://www.sari.kr,https://gogeangs.github.io,https://eugenekimkim.github.io',
   NOTICES_URL: SB_URL ? `${SB_URL}/rest/v1/notices?select=id,type,title,body,date,url,sample,region&published=is.true&order=sort.desc,created_at.desc&limit=80` : '',
@@ -58,6 +65,7 @@ const ENV = new Proxy({}, {
   get(_, k) {
     if (k === 'TR_KV') return TR_KV;
     if (k === 'LIMITER') return LIMITER;
+    if (k === 'LOC_LOG') return LOC_LOG;
     // 대시보드에 붙여 넣을 때 딸려 온 줄바꿈·공백 제거 (복사 시 흔함)
     return (Deno.env.get(String(k)) || '').trim() || DEFAULTS[k];
   },

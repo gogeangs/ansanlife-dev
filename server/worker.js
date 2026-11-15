@@ -293,6 +293,9 @@ export function mapSeoulArrivals(items) {
     buses: [1, 2].map(i => { const x = seoulBus(b['arrmsg' + i], b['traTime' + i], b['sectOrd' + i]); return x && { ...x, crowd: crowd(b['rerdie_Div' + i], b['reride_Num' + i]), seats: null, low: String(b['busType' + i]) === '1' }; }).filter(Boolean).sort((x, y) => x.min - y.min),
   })).filter(r => r.route).sort((a, b) => (a.buses[0]?.min ?? 999) - (b.buses[0]?.min ?? 999));
 }
+/* 위치정보법 제16조: 위치정보 이용사실 확인자료 자동 기록·6개월 이상 보존.
+   좌표·IP·기기 정보는 남기지 않고 '언제, 어떤 기능'만 (env.LOC_LOG, Supabase 는 public.location_log). 기록 실패해도 서비스는 계속 */
+async function locLog(env, service) { try { if (env.LOC_LOG) await env.LOC_LOG.record(service); } catch { /* 무시 */ } }
 async function busRoute(url, env, h) {
   if (!busKey(env) && !tagoKey(env)) return json({ error: 'config' }, 503, h);
   try {
@@ -314,6 +317,7 @@ async function busRoute(url, env, h) {
     }
     const lat = Number(url.searchParams.get('lat')), lng = Number(url.searchParams.get('lng'));
     if (!(lat > 33 && lat < 39 && lng > 124 && lng < 132)) return json({ error: 'coords' }, 400, h);
+    await locLog(env, 'bus');
     if (url.searchParams.get('net') === 'seoul') {
       const items = await seoul('stationinfo/getStationByPos', { tmX: lng.toFixed(6), tmY: lat.toFixed(6), radius: '500' }, env);
       return json({ stops: mapSeoulStops(items, lat, lng) }, 200, { ...h, 'cache-control': 'max-age=300' });
@@ -409,6 +413,7 @@ async function medRoute(url, env, h) {
     }
     const lat = Number(url.searchParams.get('lat')), lng = Number(url.searchParams.get('lng'));
     if (!(lat > 33 && lat < 39 && lng > 124 && lng < 132)) return json({ error: 'coords' }, 400, h);
+    await locLog(env, kind === 'pharm' ? 'pharmacy' : 'hospital');
     // 좌표를 약 100m 단위로 맞춰 캐시가 잘 맞게 함
     const items = await nmc(MED[kind].near, { WGS84_LON: lng.toFixed(3), WGS84_LAT: lat.toFixed(3), pageNo: '1', numOfRows: '40' }, env, 600);
     return json({ kind, items: mapMed(items, kind) }, 200, { ...h, 'cache-control': 'max-age=300' });
