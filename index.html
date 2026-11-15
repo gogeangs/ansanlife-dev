@@ -715,7 +715,7 @@ const isKo=()=>st.lang==='ko';
 const cur=()=>st.stack[st.stack.length-1];
 /* 언어 기억: 다시 들어오면 나라 선택 없이 홈으로 */
 try{const l=localStorage.getItem('al_lang');if(l&&COUNTRIES.some(c=>c.lang===l)){st.lang=l;st.stack=['home'];}}catch(e){}
-function go(n){if(!SURVEY_ON&&/^(surv|sq|sdone)$/.test(n))return;if(/^w\d$|^rules$/.test(n)&&!RD().waste)return;if(/^b[1-6]$/.test(n)&&!busOn())return;st.stack.push(n);render();}
+function go(n){if(!SURVEY_ON&&/^(surv|sq|sdone)$/.test(n))return;if(/^w\d$|^rules$/.test(n)&&!wasteOn())return;if(/^b[1-6]$/.test(n)&&!busOn())return;st.stack.push(n);render();}
 function back(){if(st.stack.length>1)st.stack.pop();render();}
 function home(){st.stack=['home'];render();}
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -747,6 +747,23 @@ const RG=()=>regionOf(st.addr&&st.addr.full);
 /* 지역별 자료: 확인된 지역만 분리배출·관공서·자주 가는 곳을 염. 나머지는 '준비 중' 또는 검색 기반 */
 const REGION_DATA={'경기도 안산시':{waste:true,offices:true,places:true}};
 const RD=()=>REGION_DATA[RG().key]||{};
+/* 분리배출: 행정안전부 생활쓰레기배출정보(공공데이터 표준)가 있는 수도권 시·군·구 (2026-11-15 자료 기준, 서울 도봉구·강동구는 자료 없음)
+   배출 요일·시간은 서버 /waste 가 하루 한 번 새로 받아 줌. 키 = 시도 + 시·군·구 이름(끝의 시·군·구 뺌) */
+const WASTE_AREAS={'서울특별시':'종로 중 용산 성동 광진 동대문 중랑 성북 강북 노원 은평 서대문 마포 양천 강서 구로 금천 영등포 동작 관악 서초 강남 송파',
+ '인천광역시':'영종 제물포 미추홀 연수 남동 부평 계양 서해 검단 강화 옹진 중 동 서',
+ '경기도':'수원 성남 의정부 안양 부천 광명 평택 동두천 안산 고양 과천 구리 남양주 오산 시흥 군포 의왕 하남 용인 파주 이천 안성 김포 연천 가평 양평 화성 광주 양주 포천 여주'};
+const wKey=()=>{const tk=String(st.addr&&st.addr.full||'').trim().split(/\s+/);const a1=tk[0]||'',a2=tk[1]||'';const s2=a2.replace(/(시|군|구)$/,'');
+ return {a1,a2,k:`${a1} ${s2}`,ok:!!s2&&String(WASTE_AREAS[a1]||'').split(' ').includes(s2)};};
+const wasteOn=()=>!!RD().waste||(hasApi()&&wKey().ok);
+const WASTE_TXT={
+ en:{sub:'Apply first, then put it out',step1:['Apply first','On your city or district website, or at the community center (행정복지센터)'],noPick:'No pickup',vary:'Days can differ by neighborhood. If yours is different, set your own days below.',asOf:'Data as of',loading:'Loading collection days…',fail:'Could not load collection days. Check your connection.',findOnline:'Find how to apply',ask:'Ask the city'},
+ vi:{sub:'Đăng ký trước rồi mới bỏ',step1:['Đăng ký trước','Trên trang web của thành phố/quận hoặc tại 행정복지센터'],noPick:'Không thu gom',vary:'Ngày có thể khác nhau theo khu phố. Nếu khu bạn khác, hãy tự cài đặt bên dưới.',asOf:'Dữ liệu ngày',loading:'Đang tải lịch thu gom…',fail:'Không tải được lịch thu gom. Hãy kiểm tra kết nối.',findOnline:'Tìm cách đăng ký',ask:'Hỏi chính quyền'},
+ ko:{sub:'사전 신고 후 배출',step1:['먼저 신고하기','시·군·구청 누리집이나 행정복지센터에서 신청'],noPick:'수거 안 하는 날',vary:'동네마다 요일이 다를 수 있어요. 우리 동네가 다르면 아래에서 직접 설정하세요.',asOf:'자료 기준일',loading:'배출 요일을 불러오는 중…',fail:'배출 요일을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.',findOnline:'신청 방법 찾기',ask:'담당 부서'},
+ zh:{sub:'先申报，再扔',step1:['先申报','在市/区政府网站或 행정복지센터 申请'],noPick:'不收的日子',vary:'不同街区的日子可能不同。如果你家不一样，请在下面自己设置。',asOf:'数据日期',loading:'正在加载收集日…',fail:'无法加载收集日，请检查网络。',findOnline:'查找申请方法',ask:'咨询政府'},
+ ru:{sub:'Сначала заявка, потом вынос',step1:['Подайте заявку','На сайте города или района, либо в 행정복지센터'],noPick:'Не вывозят',vary:'Дни могут отличаться по районам. Если у вас иначе, задайте свои дни ниже.',asOf:'Данные на',loading:'Загружаем дни вывоза…',fail:'Не удалось загрузить дни вывоза. Проверьте интернет.',findOnline:'Как подать заявку',ask:'Спросить в мэрии'},
+ uz:{sub:'Avval ariza, keyin chiqarish',step1:['Avval ariza bering','Shahar yoki tuman saytida yoki 행정복지센터 da'],noPick:'Olib ketilmaydi',vary:'Kunlar mahallaga qarab farq qilishi mumkin. Sizniki boshqacha bo‘lsa, quyida o‘zingiz sozlang.',asOf:'Maʼlumot sanasi',loading:'Yig‘ish kunlari yuklanmoqda…',fail:'Yig‘ish kunlarini yuklab bo‘lmadi. Internetni tekshiring.',findOnline:'Ariza berish usuli',ask:'Hokimiyatdan so‘rang'},
+ mn:{sub:'Эхлээд мэдүүлж, дараа нь гаргана',step1:['Эхлээд мэдүүлэх','Хот, дүүргийн вэб сайт эсвэл 행정복지센터-т'],noPick:'Ачихгүй өдөр',vary:'Хорооноос хамааран өдөр өөр байж болно. Танайх өөр бол доор өөрөө тохируулна уу.',asOf:'Мэдээллийн огноо',loading:'Хог ачих өдрүүдийг ачаалж байна…',fail:'Хог ачих өдрийг ачаалж чадсангүй. Интернэтээ шалгана уу.',findOnline:'Мэдүүлэх арга хайх',ask:'Захиргаанаас асуух'}};
+const WT=()=>WASTE_TXT[st.lang]||WASTE_TXT.en;
 const capArea=()=>['경기도','서울특별시','인천광역시'].includes(RG().a1); // 수도권 통합환승·경기 요금 안내는 수도권에서만
 const BUS_OFF=[]; // 버스: 경기=경기도 API, 서울=서울시 API, 그 외=국토교통부 TAGO
 const busOn=()=>!!RG().a1&&!BUS_OFF.includes(RG().a1); // 경기 = 경기도 버스 API, 그 외 = 전국 TAGO
@@ -758,7 +775,7 @@ const RNAME=(l=st.lang||'en')=>{const r=RG();return l==='ko'?r.ko:r[l]||r.en;};
 const REGION_TXT={
  en:{welcome:r=>`Welcome to ${r.en}`,homeT:r=>`Life in ${r.en}`,st2:r=>`Checking ${r.en} rules`,cityDefault:r=>`Use ${r.en} default`,cityNote:r=>`Based on ${r.en} public data · your building may differ`,addHome:()=>`Add ${brand('en')} to home screen`,notOfficial:()=>`${brand('en')} is not an official government app. Each notice links to its original source.`,onlyAnsan:()=>'Only addresses in Korea are supported.'},
  vi:{welcome:r=>`Chào mừng đến ${r.vi}`,homeT:r=>`Cuộc sống ở ${r.vi}`,st2:r=>`Kiểm tra quy định của ${r.vi}`,cityDefault:r=>`Dùng mặc định của ${r.vi}`,cityNote:r=>`Theo dữ liệu công của ${r.vi} · tòa nhà của bạn có thể khác`,addHome:()=>`Thêm ${brand('vi')} vào màn hình chính`,notOfficial:()=>`${brand('vi')} không phải ứng dụng chính thức của cơ quan nhà nước. Mỗi thông báo có liên kết đến nguồn gốc.`,onlyAnsan:()=>'Chỉ hỗ trợ địa chỉ tại Hàn Quốc.'},
- ko:{welcome:r=>`Welcome to ${r.en}`,homeT:r=>`${r.ko} 생활 안내`,st2:r=>`${r.koFull} 배출 기준 확인`,cityDefault:r=>`${r.koFull} 기본값 사용`,cityNote:r=>`${r.koFull} 생활쓰레기 배출 공공데이터 기준 · 단지별 규칙이 다를 수 있어요`,addHome:()=>`${brand('ko')} 홈 화면에 추가`,notOfficial:()=>`${brand('ko')}는 정부·지자체 공식 앱이 아니에요. 공지마다 원문 출처를 함께 보여드려요.`,onlyAnsan:()=>'대한민국 주소만 지원해요.'},
+ ko:{welcome:r=>`Welcome to ${r.en}`,homeT:r=>`${r.ko} 생활 안내`,st2:r=>`${r.koFull} 배출 기준 확인`,cityDefault:r=>`${r.koFull} 기본값 사용`,cityNote:r=>`${/(특별시|광역시|특별자치시)$/.test(r.a1)?`${r.ko} ${wKey().a2}`:r.koFull} 생활쓰레기 배출 공공데이터 기준 · 단지별 규칙이 다를 수 있어요`,addHome:()=>`${brand('ko')} 홈 화면에 추가`,notOfficial:()=>`${brand('ko')}는 정부·지자체 공식 앱이 아니에요. 공지마다 원문 출처를 함께 보여드려요.`,onlyAnsan:()=>'대한민국 주소만 지원해요.'},
  zh:{welcome:r=>`欢迎来到${r.zh}`,homeT:r=>`${r.zh}生活`,st2:r=>`正在查询${r.zh}规定`,cityDefault:r=>`使用${r.zh}默认设置`,cityNote:r=>`依据${r.zh}公共数据 · 你的楼可能有所不同`,addHome:()=>`将${brand('zh')}添加到主屏幕`,notOfficial:()=>`${brand('zh')}不是政府官方应用。每条公告都附有原文出处。`,onlyAnsan:()=>'仅支持韩国境内的地址。'},
  ru:{welcome:r=>`Добро пожаловать в ${r.ru}`,homeT:r=>`Жизнь в ${ruIn(r.ru)}`,st2:r=>`Проверяем правила: ${r.ru}`,cityDefault:r=>`Как принято: ${r.ru}`,cityNote:r=>`По открытым данным: ${r.ru} · в вашем доме может быть иначе`,addHome:()=>`Добавить ${brand('ru')} на главный экран`,notOfficial:()=>`${brand('ru')} — не официальное государственное приложение. У каждого объявления есть ссылка на источник.`,onlyAnsan:()=>'Поддерживаются только адреса в Корее.'},
  uz:{welcome:r=>`${r.uz}ga xush kelibsiz`,homeT:r=>`${r.uz}da hayot`,st2:r=>`${r.uz} qoidalari tekshirilmoqda`,cityDefault:r=>`${r.uz} standartini ishlatish`,cityNote:r=>`${r.uz} ochiq ma'lumotlari asosida · binongizda farq qilishi mumkin`,addHome:()=>`${brand('uz')}’ni bosh ekranga qo‘shish`,notOfficial:()=>`${brand('uz')} — davlat idorasining rasmiy ilovasi emas. Har bir e’longa asl manba havolasi berilgan.`,onlyAnsan:()=>'Faqat Koreya manzillari qo‘llab-quvvatlanadi.'},
@@ -904,10 +921,27 @@ const koSub=s=>isKo()||!s?'':`<span class="kr micro muted">${s}</span>`;
 const CITY={g:[0,1,2,3,4,5],f:[0,1,2,3,4,5],r:[1,2,4,5],from:'20:00',to:'06:00'};
 const validRules=r=>!!r&&['g','f','r'].every(k=>Array.isArray(r[k])&&r[k].every(d=>Number.isInteger(d)&&d>=0&&d<=6))&&[r.from,r.to].every(v=>/^\d{2}:\d{2}$/.test(v||''));
 st.rules=null;try{const r=JSON.parse(localStorage.getItem('al_rules')||'null');if(validRules(r))st.rules=r}catch(e){}
-const rules=()=>st.rules||CITY;
+/* 지역 배출 자료 (서버 /waste). st.wz={k,at,entries}. 안산은 앱에 든 값(CITY)을 기본으로 */
+st.wz=null;try{const z=JSON.parse(localStorage.getItem('al_wz')||'null');if(z&&z.k&&Array.isArray(z.entries))st.wz=z}catch(e){}
+const wzFor=()=>{const z=st.wz;return z&&z.k===wKey().k?z:null;};
+// 같은 시·군·구 안에서 동네마다 다르면 주소의 동·읍·면으로 고르고, 못 찾으면 가장 많이 쓰는 것
+function wEntry(){const z=wzFor();if(!z||!z.entries.length)return null;const es=z.entries;
+ const tk=String(st.addr&&st.addr.full||'').split(/\s+/);const cands=[st.addr&&st.addr.dong,...tk.slice(2).filter(w=>/(동|가|읍|면|리)$/.test(w))].filter(Boolean).map(x=>String(x).replace(/[()]/g,''));
+ const norm=v=>String(v||'').replace(/\s+/g,'');
+ for(const c of cands){const e=es.find(e=>e.areas&&norm(e.areas).includes(norm(c)));if(e)return {...e,match:true};}
+ return {...es[0],match:es.length===1};}
+const wVary=()=>{const z=wzFor();const e=wEntry();return !!(z&&z.entries.length>1&&e&&!e.match);};
+function cityRules(){const e=wEntry();if(e&&/^\d{2}:\d{2}$/.test(e.from)&&/^\d{2}:\d{2}$/.test(e.to))return {g:e.g,f:e.f,r:e.r,from:e.from,to:e.to};return RD().waste?CITY:null;}
+const wReady=()=>!!cityRules();
+const myRules=()=>st.rules&&(st.rules.k?st.rules.k===wKey().k:wKey().k==='경기도 안산')?st.rules:null; // 예전에 저장한 값(k 없음)은 안산 것
+const rules=()=>myRules()||cityRules()||{g:[],f:[],r:[],from:'',to:''};
+async function loadWaste(force){if(!hasApi()||!wKey().ok)return;const w=wKey();const z=wzFor();if(z&&!force&&Date.now()-(z.at||0)<864e5)return;if(st.wzLoading===w.k)return;if(!force&&st.wzErr===w.k)return;st.wzLoading=w.k;st.wzErr=false;
+ try{const j=await api(`/waste?sido=${encodeURIComponent(w.a1)}&sgg=${encodeURIComponent(w.a2)}`);const nz={k:w.k,at:Date.now(),entries:Array.isArray(j.entries)?j.entries:[]};st.wz=nz;try{localStorage.setItem('al_wz',JSON.stringify(nz))}catch(e){}}
+ catch(e){st.wzErr=w.k;setTimeout(()=>{if(st.wzErr===w.k)st.wzErr=false},60000)}finally{st.wzLoading=null}
+ if(/^(w1|rules|home)$/.test(cur()))render();}
 const sched=d=>{const R=rules();return {g:R.g.includes(d),f:R.f.includes(d),r:R.r.includes(d)}};
 const span=()=>`${rules().from} – ${rules().to}`;
-function saveRules(r){st.rules=r;try{r?localStorage.setItem('al_rules',JSON.stringify(r)):localStorage.removeItem('al_rules')}catch(e){}}
+function saveRules(r){if(r)r={...r,k:wKey().k};st.rules=r;try{r?localStorage.setItem('al_rules',JSON.stringify(r)):localStorage.removeItem('al_rules')}catch(e){}}
 function nextNight(from,k='r'){for(let i=1;i<=7;i++){const d=(from+i)%7;if(sched(d)[k])return d}return from}
 
 /* ---------- screens ---------- */
@@ -970,9 +1004,9 @@ SCR.priv=()=>{const p=PT();const on=gpsPref()==='on';
 SCR.home=()=>{const t=T();const icons=['trash','bus','office','med','mega','survey'];const to=['w1','b1','offices','hosp','news','surv'];const ko=S.ko.items;
  return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu,{menu:true,right:langPill()})}
  ${ttl(t.homeT,`<span>${fmtDay(new Date())}</span>`,{eye:t.welcome})}
- <div class="sheet"><nav class="toc">${t.items.map((x,i)=>{const off=(i===5&&!SURVEY_ON)||(i===0&&!RD().waste)||(i===1&&!busOn());return `<button ${off?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:off?`<em class="adnote">${(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중')} · ${esc(RNAME())}</em>`:''}</span><span class="n">0${i+1}</span></button>`}).join('')}</nav>
+ <div class="sheet"><nav class="toc">${t.items.map((x,i)=>{const off=(i===5&&!SURVEY_ON)||(i===0&&!wasteOn())||(i===1&&!busOn());return `<button ${off?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:off?`<em class="adnote">${(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중')} · ${esc(RNAME())}</em>`:''}</span><span class="n">0${i+1}</span></button>`}).join('')}</nav>
  <div style="margin-top:8px;display:flex;flex-direction:column;gap:12px">${installCard()}${adSlot()}</div>
- ${RD().waste?`<div class="quote"><div class="col" style="gap:6px"><span class="serif" style="font-size:16px">${t.tipT}</span><span class="small muted" style="line-height:1.55">${t.tipB}</span></div></div>`:''}
+ ${wasteOn()?`<div class="quote"><div class="col" style="gap:6px"><span class="serif" style="font-size:16px">${t.tipT}</span><span class="small muted" style="line-height:1.55">${t.tipB}</span></div></div>`:''}
  <button class="row tiny muted" data-go="priv" style="gap:6px;align-self:flex-start;padding:4px 0">${ic('lock',13,'#6E7472')}<span style="text-decoration:underline">${PT().row}</span></button>
  </div>${foot}</div>`;};
 
@@ -985,18 +1019,20 @@ SCR.w1=()=>{const t=T();const d=new Date().getDay();const s=sched(d);const any=s
  <div class="sheet">
   <div class="card" style="background:var(--deep);color:#fff;border-radius:22px;padding:16px 18px;display:flex;flex-direction:column;gap:8px">
    <div class="row" style="justify-content:space-between"><span class="row cap" style="color:rgba(255,255,255,.8);gap:6px">${ic('moon',14,'#fff')}${t.tonight} · ${DAYLONG[st.lang][d]}</span><span class="kr tiny" style="opacity:.7">${any?'오늘 밤 배출 가능':'오늘 밤 수거 없음'}</span></div>
-   <span class="serif" style="font-size:28px">${any?span():t.tonightNone}</span>
+   <span class="serif" style="font-size:${wReady()?28:16}px">${!wReady()?(st.wzErr===wKey().k||wzFor()?WT().fail:WT().loading):any?span():t.tonightNone}</span>
    <div class="chips">${[['g',t.gen,'#C9D2D0'],['f',t.food,'#EE8A3C'],['r',t.rec,'#4E8F87']].map(([k,n,c])=>`<span class="chip" style="background:rgba(255,255,255,.12);opacity:${s[k]?1:.45}"><span class="dot" style="background:${c}"></span>${n}${s[k]?ic('check',11,'#fff',2.4):ic('x',11,'#fff',2.4)}</span>`).join('')}</div>
   </div>
+  ${!myRules()&&wVary()?`<div class="row tiny" style="gap:8px;background:rgba(238,138,60,.12);border-radius:14px;padding:10px 12px;align-items:flex-start">${ic('spot',14,'#C2621C')}<span>${WT().vary}</span></div>`:''}
   ${h2(t.weekT,'이번 주 배출 요일')}
   <div class="week">${[0,1,2,3,4,5,6].map(i=>{const x=sched(i);const none=!x.g&&!x.r;return `<div class="day ${i===d?'today':''}"><span>${L[i]}</span><span class="dots">${none?`<span class="micro">${t.rest}</span>`:[['g','#3A4442'],['f','#EE8A3C'],['r','#4E8F87']].map(([k,c])=>`<i style="background:${x[k]?c:'#E6E8E6'}"></i>`).join('')}</span></div>`}).join('')}</div>
   <div class="row tiny muted" style="gap:12px;flex-wrap:wrap"><span class="row" style="gap:5px"><span class="dot" style="background:#3A4442;width:7px;height:7px"></span>${t.gen}</span><span class="row" style="gap:5px"><span class="dot" style="background:#EE8A3C;width:7px;height:7px"></span>${t.food}</span><span class="row" style="gap:5px"><span class="dot" style="background:#4E8F87;width:7px;height:7px"></span>${t.rec}</span><span>· ${span()}</span></div>
-  <button class="row" data-go="rules" style="border:1px dashed rgba(30,34,33,.25);border-radius:18px;padding:10px 14px;text-align:left">${dotI('home',st.rules?'var(--deep)':'var(--bg)',st.rules?'#fff':'#22393A',32)}<span class="col grow"><span class="b" style="font-size:13px">${st.rules?`<span class="cap" style="color:var(--accent)">${t.myBldg}</span> `:''}${t.myRules}</span><span class="tiny muted">${t.myRulesS}</span></span>${ic('arrow',16,'#6E7472')}</button>
+  <button class="row" data-go="rules" style="border:1px dashed rgba(30,34,33,.25);border-radius:18px;padding:10px 14px;text-align:left">${dotI('home',myRules()?'var(--deep)':'var(--bg)',myRules()?'#fff':'#22393A',32)}<span class="col grow"><span class="b" style="font-size:13px">${myRules()?`<span class="cap" style="color:var(--accent)">${t.myBldg}</span> `:''}${t.myRules}</span><span class="tiny muted">${t.myRulesS}</span></span>${ic('arrow',16,'#6E7472')}</button>
   <div>${types.map(([k,n,ko,b,c])=>`<button class="listrow" data-go="w5"><span class="bag">${bag(c)}</span><span class="col grow"><span class="row" style="gap:6px;align-items:baseline"><span class="serif" style="font-size:15px">${n}</span>${koSub(ko)}</span><span class="tiny muted">${b}</span></span>${ic('arrow',16,'#6E7472')}</button>`).join('')}
-  <button class="listrow" data-go="w6"><span class="bag">${ic('sofa',18,'#22393A')}</span><span class="col grow"><span class="row" style="gap:6px;align-items:baseline"><span class="serif" style="font-size:15px">${t.bulky}</span>${koSub('대형폐기물')}</span><span class="tiny muted">${t.bulkyS}</span></span>${ic('arrow',16,'#6E7472')}</button></div>
+  <button class="listrow" data-go="w6"><span class="bag">${ic('sofa',18,'#22393A')}</span><span class="col grow"><span class="row" style="gap:6px;align-items:baseline"><span class="serif" style="font-size:15px">${t.bulky}</span>${koSub('대형폐기물')}</span><span class="tiny muted">${RD().waste?t.bulkyS:WT().sub}</span></span>${ic('arrow',16,'#6E7472')}</button></div>
+  ${(()=>{const e=!myRules()&&wEntry();if(!e||RD().waste)return '';const off=String(e.off||'').trim();return `<div class="col tiny muted" style="gap:4px">${off&&!/^(없음|-|해당없음)$/.test(off)?`<span><b>${WT().noPick}</b> · <span class="kr">${esc(off)}</span></span>`:''}${e.tel?`<span>${WT().ask} · <span class="kr">${esc(e.dept||'')}</span> <a href="tel:${esc(e.tel.replace(/[^\d-]/g,''))}" style="color:inherit;user-select:all">${esc(e.tel)}</a></span>`:''}</div>`;})()}
   <div class="spacer"></div>
   <div class="acts"><button class="btn line sq" data-go="w5" aria-label="${t.lookT}">${ic('search',18)}</button><button class="btn dark" data-go="w2">${ic('camera',18,'#fff')}${t.ask}</button></div>
-  <span class="micro muted">${st.rules?`${t.myBldg} · ${t.myRules}`:t.cityNote}</span>
+  <span class="micro muted">${myRules()?`${t.myBldg} · ${t.myRules}`:t.cityNote+(wEntry()&&wEntry().date?` · ${WT().asOf} ${wEntry().date}`:'')}</span>
  </div>${foot}</div>`;};
 
 const bottleSVG=`<svg viewBox="0 0 110 230" width="110" height="230" aria-hidden="true" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)"><defs><linearGradient id="bg1" x1="0" x2="1"><stop offset="0" stop-color="#BFD8E0"/><stop offset=".5" stop-color="#EAF4F7"/><stop offset="1" stop-color="#A9C6CF"/></linearGradient></defs><rect x="40" y="0" width="30" height="20" rx="4" fill="#3E7FB6"/><path d="M42 20h26l6 30c18 10 26 22 26 40v124a12 12 0 0 1-12 12H22a12 12 0 0 1-12-12V90c0-18 8-30 26-40z" fill="url(#bg1)"/><rect x="10" y="110" width="90" height="46" fill="#5BA37A"/><path d="M26 133h58" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg>`;
@@ -1057,14 +1093,19 @@ SCR.w5=()=>{const t=T();const col={gen:'#3A4442',food:'#EE8A3C',rec:'#4E8F87',ba
   <div class="spacer"></div>
   <div class="row tiny muted" style="align-items:flex-start;margin-top:12px"><span class="dot" style="background:var(--accent);width:6px;height:6px;margin-top:5px"></span><span style="line-height:1.5">${t.noteBat}</span></div>
  </div>${foot}</div>`;};
-SCR.w6=()=>{const t=T();return `<div class="scr ${isKo()?'ko':''}">${nav(t.wasteT)}${ttl(t.bulkyT,koSub('대형폐기물 배출 · 사전 신고'))}
+SCR.w6=()=>{const t=T();const A=!!RD().waste;const e=A?null:wEntry();const W=WT();const steps=A?t.bulkySteps:[W.step1,...t.bulkySteps.slice(1)];
+ const bk=e&&String(e.bulky||'').trim();const bkOk=bk&&!/^(없음|-|해당없음|해당사항없음|미운영|별도안내|자체 처리)$/.test(bk)&&bk.length>4;const w=wKey();
+ return `<div class="scr ${isKo()?'ko':''}">${nav(t.wasteT)}${ttl(t.bulkyT,koSub('대형폐기물 배출 · 사전 신고'))}
  <div class="sheet">
-  <div class="ticket"><div class="col grow"><span class="cap">${t.pickDays}</span><span class="serif" style="font-size:18px">${t.monThu}</span>${koSub('매주 월·목 수거')}</div><span class="dash"></span><div class="col" style="align-items:center"><span class="cap">${t.askQ}</span><span class="small b" style="user-select:all">1666-1234</span></div></div>
+  ${A?`<div class="ticket"><div class="col grow"><span class="cap">${t.pickDays}</span><span class="serif" style="font-size:18px">${t.monThu}</span>${koSub('매주 월·목 수거')}</div><span class="dash"></span><div class="col" style="align-items:center"><span class="cap">${t.askQ}</span><span class="small b" style="user-select:all">1666-1234</span></div></div>`
+   :`<div class="ticket"><div class="col grow"><span class="serif" style="font-size:17px">${W.sub}</span>${koSub(`${esc(w.a2)} · 사전 신고 후 배출`)}</div>${e&&e.tel?`<span class="dash"></span><div class="col" style="align-items:center"><span class="cap">${t.askQ}</span><a class="small b" href="tel:${esc(e.tel.replace(/[^\d-]/g,''))}" style="color:inherit;user-select:all">${esc(e.tel)}</a></div>`:''}</div>`}
+  ${bkOk?`<div class="tiny muted kr" style="background:rgba(30,34,33,.05);border-radius:14px;padding:10px 12px">${esc(bk)}</div>`:''}
   ${h2(t.how)}
-  <div>${t.bulkySteps.map(([a,b],i)=>`<div class="tl"><div class="rail2"><span class="dot" style="width:10px;height:10px;margin-top:5px;background:${i?'var(--ink)':'var(--accent)'}"></span>${i<3?'<span class="ln" style="background:rgba(30,34,33,.25);width:1px"></span>':''}</div><div class="col" style="padding-bottom:14px"><span class="row" style="gap:8px;align-items:baseline"><span class="it muted" style="font-size:13px">0${i+1}</span><span class="serif" style="font-size:15px">${a}</span></span><span class="small muted">${b}</span></div></div>`).join('')}</div>
+  <div>${steps.map(([a,b],i)=>`<div class="tl"><div class="rail2"><span class="dot" style="width:10px;height:10px;margin-top:5px;background:${i?'var(--ink)':'var(--accent)'}"></span>${i<3?'<span class="ln" style="background:rgba(30,34,33,.25);width:1px"></span>':''}</div><div class="col" style="padding-bottom:14px"><span class="row" style="gap:8px;align-items:baseline"><span class="it muted" style="font-size:13px">0${i+1}</span><span class="serif" style="font-size:15px">${a}</span></span><span class="small muted">${b}</span></div></div>`).join('')}</div>
   <div class="row" style="background:rgba(78,143,135,.12);border-radius:16px;padding:12px 14px">${dotI('fridge','#4E8F87','#fff',36)}<div class="col"><span class="b" style="font-size:13px">${t.freeT}</span><span class="kr micro muted">대형폐가전 무상 방문수거 · <span style="user-select:all">1599-0903</span></span></div></div>
   <div class="spacer"></div>
-  <a class="btn dark" href="https://www.ansan.go.kr/waste/pc/web/order/insertAgreeForm.do" target="_blank" rel="noopener">${ic('globe',18,'#fff')}${t.applyOnline}${ic('ext',14,'#fff')}</a>
+  ${A?`<a class="btn dark" href="https://www.ansan.go.kr/waste/pc/web/order/insertAgreeForm.do" target="_blank" rel="noopener">${ic('globe',18,'#fff')}${t.applyOnline}${ic('ext',14,'#fff')}</a>`
+   :`<a class="btn dark" href="https://search.naver.com/search.naver?query=${encodeURIComponent(`${w.a1} ${w.a2} 대형폐기물 배출 신고`)}" target="_blank" rel="noopener">${ic('globe',18,'#fff')}${W.findOnline}${ic('ext',14,'#fff')}</a>`}
  </div>${foot}</div>`;};
 
 /* transit */
@@ -1534,7 +1575,7 @@ function locSheet(){const t=T();const o=document.createElement('div');o.classNam
   <div class="card row small" style="padding:10px 12px"><span class="dot" style="background:var(--accent)"></span><span class="col"><span class="cap">${t.locCur}</span><span class="kr b">${addrLabel()}</span></span></div></div>`;
  const msg=(m,err)=>{const e=o.querySelector('#lmsg');e.hidden=!m;e.textContent=m||'';e.classList.toggle('err',!!err)};
  const focusAddr=()=>{const i=o.querySelector('#laddr');try{i.focus()}catch(e){}};
- const done=a=>{saveAddr(a);o.remove();if((/^w\d$|^rules$/.test(cur())&&!RD().waste)||(/^b[1-6]$/.test(cur())&&!busOn()))st.stack=['home'];render();toast(T().locSaved);};
+ const done=a=>{saveAddr(a);o.remove();if((/^w\d$|^rules$/.test(cur())&&!wasteOn())||(/^b[1-6]$/.test(cur())&&!busOn()))st.stack=['home'];render();toast(T().locSaved);};
  o.querySelector('#lgps').addEventListener('click',async()=>{const t=T();
   if(!navigator.geolocation||!window.isSecureContext){msg(t.gpsDenied,1);focusAddr();return}
   if(!await askGps(true)){msg(PT().noS);focusAddr();return}
@@ -1582,6 +1623,7 @@ function render(){syncHist();syncBrand();clearInterval(bgTimer);clearTimeout(sca
  if(n==='home'&&okKey(NAVER_KEY)){const pre=()=>loadNaver();window.requestIdleCallback?requestIdleCallback(pre,{timeout:3000}):setTimeout(pre,1500);} // 지도 스크립트 미리 받아 두기 (병원·버스 지도 첫 표시 4~5초 → 단축)
  if(n==='b2'){const f=document.getElementById('destf');f&&f.addEventListener('submit',e=>{e.preventDefault();const v=document.getElementById('dest').value.trim().slice(0,80);if(v)routeTo(v,/(로|길|동|구)\s*\d/.test(v)?(/안산/.test(v)?v:'경기도 안산시 '+v):null);});}
  if(n==='news'&&(hasApi()||hasSb()))loadNews();
+ if(/^(home|w1|w6|rules)$/.test(n)&&wasteOn()&&!RD().waste)loadWaste();
  if(hasApi()){if(n==='b1')loadStops();if(n==='b4')loadArr();}
  // 위치가 필요한 기능에 들어갈 때만 위치 설정을 요청 (버스: 집 주소 기준 주변 정류장). 집 주소를 아직 안 정했으면 앱을 열 때마다 한 번 (주소 입력 또는 현재 위치)
  if(n==='b1'&&!addrSaved()&&!st.locAsked){st.locAsked=true;setTimeout(()=>{if(cur()==='b1'&&!document.querySelector('.sheetover'))locSheet();},350);}
@@ -1628,8 +1670,8 @@ app.addEventListener('click',e=>{const el=e.target.closest('[data-sel],[data-go]
  const a=el.dataset.act;
  if(a==='back')back();else if(a==='home')home();else if(a==='loc')locSheet();
  else if(a==='sample'){stopCam();st.photo=null;go('w3');}
- else if(a==='rsave'){const R=st.rulesDraft;const tm=(id,d)=>{const v=document.getElementById(id).value;return /^\d{2}:\d{2}$/.test(v)?v:d};R.from=tm('rfrom','20:00');R.to=tm('rto','06:00');if(!validRules(R))return;saveRules(JSON.stringify(R)===JSON.stringify(CITY)?null:R);back();toast(T().rulesSaved);}
- else if(a==='rcity'){st.rulesDraft=JSON.parse(JSON.stringify(CITY));render();}
+ else if(a==='rsave'){const R=st.rulesDraft;const tm=(id,d)=>{const v=document.getElementById(id).value;return /^\d{2}:\d{2}$/.test(v)?v:d};R.from=tm('rfrom','20:00');R.to=tm('rto','06:00');if(!validRules(R))return;saveRules((({k,...x})=>JSON.stringify(x))(R)===JSON.stringify(cityRules())?null:R);back();toast(T().rulesSaved);}
+ else if(a==='rcity'){st.rulesDraft=JSON.parse(JSON.stringify(cityRules()||CITY));render();}
  else if(a==='samplestop'){st.stop=null;go('b4');}
  else if(a==='orig'){st.showOrig=!st.showOrig;render();}
  else if(a==='install'){if(installEvt){installEvt.prompt();installEvt.userChoice.finally(()=>{installEvt=null;render();});}}
