@@ -46,7 +46,13 @@
    SUPABASE_URL=... SUPABASE_ANON_KEY=... NAVER_KEY=... python3 build.py
    ```
 
-**무료 플랜 주의:** 7일 동안 요청이 없으면 프로젝트가 일시 정지됩니다(대시보드에서 Resume). 정식 출시 때는 Pro($25/월) 권장.
+**무료 플랜 주의:** 7일 동안 요청이 없으면 프로젝트가 일시 정지됩니다(대시보드에서 Resume). 그래서 저장소 `main` 브랜치의 GitHub Actions `Supabase keep-alive`(.github/workflows/supabase-keepalive.yml)가 매일 09:41(KST) 공개 공지 목록을 한 번 읽습니다. 정식 출시 때는 Pro($25/월) 권장 — 바꾸면 이 워크플로는 지워도 됩니다.
+
+## 4. 운영 정리 (2026-11-15)
+
+- `supabase/hardening.sql` 실행됨: Security Advisor 경고 정리(함수 search_path 고정, `is_admin()` 은 로그인 사용자만, Supabase 기본 `rls_auto_enable()` 비공개)
+- 매일 03:23(KST) `cleanup_edge_tables()` 자동 실행 (pg_cron 작업 `ansanlife-cleanup`) — 만료된 번역 캐시·하루 지난 접속 횟수 기록 삭제
+- 남겨 둔 Advisor 항목(의도): 설문 익명 insert 정책, `kv_cache`·`rate_hits` 정책 없음(API 서버 전용), 유출 비밀번호 차단(Pro 기능)
 
 ## 2. 공지 관리 페이지 (admin.html) — 추천
 
