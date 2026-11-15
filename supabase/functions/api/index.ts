@@ -252,7 +252,7 @@ async function busRoute(url, env, h) {
   try {
     if (url.pathname === '/bus/arrivals') {
       const id = url.searchParams.get('stationId') || '';
-      const t = id.match(/^(\d{1,5}):([A-Z]{2,5}\d{4,12})$/);
+      const t = id.match(/^(\d{1,5}):([A-Z]{2,5}\d{1,12})$/);
       if (t) {
         const items = await tago('ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList', { cityCode: t[1], nodeId: t[2], numOfRows: '60' }, env);
         return json({ stationId: id, at: Date.now(), arrivals: mapTagoArrivals(items) }, 200, { ...h, 'cache-control': 'max-age=15' });
