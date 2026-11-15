@@ -229,7 +229,10 @@ const distM = (a, b, c, d) => { const R = 6371000, r = x => x * Math.PI / 180; c
 export function mapTagoStops(items, lat, lng) {
   return items.map(s => ({ id: s.citycode && s.nodeid ? `${s.citycode}:${s.nodeid}` : '', name: String(s.nodenm ?? ''), no: String(s.nodeno ?? '').trim(), lat: num(s.gpslati), lng: num(s.gpslong) }))
     .filter(s => s.id).map(s => ({ ...s, dist: s.lat != null && s.lng != null ? distM(lat, lng, s.lat, s.lng) : null }))
-    .sort((a, b) => (a.dist ?? 1e9) - (b.dist ?? 1e9)).slice(0, 8);
+    .sort((a, b) => (a.dist ?? 1e9) - (b.dist ?? 1e9))
+    // 인접 도시 자료에 같은 정류소가 겹쳐 들어 있음(예: 대전시청이 대전·세종 둘 다) → 이름+번호(없으면 좌표)가 같으면 가까운 하나만
+    .filter((x, i, a) => a.findIndex(y => y.name === x.name && (x.no ? y.no === x.no : Math.abs((y.lat ?? 0) - (x.lat ?? 0)) < 0.0003 && Math.abs((y.lng ?? 0) - (x.lng ?? 0)) < 0.0003)) === i)
+    .slice(0, 8);
 }
 export function mapTagoArrivals(items) {
   const by = new Map();
