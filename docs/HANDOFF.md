@@ -13,13 +13,51 @@
 - **언어:** 한국어 · 영어 · 베트남어 운영 / 중국어 · 러시아어 · 우즈베크어 · 몽골어는 "준비 중"
 - **배경:** 안산시 정부사업 수행 중. 급여·노동법 영역(어서와, 오퍼센트ai)은 이 서비스 범위에서 제외
 
+## 2026-11-13 ~ 11-15 변경 요약 (유진 님께)
+
+브랜치 `gogeangs/ansanlife-dev` › `feature/camera-gps` (서비스 중인 sari.kr 의 원본). 앱 테스트(Playwright) 145개 통과 후 배포.
+
+**1. QA 문서 반영 (11-13 ~ 14)**
+- 유진 님 QA PDF 항목 수정: 도착정보 없음/운행 종료 구분, 언어 기억, 휴대폰 뒤로가기, 시내버스 빈자리·단수형, 몽골어·우즈베크어 날짜, 예시 광고 숨김, 관공서 정보·핀, 지도 로딩, 낮/밤 환승 안내, 병원·약국 이름 로마자 병기, 진료과목 7개 언어
+- 외국어 진료 병원 표시: KHIDI 데이터(`data/lang_hospitals.json`) — 단원병원, 한도병원, 시화병원, 고려대 안산병원, 안산21세기병원(11-15 추가, 영·중·러)
+
+**2. 전국 확장 (11-15)**
+- 지역은 저장된 집 주소로 판별(`regionOf`): 특별·광역시는 시 단위, 도는 시·군 단위. 앱 이름·제목이 지역에 따라 바뀜(수원살이 / Suwon Life / 水原生活 …, 7개 언어)
+- 기능별로 자료 있는 지역만 엶. 없는 곳은 메뉴에 "준비 중 · 지역명"
+- 공지에 지역 구분: Supabase `notices.region`(빈 값 = 전국). 관리 페이지에 지역 입력칸
+- 관공서: 안산은 기존 3곳, 다른 지역은 시·군·구청·외국인지원센터 검색 + 출입국 1345
+
+**3. 버스: 전국 (11-15)**
+- 경기 = 경기도 버스 API(기존), 서울 = 서울특별시 정류소정보조회(data.go.kr 15000303, `net=seoul`, 정류소 id `SEL:arsId`), 그 밖 = 국토교통부 TAGO(15098534·15098530, `net=tago`, id `도시코드:정류소ID`)
+- 새 Secret `TAGO_KEY`(개인 서비스키, 서울 API 도 같은 키). 경기 밖은 좌석·혼잡 정보 없음
+- 수도권 통합환승·요금 안내는 수도권 주소에서만
+
+**4. 분리배출: 수도권 66개 시·군·구 (11-15)**
+- 서버 `/waste?sido=&sgg=` — 행정안전부 생활쓰레기배출정보(공공데이터 표준, data.go.kr 15025450)를 하루 한 번 받아 시·군·구별로 묶어 캐시(`kv_cache` 'waste/v1'). 파일 서버가 해외 IP 를 막아서 서울 리전 Edge Function 에서만 받아짐
+- 같은 시·군·구에서 동네마다 다르면 주소의 동·읍·면으로 고르고, 못 찾으면 "동네마다 다를 수 있어요" 안내. 수거 안 하는 날·담당 부서 전화·자료 기준일 표시
+- 표준데이터에 없는 서울 도봉구·강동구는 서버 `WASTE_EXTRA` 에 구청 누리집 기준으로 직접 넣음
+- 안산은 앱에 든 값(`CITY`) 그대로, 대형폐기물 안내도 안산 것 유지. 다른 지역 대형폐기물은 일반 안내 + 지역 신청 방법 검색
+- "우리 단지 배출 요일"은 지역별로 저장(`al_rules.k`)
+
+**5. 개인정보·위치정보 (11-15)**
+- 위치기반서비스사업 신고 제12284호(2026-11-12, 방송미디어통신위원회)
+- `privacy.html`·`location-terms.html` 확정, 2026-11-15 시행. 보호책임자 김지원 매니저(biz@project30s.co.kr), 주소 한양대학로 55 창업보육센터 524호(이전 예정 주소)
+- 위치 동의 시트·"위치 · 개인정보" 화면, 집 주소는 위치가 필요한 기능(버스)에 들어갈 때 물음
+- 위치정보법 제16조 이용사실 확인자료: Edge Function 이 버스·병원·약국 조회 때 시각·기능만 `location_log` 에 기록(좌표·IP 없음), 1년 뒤 자동 삭제(`supabase/location_log.sql`)
+
+**6. 운영 (11-15)**
+- 도메인 sari.kr 연결(아래), GitHub 도메인 인증 완료, sari.co.kr → sari.kr 포워딩(닷네임)
+- Supabase 무료 플랜 정리: Security Advisor 경고 정리(`supabase/hardening.sql`), 캐시·기록 매일 03:23 자동 정리(pg_cron), 7일 미사용 정지 방지 GitHub Actions(`main` 브랜치 `.github/workflows/supabase-keepalive.yml`)
+- Claude API 키: Console 조직 Project30s › 워크스페이스 ansanlife, 월 한도 $50
+
 ## 서비스 주소 (2026-11-15)
 
 - **https://sari.kr** — 자체 도메인(닷네임코리아 등록, 만료 2027-11-15). GitHub Pages(`gogeangs/ansanlife-dev`, 브랜치 `feature/camera-gps`, 루트의 `CNAME` 파일)로 연결
 - DNS(닷네임): A 4개(185.199.108~111.153), `www` CNAME → gogeangs.github.io. www.sari.kr·gogeangs.github.io/ansanlife-dev 는 sari.kr 로 자동 이동
 - 관리 페이지: https://sari.kr/admin.html · 처리방침: /privacy.html · 위치기반서비스 약관: /location-terms.html
 - 새 주소를 쓰려면 함께 바꿔야 하는 곳: Supabase Edge Function `ALLOWED_ORIGIN`(supabase/build_edge.py), 네이버 지도 Application 'ansanlife' Web 서비스 URL(현재 https://sari.kr, https://gogeangs.github.io)
-- sari.co.kr 도 보유 — 닷네임 '도메인 포워딩'으로 https://sari.kr 로 넘기면 됨(미설정)
+- sari.co.kr 도 보유 — 닷네임 '도메인 포워딩'으로 sari.kr 로 넘김(2026-11-15 설정, http 만)
+- GitHub Pages 도메인 인증 완료(TXT `_github-pages-challenge-gogeangs.sari.kr` — 지우지 말 것)
 
 ## 결과물 위치
 
@@ -85,14 +123,15 @@ Figma 색상 변수 컬렉션 "Ansan Life" (color/accent, deep, sage, background
 | --- | --- | --- |
 | 높음 | 사진 판별 모델 비교 | 기본은 Haiku 5.5(장당 약 0.4원). 실제 사진 50장으로 Sonnet 5.5(약 8원)와 비교해 `VISION_MODEL` 결정 |
 | 높음 | API 서버 배포 + 실기기 시험 | Supabase Edge Function `api` 로 배포 완료, 앱 연결 완료(`API_URL`·`API_KEY`). Secrets(`ANTHROPIC_API_KEY`·`DATA_GO_KR_KEY`·`BUS_KEY`) 입력 완료, 2026-11-10 사진 분석·공지 번역·버스·병원/약국 실데이터 확인. Claude 키는 Console 조직 Project30s › 워크스페이스 ansanlife (만료 2027-12-31). 남은 것: 실기기 시험, 분류표(`RULES`) 자원순환과 확인 사진 판별 정확도, 경기도 버스 응답 구조 첫 확인. 분류표(`RULES`)는 자원순환과 확인 필요 |
+| 높음 | 배출 요일 대조 | 이용자 많을 시흥·화성·수원·강동구는 시·구청 누리집과 비교(표준데이터에 오래된 자료 섞임, 앱에 기준일 표시) |
 | 높음 | GPS 지역 변경 실기기 시험 | 코드는 완료. 네이버 키 발급 후 실제 도로명·행정동이 맞게 나오는지 확인. 주변 정류장은 버스 데이터 연결 때 함께 |
 | 높음 | 네이버 지도 키 + HTTPS 호스팅 | Dynamic Map, Geocoding, Reverse Geocoding 체크 |
-| 높음 | 개인정보·법적 검토 | `docs/PRIVACY_DRAFT.md` 초안 → 변호사 검토(사진 국외 이전, 위치정보, 처리위탁, 설문 보상). 결과에 따라 첫 사용 동의 화면 추가 |
+| 완료 | 개인정보·위치정보 | 2026-11-15 처리방침·위치기반서비스 약관 시행, 위치 동의 화면·이용사실 기록. 국외 이전 고지 방식은 변호사 확인 권장 |
 | 완료 | Supabase 프로젝트 | 2026-10-27 생성: gogeangs 조직 `ansanlife`(서울 ap-northeast-2), URL `https://mriuywhiaaslmcdrfhfh.supabase.co`. schema.sql 적용, 공개 키 보안 규칙 실서버 확인, 빌드에 연결. 예시 공지 2건 들어 있음 |
 | 중간 | 회원 기능 | 지금은 회원 없이 동작. 기기 바꿔도 설정·광고 제거 유지가 필요해지면 Supabase Auth(익명 로그인) 추가 |
 | 중간 | 푸시 알림 | 배출일 전날, 버스 2정류장 전 |
 | 중간 | 공지 운영자 계정 | 2026-10-27 공지 관리 페이지(`admin.html`) 추가, `admin.sql` 실서버 적용. Authentication 에서 운영자 계정을 만들고 `admins` 에 등록, 가입 허용 끄기 (`supabase/README.md` 2번). 광고는 아직 Table Editor 에서 |
-| 중간 | 번역 원어민 검수 | 베트남어 포함 6개 외국어 (`docs/CHECKLIST.md`) |
+| 보류 | 번역 원어민 검수 | 2026-11-15 진행하지 않기로 함. 이용자 의견이 들어오면 고침 |
 | 낮음 | 빈 정보 채우기 | 관공서 2곳 주소, 대형폐기물 수수료, 병원 사진 |
 | 낮음 | 하늘색 인트로 이미지 고해상도 교체 | 지금은 390×700 캡처 |
 
