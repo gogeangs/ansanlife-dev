@@ -6,6 +6,7 @@
  *   POST /analyze            사진 → 배출 분류 (Claude API 이미지 입력). POST / 도 같음
  *   GET  /bus/stops?lat&lng  주변 정류장 (경기도 정류소 조회 v2)
 *   (전국) /bus/stops?lat=&lng=&net=tago · /bus/arrivals?stationId=도시코드:정류소ID  — 국토교통부 TAGO
+ *   (서울) /bus/stops?lat=&lng=&net=seoul · /bus/arrivals?stationId=SEL:arsId  — 서울특별시 정류소정보조회
  *   GET  /bus/arrivals?stationId=  정류장 도착 정보 (경기도 버스도착정보 v2)
  *   GET  /notices?lang=vi&region=경기도 안산시   NOTICES_URL 의 공지(한국어)를 번역해 돌려줌. region 이 빈 공지(전국)+그 지역 공지. 번역은 내용이 바뀔 때만 다시 함
  *   GET  /med/nearby?kind=hosp|pharm&lat&lng  주변 병·의원 / 약국 (국립중앙의료원, 거리순 + 오늘 진료시간)
@@ -247,11 +248,63 @@ function mapTagoArrivals(items) {
   return [...by.values()].map(r => ({ ...r, buses: r.buses.sort((a, b) => a.min - b.min).slice(0, 2) }))
     .sort((a, b) => (a.buses[0]?.min ?? 999) - (b.buses[0]?.min ?? 999));
 }
+/* ---------- 서울 버스: 서울특별시_정류소정보조회 서비스 (data.go.kr 15000303, 자동승인) ----------
+   TAGO 에 서울이 없어서 따로 붙임. 같은 개인 서비스키(TAGO_KEY/BUS_KEY) 사용.
+   - 주변 정류소: stationinfo/getStationByPos (tmX=경도, tmY=위도, radius m)
+   - 도착 정보: stationinfo/getStationByUid (arsId = 정류소 고유번호 5자리)
+   정류소 id 는 'SEL:arsId' 로 앱에 내려 줌. */
+const SEOUL = 'http://ws.bus.go.kr/api/rest';
+async function seoul(path, params, env) {
+  const q = new URLSearchParams({ ...params, resultType: 'json' });
+  const r = await fetch(`${SEOUL}/${path}?serviceKey=${encodeURIComponent(tagoKey(env))}&${q}`);
+  if (!r.ok) throw new Error('http ' + r.status + ' ' + (await r.text().catch(() => '')).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80));
+  const text = await r.text();
+  if (!text.trimStart().startsWith('{')) {
+    const err = (text.match(/<(?:returnReasonCode|headerMsg)>\s*([^<]*?)\s*<\//) || [])[1];
+    throw new Error('upstream ' + (err || 'format'));
+  }
+  const j = JSON.parse(text);
+  const cd = String(j?.msgHeader?.headerCd ?? '0');
+  if (cd === '4') return []; // 결과 없음
+  if (cd !== '0') throw new Error('upstream ' + cd + ' ' + String(j?.msgHeader?.headerMsg ?? '').slice(0, 60));
+  return asList(j?.msgBody?.itemList);
+}
+function mapSeoulStops(items, lat, lng) {
+  return items.map(s => ({ id: /^\d{5}$/.test(String(s.arsId ?? '')) ? `SEL:${s.arsId}` : '', name: String(s.stationNm ?? ''), no: String(s.arsId ?? ''), lat: num(s.gpsY), lng: num(s.gpsX) }))
+    .filter(s => s.id).map(s => ({ ...s, dist: s.lat != null && s.lng != null ? distM(lat, lng, s.lat, s.lng) : null }))
+    .sort((a, b) => (a.dist ?? 1e9) - (b.dist ?? 1e9)).slice(0, 8);
+}
+// arrmsg 예: "곧 도착", "3분12초후[2번째 전]", "운행종료", "출발대기", "회차지 대기"
+function seoulBus(msg, sec, sect) {
+  msg = String(msg ?? '');
+  if (/곧 도착/.test(msg)) return { min: 0, stops: 0 };
+  const m = msg.match(/(\d+)분(?:\s*(\d+)초)?\s*후?(?:\[(\d+)번째 전\])?/);
+  if (m) return { min: Number(m[1]) + (Number(m[2] || 0) >= 30 ? 1 : 0), stops: m[3] != null ? Number(m[3]) : null };
+  const s = num(sec);
+  if (s != null && s > 0 && !/종료|대기/.test(msg)) return { min: Math.round(s / 60), stops: num(sect) };
+  return null;
+}
+function mapSeoulArrivals(items) {
+  const crowd = (div, n) => (String(div) === '2' && num(n) >= 3 && num(n) <= 6 ? num(n) - 2 : null); // 서울 3여유 4보통 5혼잡 6매우혼잡 → 앱 1~4
+  return items.map(b => ({
+    routeId: String(b.busRouteId ?? b.rtNm ?? ''),
+    route: String(b.rtNm ?? ''),
+    type: null,
+    dest: String(b.adirection ?? ''),
+    ended: /운행종료/.test(String(b.arrmsg1 ?? '')),
+    buses: [1, 2].map(i => { const x = seoulBus(b['arrmsg' + i], b['traTime' + i], b['sectOrd' + i]); return x && { ...x, crowd: crowd(b['rerdie_Div' + i], b['reride_Num' + i]), seats: null, low: String(b['busType' + i]) === '1' }; }).filter(Boolean).sort((x, y) => x.min - y.min),
+  })).filter(r => r.route).sort((a, b) => (a.buses[0]?.min ?? 999) - (b.buses[0]?.min ?? 999));
+}
 async function busRoute(url, env, h) {
   if (!busKey(env) && !tagoKey(env)) return json({ error: 'config' }, 503, h);
   try {
     if (url.pathname === '/bus/arrivals') {
       const id = url.searchParams.get('stationId') || '';
+      const se = id.match(/^SEL:(\d{5})$/);
+      if (se) {
+        const items = await seoul('stationinfo/getStationByUid', { arsId: se[1] }, env);
+        return json({ stationId: id, at: Date.now(), arrivals: mapSeoulArrivals(items) }, 200, { ...h, 'cache-control': 'max-age=15' });
+      }
       const t = id.match(/^(\d{1,5}):([A-Z]{2,5}\d{1,12})$/);
       if (t) {
         const items = await tago('ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList', { cityCode: t[1], nodeId: t[2], numOfRows: '60' }, env);
@@ -263,6 +316,10 @@ async function busRoute(url, env, h) {
     }
     const lat = Number(url.searchParams.get('lat')), lng = Number(url.searchParams.get('lng'));
     if (!(lat > 33 && lat < 39 && lng > 124 && lng < 132)) return json({ error: 'coords' }, 400, h);
+    if (url.searchParams.get('net') === 'seoul') {
+      const items = await seoul('stationinfo/getStationByPos', { tmX: lng.toFixed(6), tmY: lat.toFixed(6), radius: '500' }, env);
+      return json({ stops: mapSeoulStops(items, lat, lng) }, 200, { ...h, 'cache-control': 'max-age=300' });
+    }
     if (url.searchParams.get('net') === 'tago') {
       const items = await tago('BusSttnInfoInqireService/getCrdntPrxmtSttnList', { gpsLati: lat.toFixed(6), gpsLong: lng.toFixed(6), numOfRows: '30' }, env);
       return json({ stops: mapTagoStops(items, lat, lng) }, 200, { ...h, 'cache-control': 'max-age=300' });
