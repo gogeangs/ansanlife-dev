@@ -213,9 +213,10 @@ export function mapStops(j) {
    - 도착 정보: ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList (도시코드 + 정류소ID)
    정류소 id 는 '도시코드:정류소ID' (예: 25:DJB8001793) 로 앱에 내려 줌. 활용신청(자동승인)이 필요하고 키는 BUS_KEY/DATA_GO_KR_KEY. */
 const TAGO = 'https://apis.data.go.kr/1613000';
+const tagoKey = env => String(env.TAGO_KEY || env.BUS_KEY || env.DATA_GO_KR_KEY || '').trim(); // TAGO 를 다른 키로 승인받았으면 TAGO_KEY
 async function tago(path, params, env) {
   const q = new URLSearchParams({ ...params, _type: 'json', numOfRows: params.numOfRows || '30', pageNo: '1' });
-  const r = await fetch(`${TAGO}/${path}?serviceKey=${encodeURIComponent(busKey(env))}&${q}`);
+  const r = await fetch(`${TAGO}/${path}?serviceKey=${encodeURIComponent(tagoKey(env))}&${q}`);
   if (!r.ok) throw new Error('http ' + r.status + ' ' + (await r.text().catch(() => '')).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80));
   const text = await r.text();
   if (!text.trimStart().startsWith('{')) { const err = (text.match(/<returnReasonCode>\s*([^<]*?)\s*<\/returnReasonCode>/) || [])[1]; throw new Error('upstream ' + (err || 'format')); }
@@ -242,7 +243,7 @@ export function mapTagoArrivals(items) {
     .sort((a, b) => (a.buses[0]?.min ?? 999) - (b.buses[0]?.min ?? 999));
 }
 async function busRoute(url, env, h) {
-  if (!busKey(env)) return json({ error: 'config' }, 503, h);
+  if (!busKey(env) && !tagoKey(env)) return json({ error: 'config' }, 503, h);
   try {
     if (url.pathname === '/bus/arrivals') {
       const id = url.searchParams.get('stationId') || '';

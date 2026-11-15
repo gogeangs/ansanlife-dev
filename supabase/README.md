@@ -36,6 +36,7 @@
    | `ANTHROPIC_API_KEY` | Claude API 키 (console.anthropic.com) | 사진 분석·공지 번역 안 됨 (`config` 오류) |
    | `DATA_GO_KR_KEY` | 공공데이터포털 인증키 — **국립중앙의료원(병원·약국) API 상세 화면의 일반 인증키** | 병원·약국(버스도 `BUS_KEY` 없으면) 예시 데이터 |
    | `BUS_KEY` | 경기도 버스 API 에 쓰는 인증키 (현재 계정은 마이페이지의 개인 API 인증키) | `DATA_GO_KR_KEY` 사용 |
+   | `TAGO_KEY` (선택) | 국토교통부 TAGO(전국 버스) 인증키 — 다른 키로 승인받았을 때만 | `BUS_KEY` 사용 |
 
    API 마다 인증키가 다를 수 있습니다. 각 API **활용신청 상세 화면의 '일반 인증키'** 를 기준으로 넣으세요. 키가 맞지 않으면 응답의 `why` 에 `SERVICE_KEY_IS_NOT_REGISTERED` 가 보입니다. 값 앞뒤의 줄바꿈·공백은 서버가 자동으로 지웁니다.
    | `ALLOWED_ORIGIN` (선택) | 앱 주소, 쉼표로 여러 개 | 기본: gogeangs·eugenekimkim github.io |
