@@ -747,6 +747,7 @@ const RG=()=>regionOf(st.addr&&st.addr.full);
 /* 지역별 자료: 확인된 지역만 분리배출·관공서·자주 가는 곳을 염. 나머지는 '준비 중' 또는 검색 기반 */
 const REGION_DATA={'경기도 안산시':{waste:true,offices:true,places:true}};
 const RD=()=>REGION_DATA[RG().key]||{};
+const capArea=()=>['경기도','서울특별시','인천광역시'].includes(RG().a1); // 수도권 통합환승·경기 요금 안내는 수도권에서만
 const BUS_ANY=false; // 전국 버스(TAGO) 연동되면 true
 const busOn=()=>RG().a1==='경기도'||BUS_ANY; // 경기 = 경기도 버스 API. 그 외 지역은 전국(TAGO) 연동 후
 const ruIn=n=>/[бвгджзклмнпрстфхцчшщ]$/i.test(n)?n+'е':/[ая]$/.test(n)?n.slice(0,-1)+'е':n; // 러시아어 전치격(в ...е) 간단 규칙
@@ -1075,7 +1076,7 @@ SCR.b1=()=>{const t=T();return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)
   ${miniMap('near')}
   <!-- 주변 역 카드(초지역 고정)는 삭제: 주소와 상관없이 같은 역이 나왔음. 지도에는 실제 주변 정류장을 표시 -->
   <div id="stops" class="col" style="gap:10px"><button class="card row fixh" style="text-align:left" data-act="samplestop">${dotI('bus','#fff','#1E2221',36)}<span class="col grow"><span class="serif" style="font-size:15px">${t.busStop}</span><span class="tiny muted">${t.busStopS}</span></span>${ic('arrow',16,'#6E7472')}</button></div>
-  <div class="acts">${[['card',t.quick[0],'b6'],['moon',t.quick[1],'b5'],['route',t.quick[2],'b2']].map(([i,l,g])=>`<button data-go="${g}" class="col" style="flex:1;align-items:center;gap:6px;border:1px solid var(--hair);border-radius:16px;padding:12px 6px">${ic(i,18,'#22393A')}<span class="b" style="font-size:12px;text-align:center">${l}</span></button>`).join('')}</div>
+  <div class="acts">${[['card',t.quick[0],'b6'],['moon',t.quick[1],'b5'],['route',t.quick[2],'b2']].filter(x=>x[2]!=='b6'||capArea()).map(([i,l,g])=>`<button data-go="${g}" class="col" style="flex:1;align-items:center;gap:6px;border:1px solid var(--hair);border-radius:16px;padding:12px 6px">${ic(i,18,'#22393A')}<span class="b" style="font-size:12px;text-align:center">${l}</span></button>`).join('')}</div>
  </div>${foot}</div>`;};
 const seg=(c,g,l='')=>`<span class="seg" style="background:${c};flex:${g}">${l}</span>`;
 SCR.b2=()=>{const t=T();return `<div class="scr ${isKo()?'ko':''}">${nav(t.busT)}${ttl(t.whereTo,`<span class="kr">${t.home} · ${addrLabel()}</span>`,{eye:t.routeT})}
@@ -1093,7 +1094,7 @@ SCR.b4=()=>{const t=T();const rows=[['Bus A',2,5,0,true],['Bus B',6,14,1],['Bus 
   ${live?`<span id="arrerr" class="soft-accent small" hidden>${t.busErr}</span><div id="arrs" class="col" style="gap:10px" data-sample="${esc(sample)}"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>`:sample}
   <!-- 2정류장 전 알림: 푸시 알림을 만들 때까지 숨김 (QA 2026-11-13) -->
   <div class="spacer"></div>
-  ${(()=>{const hr=new Date().getHours(),night=hr>=21||hr<7;return `<span class="row tiny muted" style="gap:6px">${ic(night?'moon':'clock',13,'#6E7472')}${night?t.nightNote:t.dayNote}</span>`})()}<!-- 환승: 낮 30분 / 밤(21~07시) 60분 (QA 13) -->
+  ${!capArea()?'':(()=>{const hr=new Date().getHours(),night=hr>=21||hr<7;return `<span class="row tiny muted" style="gap:6px">${ic(night?'moon':'clock',13,'#6E7472')}${night?t.nightNote:t.dayNote}</span>`})()}<!-- 환승: 낮 30분 / 밤(21~07시) 60분 (QA 13) -->
  </div>${foot}</div>`;};
 SCR.b5=()=>{const t=T();return `<div class="scr board ${isKo()?'ko':''}" style="background:var(--deep)">${nav(t.onboard)}
  <div class="ttl" style="color:#fff"><span class="row small" style="gap:8px;opacity:.8"><span class="badge" style="background:var(--bus)">Bus</span>→ Banwol</span><div class="row" style="align-items:baseline;gap:10px"><span class="serif" style="font-size:72px;line-height:1">3</span><span class="col"><span class="it" style="font-size:20px">${t.stopsLeft}</span>${koSub('3정류장 남았어요')}</span></div><span class="small" style="opacity:.85">${t.getOffAt}</span></div>
@@ -1380,7 +1381,7 @@ async function routeTo(name,addr){const N=await loadNaver();
 st.stops=null;st.stop=null;st.arr=null;let arrTimer=null;
 async function homeLL(){if(st.addr.lat)return {lat:st.addr.lat,lng:st.addr.lng};const P=await mapProv();if(!P)return null;const ll=await P.geocode(st.addr.full);return ll?{lat:typeof ll.lat==="function"?ll.lat():ll.y,lng:typeof ll.lng==="function"?ll.lng():ll.x}:null;}
 async function loadStops(){const box=document.getElementById('stops');if(!box)return;const t=T();
- try{const key=st.addr.full;if(!st.stops||st.stops.key!==key){const ll=await homeLL();if(!ll)throw new Error('coords');const j=await api(`/bus/stops?lat=${ll.lat}&lng=${ll.lng}`);if(st.addr.full!==key)return;st.stops={key,list:j.stops||[]};}
+ try{const key=st.addr.full;if(!st.stops||st.stops.key!==key){const ll=await homeLL();if(!ll)throw new Error('coords');const j=await api(`/bus/stops?lat=${ll.lat}&lng=${ll.lng}${RG().a1==='경기도'?'':'&net=tago'}`);if(st.addr.full!==key)return;st.stops={key,list:j.stops||[]};}
   if(!document.body.contains(box))return;
   box.innerHTML=st.stops.list.length?`<span class="livetag">${t.live}</span>${st.stops.list.slice(0,3).map((x,i)=>`<button class="card row fixh" style="text-align:left" data-stop="${i}">${dotI('bus','#fff','#1E2221',36)}<span class="col grow"><span class="serif" style="font-size:15px">${esc(x.name)}</span><span class="tiny muted">${isKo()?'':esc(romaName(x.name))+' · '}${x.no?esc(x.no)+' · ':''}${x.dist!=null?x.dist+' m':''}</span></span>${ic('arrow',16,'#6E7472')}</button>`).join('')}`:`<span class="small muted">${t.noStops}</span>`;tagFx(box);const nm=app.querySelector('.nmap[data-map="near"]');if(nm)mountMaps(nm);}
  catch(e){/* keep the sample card */}}

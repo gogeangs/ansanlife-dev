@@ -5,6 +5,7 @@
  *
  *   POST /analyze            사진 → 배출 분류 (Claude API 이미지 입력). POST / 도 같음
  *   GET  /bus/stops?lat&lng  주변 정류장 (경기도 정류소 조회 v2)
+*   (전국) /bus/stops?lat=&lng=&net=tago · /bus/arrivals?stationId=도시코드:정류소ID  — 국토교통부 TAGO
  *   GET  /bus/arrivals?stationId=  정류장 도착 정보 (경기도 버스도착정보 v2)
  *   GET  /notices?lang=vi&region=경기도 안산시   NOTICES_URL 의 공지(한국어)를 번역해 돌려줌. region 이 빈 공지(전국)+그 지역 공지. 번역은 내용이 바뀔 때만 다시 함
  *   GET  /med/nearby?kind=hosp|pharm&lat&lng  주변 병·의원 / 약국 (국립중앙의료원, 거리순 + 오늘 진료시간)
@@ -209,17 +210,59 @@ function mapStops(j) {
     lat: num(s.y), lng: num(s.x),
   })).filter(s => s.id).sort((a, b) => (a.dist ?? 1e9) - (b.dist ?? 1e9)).slice(0, 8);
 }
+/* ---------- 전국 버스: 국토교통부 TAGO (경기도 밖 지역) ----------
+   - 주변 정류소: BusSttnInfoInqireService/getCrdntPrxmtSttnList (좌표 기준)
+   - 도착 정보: ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList (도시코드 + 정류소ID)
+   정류소 id 는 '도시코드:정류소ID' (예: 25:DJB8001793) 로 앱에 내려 줌. 활용신청(자동승인)이 필요하고 키는 BUS_KEY/DATA_GO_KR_KEY. */
+const TAGO = 'https://apis.data.go.kr/1613000';
+async function tago(path, params, env) {
+  const q = new URLSearchParams({ ...params, _type: 'json', numOfRows: params.numOfRows || '30', pageNo: '1' });
+  const r = await fetch(`${TAGO}/${path}?serviceKey=${encodeURIComponent(busKey(env))}&${q}`);
+  if (!r.ok) throw new Error('http ' + r.status + ' ' + (await r.text().catch(() => '')).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80));
+  const text = await r.text();
+  if (!text.trimStart().startsWith('{')) { const err = (text.match(/<returnReasonCode>\s*([^<]*?)\s*<\/returnReasonCode>/) || [])[1]; throw new Error('upstream ' + (err || 'format')); }
+  const j = JSON.parse(text);
+  const code = String(findKey(j, 'resultCode') ?? '00');
+  if (code !== '00' && code !== '0') throw new Error('upstream ' + code + ' ' + String(findKey(j, 'resultMsg') ?? ''));
+  return asList(findKey(j, 'item'));
+}
+const distM = (a, b, c, d) => { const R = 6371000, r = x => x * Math.PI / 180; const dl = r(c - a), dn = r(d - b); const x = Math.sin(dl / 2) ** 2 + Math.cos(r(a)) * Math.cos(r(c)) * Math.sin(dn / 2) ** 2; return Math.round(2 * R * Math.asin(Math.sqrt(x))); };
+function mapTagoStops(items, lat, lng) {
+  return items.map(s => ({ id: s.citycode && s.nodeid ? `${s.citycode}:${s.nodeid}` : '', name: String(s.nodenm ?? ''), no: String(s.nodeno ?? '').trim(), lat: num(s.gpslati), lng: num(s.gpslong) }))
+    .filter(s => s.id).map(s => ({ ...s, dist: s.lat != null && s.lng != null ? distM(lat, lng, s.lat, s.lng) : null }))
+    .sort((a, b) => (a.dist ?? 1e9) - (b.dist ?? 1e9)).slice(0, 8);
+}
+function mapTagoArrivals(items) {
+  const by = new Map();
+  for (const b of items) {
+    const k = String(b.routeid ?? b.routeno ?? '');
+    if (!by.has(k)) by.set(k, { routeId: k, route: String(b.routeno ?? ''), type: null, dest: '', ended: false, buses: [] });
+    const sec = num(b.arrtime);
+    if (sec != null) by.get(k).buses.push({ min: Math.max(0, Math.round(sec / 60)), stops: num(b.arrprevstationcnt), crowd: null, seats: null, low: /저상/.test(String(b.vehicletp ?? '')) });
+  }
+  return [...by.values()].map(r => ({ ...r, buses: r.buses.sort((a, b) => a.min - b.min).slice(0, 2) }))
+    .sort((a, b) => (a.buses[0]?.min ?? 999) - (b.buses[0]?.min ?? 999));
+}
 async function busRoute(url, env, h) {
   if (!busKey(env)) return json({ error: 'config' }, 503, h);
   try {
     if (url.pathname === '/bus/arrivals') {
       const id = url.searchParams.get('stationId') || '';
+      const t = id.match(/^(\d{1,5}):([A-Z]{2,5}\d{4,12})$/);
+      if (t) {
+        const items = await tago('ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList', { cityCode: t[1], nodeId: t[2], numOfRows: '60' }, env);
+        return json({ stationId: id, at: Date.now(), arrivals: mapTagoArrivals(items) }, 200, { ...h, 'cache-control': 'max-age=15' });
+      }
       if (!/^\d{5,12}$/.test(id)) return json({ error: 'stationId' }, 400, h);
       const j = await gbis('busarrivalservice/v2/getBusArrivalListv2', { stationId: id }, env);
       return json({ stationId: id, at: Date.now(), arrivals: j ? mapArrivals(j) : [] }, 200, { ...h, 'cache-control': 'max-age=15' });
     }
     const lat = Number(url.searchParams.get('lat')), lng = Number(url.searchParams.get('lng'));
     if (!(lat > 33 && lat < 39 && lng > 124 && lng < 132)) return json({ error: 'coords' }, 400, h);
+    if (url.searchParams.get('net') === 'tago') {
+      const items = await tago('BusSttnInfoInqireService/getCrdntPrxmtSttnList', { gpsLati: lat.toFixed(6), gpsLong: lng.toFixed(6), numOfRows: '30' }, env);
+      return json({ stops: mapTagoStops(items, lat, lng) }, 200, { ...h, 'cache-control': 'max-age=300' });
+    }
     const j = await gbis('busstationservice/v2/getBusStationAroundListv2', { x: lng.toFixed(6), y: lat.toFixed(6) }, env);
     return json({ stops: j ? mapStops(j) : [] }, 200, { ...h, 'cache-control': 'max-age=300' });
   } catch (e) { return upstreamErr('bus', e, h); }
