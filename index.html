@@ -1529,6 +1529,8 @@ function render(){syncHist();clearInterval(bgTimer);clearTimeout(scanTimer);clea
  if(n==='b2'){const f=document.getElementById('destf');f&&f.addEventListener('submit',e=>{e.preventDefault();const v=document.getElementById('dest').value.trim().slice(0,80);if(v)routeTo(v,/(로|길|동|구)\s*\d/.test(v)?(/안산/.test(v)?v:'경기도 안산시 '+v):null);});}
  if(n==='news'&&(hasApi()||hasSb()))loadNews();
  if(hasApi()){if(n==='b1')loadStops();if(n==='b4')loadArr();}
+ // 위치가 필요한 기능에 들어갈 때만 위치 설정을 요청 (버스: 집 주소 기준 주변 정류장). 집 주소를 아직 안 정했으면 앱을 열 때마다 한 번 (주소 입력 또는 현재 위치)
+ if(n==='b1'&&!addrSaved()&&!st.locAsked){st.locAsked=true;setTimeout(()=>{if(cur()==='b1'&&!document.querySelector('.sheetover'))locSheet();},350);}
  if(n==='hosp')loadMed();if(n==='hdetail')loadMedDetail();
  mountMaps();
  if(n==='w2'){['ph','ph2'].forEach(id=>{const i=document.getElementById(id);i&&i.addEventListener('change',()=>{const f=i.files&&i.files[0];if(f)readPhoto(f);});});
@@ -1558,10 +1560,7 @@ app.addEventListener('click',e=>{const el=e.target.closest('[data-sel],[data-go]
  if(el.dataset.sel){if(dragMoved)return;const keep=document.getElementById('rail').scrollLeft;const A0=document.getElementById('bgA');const orangeOn=A0&&A0.style.opacity!=='0';st.sel=el.dataset.sel;clearInterval(bgTimer);app.innerHTML=SCR.intro().replace('class="scr intro"','class="scr intro" style="animation:none"');
   const A=document.getElementById('bgA'),B=document.getElementById('bgB');A.style.transition=B.style.transition='none';A.style.opacity=orangeOn?1:0;B.style.opacity=orangeOn?0:1;void A.offsetWidth;A.style.transition=B.style.transition='';
   bindIntro(orangeOn);document.getElementById('rail').scrollLeft=keep;return;}
- if(el.id==='goBtn'){const c=COUNTRIES.find(x=>x.c===st.sel);if(c&&c.lang){st.lang=c.lang;try{localStorage.setItem('al_lang',c.lang)}catch(e){}home();
-  // 첫 사용: 집 주소를 먼저 물어봄 (한 번만. '그대로'를 누르면 예시 주소로 계속)
-  let asked=true;try{asked=!!localStorage.getItem('al_addrask');localStorage.setItem('al_addrask','1')}catch(e){}
-  if(!asked&&!addrSaved())setTimeout(()=>{if(cur()==='home'&&!document.querySelector('.sheetover'))locSheet();},400);}return;}
+ if(el.id==='goBtn'){const c=COUNTRIES.find(x=>x.c===st.sel);if(c&&c.lang){st.lang=c.lang;try{localStorage.setItem('al_lang',c.lang)}catch(e){}home();}return;}
  if(el.id==='remind'){st.remind=!st.remind;render();return;}
  if(el.id==='ntf'){st.notify=!st.notify;el.setAttribute('aria-pressed',st.notify);return;}
  if(el.dataset.naver){openNaver(el.dataset.naver);return;}
