@@ -453,7 +453,7 @@ const LIMITER = SB_URL && SB_SERVICE ? {
 } : undefined;
 
 const DEFAULTS = {
-  ALLOWED_ORIGIN: 'https://gogeangs.github.io,https://eugenekimkim.github.io',
+  ALLOWED_ORIGIN: 'https://sari.kr,https://www.sari.kr,https://gogeangs.github.io,https://eugenekimkim.github.io',
   NOTICES_URL: SB_URL ? `${SB_URL}/rest/v1/notices?select=id,type,title,body,date,url,sample&published=is.true&order=sort.desc,created_at.desc&limit=30` : '',
   NOTICES_KEY: SB_ANON,
 };
