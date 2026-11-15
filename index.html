@@ -748,7 +748,7 @@ const RG=()=>regionOf(st.addr&&st.addr.full);
 const REGION_DATA={'경기도 안산시':{waste:true,offices:true,places:true}};
 const RD=()=>REGION_DATA[RG().key]||{};
 const capArea=()=>['경기도','서울특별시','인천광역시'].includes(RG().a1); // 수도권 통합환승·경기 요금 안내는 수도권에서만
-const BUS_OFF=['서울특별시']; // TAGO(국토교통부)에 서울 버스가 없음 → 서울시 버스 API 붙이기 전까지 준비 중
+const BUS_OFF=[]; // 버스: 경기=경기도 API, 서울=서울시 API, 그 외=국토교통부 TAGO
 const busOn=()=>!!RG().a1&&!BUS_OFF.includes(RG().a1); // 경기 = 경기도 버스 API, 그 외 = 전국 TAGO
 const ruIn=n=>/[бвгджзклмнпрстфхцчшщ]$/i.test(n)?n+'е':/[ая]$/.test(n)?n.slice(0,-1)+'е':n; // 러시아어 전치격(в ...е) 간단 규칙
 const BRAND={ko:r=>`${r.ko}살이`,en:r=>`${r.en} Life`,vi:r=>`${r.en} Life`,zh:r=>`${r.zh}生活`,ru:r=>`«Жизнь в ${ruIn(r.ru)}»`,uz:r=>`${r.en} Life`,mn:r=>`${r.en} Life`};
@@ -1381,7 +1381,7 @@ async function routeTo(name,addr){const N=await loadNaver();
 st.stops=null;st.stop=null;st.arr=null;let arrTimer=null;
 async function homeLL(){if(st.addr.lat)return {lat:st.addr.lat,lng:st.addr.lng};const P=await mapProv();if(!P)return null;const ll=await P.geocode(st.addr.full);return ll?{lat:typeof ll.lat==="function"?ll.lat():ll.y,lng:typeof ll.lng==="function"?ll.lng():ll.x}:null;}
 async function loadStops(){const box=document.getElementById('stops');if(!box)return;const t=T();
- try{const key=st.addr.full;if(!st.stops||st.stops.key!==key){const ll=await homeLL();if(!ll)throw new Error('coords');const j=await api(`/bus/stops?lat=${ll.lat}&lng=${ll.lng}${RG().a1==='경기도'?'':'&net=tago'}`);if(st.addr.full!==key)return;st.stops={key,list:j.stops||[]};}
+ try{const key=st.addr.full;if(!st.stops||st.stops.key!==key){const ll=await homeLL();if(!ll)throw new Error('coords');const j=await api(`/bus/stops?lat=${ll.lat}&lng=${ll.lng}${RG().a1==='경기도'?'':RG().a1==='서울특별시'?'&net=seoul':'&net=tago'}`);if(st.addr.full!==key)return;st.stops={key,list:j.stops||[]};}
   if(!document.body.contains(box))return;
   box.innerHTML=st.stops.list.length?`<span class="livetag">${t.live}</span>${st.stops.list.slice(0,3).map((x,i)=>`<button class="card row fixh" style="text-align:left" data-stop="${i}">${dotI('bus','#fff','#1E2221',36)}<span class="col grow"><span class="serif" style="font-size:15px">${esc(x.name)}</span><span class="tiny muted">${isKo()?'':esc(romaName(x.name))+' · '}${x.no?esc(x.no)+' · ':''}${x.dist!=null?x.dist+' m':''}</span></span>${ic('arrow',16,'#6E7472')}</button>`).join('')}`:`<span class="small muted">${t.noStops}</span>`;tagFx(box);const nm=app.querySelector('.nmap[data-map="near"]');if(nm)mountMaps(nm);}
  catch(e){/* keep the sample card */}}
