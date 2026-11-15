@@ -1,0 +1,20 @@
+# 안산살이: Supabase 무료 플랜은 7일 동안 요청이 없으면 프로젝트가 일시 정지됨 → 하루 한 번 공개 공지 목록을 읽어 깨워 둠.
+# 쓰는 키는 앱에도 들어 있는 공개(publishable) 키뿐. Pro 요금제로 바꾸면 이 파일은 지워도 됨.
+name: Supabase keep-alive
+on:
+  schedule:
+    - cron: '41 0 * * *'   # 매일 09:41 KST
+  workflow_dispatch:
+permissions: {}
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read published notices (REST)
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' \
+            'https://mriuywhiaaslmcdrfhfh.supabase.co/rest/v1/notices?select=id&limit=1' \
+            -H 'apikey: sb_publishable_a4KmdsVZm1nrH-FvxA3RrQ_RfZxHyIr')
+          echo "notices: $code"
+          test "$code" = "200"
