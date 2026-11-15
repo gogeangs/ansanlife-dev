@@ -20,7 +20,7 @@ create or replace function public.is_admin() returns boolean
   language sql stable security definer set search_path = public, pg_temp
 as $$ select exists (select 1 from public.admins where user_id = auth.uid()) $$;
 revoke all on function public.is_admin() from public;
-grant execute on function public.is_admin() to anon, authenticated;
+grant execute on function public.is_admin() to authenticated;  -- anon 제외 (2026-11-15, hardening.sql)
 
 -- 공지: 관리자는 게시 안 된 것까지 보고, 쓰고, 고치고, 지움
 grant select, insert, update, delete on public.notices to authenticated;
