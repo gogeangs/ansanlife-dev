@@ -687,7 +687,7 @@ async function boardTr(items, lang, env) {
   need.forEach((n, i) => { if (hit[i]) n.tr = hit[i]; });
   return items;
 }
-const pubPost = p => ({ id: p.id, nick: p.nick, ip: p.ip_mask, country: p.country, lang: p.lang, title: p.title, body: p.body, at: p.created_at, comments: p.comment_count || 0 });
+const pubPost = p => ({ id: p.id, nick: p.nick, ip: p.ip_mask, country: p.country, lang: p.lang, title: p.title, body: p.body, at: p.created_at, edited: p.edited_at || null, comments: p.comment_count || 0 });
 const pubCmt = c => ({ id: c.id, nick: c.nick, ip: c.ip_mask, country: c.country, lang: c.lang, body: c.body, at: c.created_at });
 async function readJson(req, max = 8000) {
   const t = await req.text();
@@ -704,7 +704,7 @@ async function boardRoute(req, url, env, h) {
       const region = (url.searchParams.get('region') || '').trim();
       if (!okRegionKey(region)) return json({ error: 'region' }, 400, h);
       const before = Number(url.searchParams.get('before')) || 0;
-      const rows = await db(`board_posts?select=id,nick,ip_mask,country,lang,title,body,created_at,comment_count&region=eq.${encodeURIComponent(region)}&hidden=is.false${before ? `&id=lt.${before}` : ''}&order=id.desc&limit=20`);
+      const rows = await db(`board_posts?select=id,nick,ip_mask,country,lang,title,body,created_at,edited_at,comment_count&region=eq.${encodeURIComponent(region)}&hidden=is.false${before ? `&id=lt.${before}` : ''}&order=id.desc&limit=20`);
       // 목록은 제목 + 앞부분만 번역 (비용 절약)
       const items = rows.map(p => ({ ...pubPost(p), body: p.body.slice(0, 160) }));
       await boardTr(items, lang, env);
@@ -713,7 +713,7 @@ async function boardRoute(req, url, env, h) {
     if (req.method === 'GET' && url.pathname === '/board/post') {
       const id = Number(url.searchParams.get('id'));
       if (!(id > 0)) return json({ error: 'id' }, 400, h);
-      const [p] = await db(`board_posts?select=id,region,nick,ip_mask,country,lang,title,body,created_at,comment_count&id=eq.${id}&hidden=is.false`);
+      const [p] = await db(`board_posts?select=id,region,nick,ip_mask,country,lang,title,body,created_at,edited_at,comment_count&id=eq.${id}&hidden=is.false`);
       if (!p) return json({ error: 'gone' }, 404, h);
       const cs = await db(`board_comments?select=id,nick,ip_mask,country,lang,body,created_at&post_id=eq.${id}&hidden=is.false&order=id.asc&limit=200`);
       const post = { ...pubPost(p), region: p.region }, comments = cs.map(pubCmt);
@@ -747,6 +747,19 @@ async function boardRoute(req, url, env, h) {
     }
     const table = b.type === 'comment' ? 'board_comments' : 'board_posts', id = Number(b.id);
     if (!(id > 0)) return json({ error: 'id' }, 400, h);
+    if (url.pathname === '/board/edit') {
+      // 글쓴이가 비밀번호로 글 고치기 (게시글만). 번역은 내용이 바뀌면 캐시 키(sha)가 달라져 새로 번역됨
+      if (table !== 'board_posts') return json({ error: 'type' }, 400, h);
+      const title = cleanText(b.title, 60).replace(/\n/g, ' '), body = cleanText(b.body, 2000);
+      if (!title || !body) return json({ error: 'empty' }, 400, h);
+      const [row] = await db(`board_posts?select=id,pw_hash&id=eq.${id}&hidden=is.false`);
+      if (!row) return json({ error: 'gone' }, 404, h);
+      if (!(await pwCheck(String(b.pw || ''), row.pw_hash))) return json({ error: 'pw' }, 403, h);
+      const patchRow = { title, body, edited_at: new Date().toISOString() };
+      if (BOARD_LANGS.includes(b.lang)) patchRow.lang = b.lang;
+      await db(`board_posts?id=eq.${id}`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify(patchRow) });
+      return json({ ok: true }, 200, h);
+    }
     if (url.pathname === '/board/delete') {
       const [row] = await db(`${table}?select=id,pw_hash&id=eq.${id}&hidden=is.false`);
       if (!row) return json({ error: 'gone' }, 404, h);

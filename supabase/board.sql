@@ -18,8 +18,10 @@ create table if not exists public.board_posts (
   report_count  integer not null default 0,
   hidden        boolean not null default false,     -- 신고 누적·글쓴이 삭제·운영자 숨김
   deleted       boolean not null default false,     -- 글쓴이가 지움
-  created_at    timestamptz not null default now()
+  created_at    timestamptz not null default now(),
+  edited_at     timestamptz                         -- 글쓴이가 고친 시각 (고친 적 없으면 null)
 );
+alter table public.board_posts add column if not exists edited_at timestamptz;   -- 이미 만든 표에도 추가
 create index if not exists board_posts_region_idx on public.board_posts (region, id desc) where not hidden;
 
 create table if not exists public.board_comments (
