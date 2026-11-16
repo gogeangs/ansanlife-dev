@@ -49,6 +49,14 @@
 
 **무료 플랜 주의:** 7일 동안 요청이 없으면 프로젝트가 일시 정지됩니다(대시보드에서 Resume). 그래서 저장소 `main` 브랜치의 GitHub Actions `Supabase keep-alive`(.github/workflows/supabase-keepalive.yml)가 매일 09:41(KST) 공개 공지 목록을 한 번 읽습니다. 정식 출시 때는 Pro($25/월) 권장 — 바꾸면 이 워크플로는 지워도 됩니다.
 
+## 주민 이야기 게시판 (2026-11-16)
+
+`supabase/board.sql` 을 SQL Editor 에서 한 번 실행하고, Edge Function 을 다시 배포하세요 (`python3 supabase/build_edge.py` 후 `supabase functions deploy api --no-verify-jwt`).
+`board_posts` · `board_comments` · `board_reports` 표가 생깁니다. 앱(공개 키)은 이 표를 직접 읽거나 쓰지 못하고, API 서버(`/board/*`)만 service key 로 씁니다.
+- 비밀번호는 PBKDF2 해시로만 저장, IP 는 공개용 앞 두 자리(`ip_mask`)와 같은 IP 확인용 해시(`ip_hash`)만 저장 (전체 IP 저장 안 함)
+- 신고 5건이면 자동 숨김(`hidden`). 다시 보이게 하거나 지우려면 Table Editor 에서 `hidden` 을 바꾸세요 (관리자 계정은 RLS 로 조회·수정 가능)
+- 글·댓글은 읽는 사람의 언어로 번역(ANTHROPIC_API_KEY, 30일 캐시). 목록은 제목과 앞 160자만 번역
+
 ## 상단 배너 (2026-11-16)
 
 `supabase/banners.sql` 을 SQL Editor 에서 한 번 실행하세요 (다시 실행해도 안전). `banners` 표와 배너 이미지 저장소(`banners` 버킷, 공개 읽기·관리자만 올리기)가 생깁니다.

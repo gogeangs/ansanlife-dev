@@ -142,6 +142,27 @@ a{color:inherit;text-decoration:none}
 .toprule{display:flex;align-items:center;gap:10px;padding:0 32px}
 .toprule i{display:block;width:120px;height:1px;background:var(--deep);opacity:.55}
 .welcome{padding:24px 32px 0}
+.in{width:100%;border:1px solid transparent;background:var(--bg);border-radius:14px;padding:12px 14px;font:inherit;font-size:15px;color:var(--ink);outline:none;min-width:0}
+.in:focus{border-color:var(--deep);background:#fff}
+textarea.in{resize:vertical;line-height:1.6}
+.bd-form .in{background:#fff}
+.btn.sm{height:40px;padding:0 14px;font-size:13px;border-radius:12px}
+.bd-item{display:flex;flex-direction:column;gap:5px;text-align:left;width:100%;padding:14px 16px;border-radius:16px;background:var(--bg)}
+.bd-t{font-family:var(--serif);font-size:16px;line-height:1.3}.ko .bd-t{font-family:var(--serif-ko)}
+.bd-ex{font-size:13px;color:var(--muted);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:pre-line}
+.bd-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+.bd-who{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.bd-who b{color:var(--ink);font-weight:700}
+.bd-ip{font-size:11px}
+.bd-fl{width:16px;height:16px;border-radius:50%;overflow:hidden;flex:none;display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.bd-fl svg{width:100%;height:100%}
+#bdwf .bd-fl{width:24px;height:24px}
+.bd-c,.bd-tr{display:inline-flex;align-items:center;gap:3px}
+.bd-body{white-space:pre-line;line-height:1.75;font-size:15px;word-break:break-word}
+.bd-cmt{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:14px;background:var(--bg)}
+.bd-cb{white-space:pre-line;font-size:14px;line-height:1.6;word-break:break-word}
+.bd-ask{display:flex;gap:6px;align-items:center}.bd-ask .in{flex:1;min-width:0}
+.bd-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 0;text-align:center}
 .bnwrap{position:relative;margin:0 0 8px}
 .bntrack{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;border-radius:12px;gap:0}
 .bntrack::-webkit-scrollbar{display:none}
@@ -377,7 +398,7 @@ const app=$('#app');
 const enc=encodeURIComponent;
 
 /* ---------- icons ---------- */
-const P={menu:'<path d="M4 7h16M4 12h16M4 17h10"/>',back:'<path d="M15 6l-6 6 6 6"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',arrow:'<path d="M9 6l6 6-6 6"/>',arrowR:'<path d="M5 12h14M13 6l6 6-6 6"/>',spot:'<path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',trash:'<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/>',bus:'<rect x="4" y="3" width="16" height="15" rx="3"/><path d="M4 11h16"/><path d="M7 21l1-3M17 21l-1-3"/>',office:'<path d="M3 21h18"/><path d="M4 10h16"/><path d="M12 3l8 5H4z"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/>',med:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>',mega:'<path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/>',survey:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/>',camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',sofa:'<rect x="3" y="8" width="18" height="10" rx="2"/><path d="M6 18v2M18 18v2M6 8V6h12v2"/>',recycle:'<path d="M7 19H4l3-5"/><path d="M17 19h3l-3-5"/><path d="M9 6l3-3 3 3"/><path d="M12 3v7M5 14l7-4 7 4"/>',flash:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',img:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-8 8"/>',flip:'<path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.8 2.5 4 5.5 4 9s-1.2 6.5-4 9c-2.8-2.5-4-5.5-4-9s1.2-6.5 4-9z"/>',phone:'<path d="M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',fridge:'<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M6 10h12M9 6v2M9 13v3"/>',home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',work:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5h8v2"/>',train:'<rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 10h14M8 21l2-4M16 21l-2-4"/>',walk:'<circle cx="13" cy="4" r="2"/><path d="M10 22l2-7-3-3 2-5 4 3 3 1M9 12l-3 2"/>',card:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 15h4"/>',star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',route:'<circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h6.5"/>',map:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',ext:'<path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',web:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/>',mobile:'<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/>',download:'<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/>',tap:'<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M10 17h4"/>',speak:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',alert:'<path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5v.5"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',shield:'<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/>',gift:'<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 12h18M12 8v13"/><path d="M12 8c-2-4-6-4-6-1.5S10 8 12 8zM12 8c2-4 6-4 6-1.5S14 8 12 8z"/>',lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',van:'<path d="M3 7h12l4 4v6H3z"/><circle cx="7" cy="18" r="1.5"/><circle cx="16" cy="18" r="1.5"/>',dots:'<circle cx="6" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="18" cy="12" r="1"/>',refresh:'<path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/>'};
+const P={chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h7M8.5 14.5h4"/>',pen:'<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>',menu:'<path d="M4 7h16M4 12h16M4 17h10"/>',back:'<path d="M15 6l-6 6 6 6"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',arrow:'<path d="M9 6l6 6-6 6"/>',arrowR:'<path d="M5 12h14M13 6l6 6-6 6"/>',spot:'<path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',trash:'<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/>',bus:'<rect x="4" y="3" width="16" height="15" rx="3"/><path d="M4 11h16"/><path d="M7 21l1-3M17 21l-1-3"/>',office:'<path d="M3 21h18"/><path d="M4 10h16"/><path d="M12 3l8 5H4z"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/>',med:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>',mega:'<path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/>',survey:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/>',camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',sofa:'<rect x="3" y="8" width="18" height="10" rx="2"/><path d="M6 18v2M18 18v2M6 8V6h12v2"/>',recycle:'<path d="M7 19H4l3-5"/><path d="M17 19h3l-3-5"/><path d="M9 6l3-3 3 3"/><path d="M12 3v7M5 14l7-4 7 4"/>',flash:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',img:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-8 8"/>',flip:'<path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.8 2.5 4 5.5 4 9s-1.2 6.5-4 9c-2.8-2.5-4-5.5-4-9s1.2-6.5 4-9z"/>',phone:'<path d="M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',fridge:'<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M6 10h12M9 6v2M9 13v3"/>',home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',work:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5h8v2"/>',train:'<rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 10h14M8 21l2-4M16 21l-2-4"/>',walk:'<circle cx="13" cy="4" r="2"/><path d="M10 22l2-7-3-3 2-5 4 3 3 1M9 12l-3 2"/>',card:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 15h4"/>',star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',route:'<circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h6.5"/>',map:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',ext:'<path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',web:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/>',mobile:'<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/>',download:'<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/>',tap:'<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M10 17h4"/>',speak:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',alert:'<path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5v.5"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',shield:'<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/>',gift:'<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 12h18M12 8v13"/><path d="M12 8c-2-4-6-4-6-1.5S10 8 12 8zM12 8c2-4 6-4 6-1.5S14 8 12 8z"/>',lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',van:'<path d="M3 7h12l4 4v6H3z"/><circle cx="7" cy="18" r="1.5"/><circle cx="16" cy="18" r="1.5"/>',dots:'<circle cx="6" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="18" cy="12" r="1"/>',refresh:'<path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/>'};
 const ic=(n,s=20,c='currentColor',w=1.8)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
 const dotI=(n,bg,fg='#fff',s=36)=>`<span class="idot" style="width:${s}px;height:${s}px;background:${bg}">${ic(n,s/2,fg,2)}</span>`;
 
@@ -410,7 +431,7 @@ const DAYS={en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],vi:['CN','T2','T3','T
 const DAYLONG={en:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],vi:['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'],ko:['일요일','월요일','화요일','수요일','목요일','금요일','토요일'],zh:['星期日','星期一','星期二','星期三','星期四','星期五','星期六'],ru:['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'],uz:[`Yakshanba`,`Dushanba`,`Seshanba`,`Chorshanba`,`Payshanba`,`Juma`,`Shanba`],mn:['Ням','Даваа','Мягмар','Лхагва','Пүрэв','Баасан','Бямба']};
 const S={
 en:{cont:'Continue',contSub:'다음 단계로',menu:'Menu',welcome:'Welcome to Ansan',homeT:'Life in Ansan',
- items:['Waste sorting','Bus & transit','Public offices','Hospitals','News & events','Surveys'],
+ items:['Waste sorting','Bus & transit','Public offices','Hospitals','News & events','Surveys','Neighbors'],
  sponsored:'SPONSORED · SAMPLE',adT:'Send money home for less',adS:'Example ad · remittance, mobile plans, local shops',tipT:"Today's tip",tipB:'Food waste never goes in the regular bag. Drain it and use the orange food-waste bag.',
  wasteT:'Waste sorting',change:'Change',tonight:'TONIGHT',tonightNone:'No collection tonight',canTonight:'You can put out tonight',weekT:'This week',rest:'Off',
  gen:'General',food:'Food',rec:'Recycling',genL:'General waste',foodL:'Food waste',recL:'Recyclables',bagW:'Milky-white pay-as-you-throw bag',bagO:'Orange food-waste bag',bagC:'Clear plastic bag',bulky:'Bulky items',bulkyS:'Apply first · pickup Mon & Thu',ask:'Ask with a photo',
@@ -447,7 +468,7 @@ en:{cont:'Continue',contSub:'다음 단계로',menu:'Menu',welcome:'Welcome to A
  origView:'View original (Korean)',transView:'View translation',autoTr:'Auto-translated · may contain errors',readMore:'Read more',addHome:'Add Ansan Life to home screen',addHomeS:'Open it like an app, even offline',iosHome:'Tap Share, then “Add to Home Screen”',offline:'You’re offline · showing saved info',photoConsent:'Photos are used only to identify the item and are not stored.',locConsent:'Your location is used only to find your address (via Naver Maps) and is not saved on our server.',
  destPh:'Search a place or address',routeNote:'Directions open in Naver Map with bus and subway times.',adLbl:'SPONSORED',lang:'EN'},
 vi:{cont:'Tiếp tục',contSub:'다음 단계로',menu:'Menu',welcome:'Chào mừng đến Ansan',homeT:'Cuộc sống ở Ansan',
- items:['Phân loại rác','Xe buýt','Cơ quan','Bệnh viện','Tin tức & sự kiện','Khảo sát'],
+ items:['Phân loại rác','Xe buýt','Cơ quan','Bệnh viện','Tin tức & sự kiện','Khảo sát','Hàng xóm'],
  sponsored:'QUẢNG CÁO · MẪU',adT:'Chuyển tiền về nhà phí thấp',adS:'Quảng cáo mẫu · chuyển tiền, viễn thông, cửa hàng',tipT:'Mẹo hôm nay',tipB:'Không bỏ rác thực phẩm vào túi rác thường. Chắt nước và bỏ vào túi màu cam.',
  wasteT:'Phân loại rác',change:'Đổi',tonight:'TỐI NAY',tonightNone:'Tối nay không thu gom',canTonight:'오늘 밤 배출 가능',weekT:'Lịch tuần này',rest:'Nghỉ',
  gen:'Thường',food:'Thực phẩm',rec:'Tái chế',genL:'Rác thường',foodL:'Rác thực phẩm',recL:'Rác tái chế',bagW:'Túi trắng sữa (종량제)',bagO:'Túi màu cam',bagC:'Túi nilon trong suốt',bulky:'Đồ cồng kềnh',bulkyS:'Đăng ký trước · thu gom T2, T5',ask:'Chụp ảnh để hỏi',
@@ -484,7 +505,7 @@ vi:{cont:'Tiếp tục',contSub:'다음 단계로',menu:'Menu',welcome:'Chào m�
  origView:'Xem bản gốc (tiếng Hàn)',transView:'Xem bản dịch',autoTr:'Dịch tự động · có thể có lỗi',readMore:'Xem thêm',addHome:'Thêm Ansan Life vào màn hình chính',addHomeS:'Mở như ứng dụng, kể cả khi không có mạng',iosHome:'Nhấn Chia sẻ, rồi “Thêm vào MH chính”',offline:'Đang ngoại tuyến · hiện thông tin đã lưu',photoConsent:'Ảnh chỉ dùng để nhận diện đồ vật và không được lưu.',locConsent:'Vị trí chỉ dùng để tìm địa chỉ (qua Naver Maps) và không được lưu trên máy chủ của chúng tôi.',
  destPh:'Tìm địa điểm hoặc địa chỉ',routeNote:'Chỉ đường mở trong Naver Map, có giờ xe buýt và tàu điện.',adLbl:'QUẢNG CÁO',lang:'VI'},
 ko:{cont:'다음',contSub:'안산살이 시작하기',menu:'메뉴',welcome:'Welcome to Ansan',homeT:'안산 생활 안내',
- items:['분리배출','버스·교통','관공서','병원·약국','공지·행사','설문 참여'],
+ items:['분리배출','버스·교통','관공서','병원·약국','공지·행사','설문 참여','주민 이야기'],
  sponsored:'광고 · 예시',adT:'해외송금 수수료 아끼기',adS:'예시 광고 · 송금, 통신, 지역 상점',tipT:'오늘의 생활 팁',tipB:'음식물 쓰레기는 일반 종량제 봉투에 넣지 말고, 물기를 빼서 주황색 음식물 봉투에 버려요.',
  wasteT:'분리배출',change:'변경',tonight:'오늘 밤',tonightNone:'오늘 밤은 수거하지 않아요',canTonight:'오늘 밤 배출 가능',weekT:'이번 주 배출 요일',rest:'쉼',
  gen:'일반',food:'음식물',rec:'재활용',genL:'일반쓰레기',foodL:'음식물쓰레기',recL:'재활용품',bagW:'유백색 일반 종량제 봉투',bagO:'주황색 음식물 봉투',bagC:'투명 비닐봉투',bulky:'대형폐기물',bulkyS:'사전 신고 · 월·목 수거',ask:'사진으로 물어보기',
@@ -521,7 +542,7 @@ ko:{cont:'다음',contSub:'안산살이 시작하기',menu:'메뉴',welcome:'Wel
  origView:'원문 보기',transView:'번역 보기',autoTr:'',readMore:'자세히 보기',addHome:'안산살이 홈 화면에 추가',addHomeS:'앱처럼 열고 오프라인에서도 볼 수 있어요',iosHome:'공유 버튼 → "홈 화면에 추가"를 누르세요',offline:'오프라인 상태예요 · 저장된 정보를 보여드려요',photoConsent:'사진은 품목 판별에만 쓰이고 저장하지 않아요.',locConsent:'위치는 주소를 찾는 데만 쓰이고(네이버 지도) 저희 서버에 저장하지 않아요.',
  destPh:'장소나 주소 검색',routeNote:'길찾기는 네이버지도에서 버스·지하철 시간과 함께 열려요.',adLbl:'광고',lang:'KO'},
 zh:{cont:'继续',contSub:'다음 단계로',menu:'菜单',welcome:'欢迎来到安山',homeT:'安山生活',
- items:['垃圾分类','公交·交通','政府机关','医院','新闻·活动','问卷调查'],
+ items:['垃圾分类','公交·交通','政府机关','医院','新闻·活动','问卷调查','邻里故事'],
  sponsored:'广告 · 示例',adT:'汇款回家更省钱',adS:'示例广告 · 汇款、手机套餐、本地商店',tipT:'今日小贴士',tipB:'厨余垃圾不能放进普通垃圾袋。沥干水分后，装进橙色厨余垃圾袋。',
  wasteT:'垃圾分类',change:'更改',tonight:'今晚',tonightNone:'今晚不收垃圾',canTonight:'今晚可以扔',weekT:'本周',rest:'不收',
  gen:'一般',food:'厨余',rec:'回收',genL:'一般垃圾',foodL:'厨余垃圾',recL:'可回收物',bagW:'乳白色计量制垃圾袋',bagO:'橙色厨余垃圾袋',bagC:'透明塑料袋',bulky:'大件垃圾',bulkyS:'需先申请 · 周一、周四收',ask:'拍照提问',
@@ -559,7 +580,7 @@ zh:{cont:'继续',contSub:'다음 단계로',menu:'菜单',welcome:'欢迎来到
  destPh:'搜索地点或地址',routeNote:'路线将在Naver地图中打开，可查看公交和地铁时间。',adLbl:'广告',lang:'ZH'},
 ru:{
 cont:'Продолжить',contSub:'다음 단계로',menu:'Меню',welcome:'Добро пожаловать в Ансан',homeT:'Жизнь в Ансане',
-items:['Сортировка мусора','Автобусы и транспорт','Госучреждения','Больницы','Новости и события','Опросы'],
+items:['Сортировка мусора','Автобусы и транспорт','Госучреждения','Больницы','Новости и события','Опросы','Соседи'],
 sponsored:'РЕКЛАМА · ПРИМЕР',adT:'Переводы домой дешевле',adS:'Пример рекламы · переводы, мобильная связь, местные магазины',
 tipT:'Совет дня',tipB:'Пищевые отходы нельзя класть в обычный мешок. Слейте воду и используйте оранжевый мешок для пищевых отходов.',
 wasteT:'Сортировка мусора',change:'Изменить',tonight:'СЕГОДНЯ ВЕЧЕРОМ',tonightNone:'Сегодня вечером вывоза нет',canTonight:'Сегодня вечером можно выносить',
@@ -636,7 +657,7 @@ locConsent:'Местоположение используется только �
 destPh:'Найдите место или адрес',routeNote:'Маршрут откроется в Naver Map с временем автобусов и метро.',adLbl:'РЕКЛАМА',lang:'RU'
 },
 uz:{cont:`Davom etish`,contSub:'다음 단계로',menu:`Menyu`,welcome:`Ansanga xush kelibsiz`,homeT:`Ansanda hayot`,
- items:[`Chiqindini saralash`,`Avtobus va transport`,`Davlat idoralari`,`Shifoxonalar`,`Yangiliklar va tadbirlar`,`So‘rovnomalar`],
+ items:[`Chiqindini saralash`,`Avtobus va transport`,`Davlat idoralari`,`Shifoxonalar`,`Yangiliklar va tadbirlar`,`So‘rovnomalar`,`Qo‘shnilar`],
  sponsored:`REKLAMA · NAMUNA`,adT:`Uyga arzonroq pul yuboring`,adS:`Namuna reklama · pul o‘tkazish, mobil tariflar, mahalliy do‘konlar`,tipT:`Bugungi maslahat`,tipB:`Oziq-ovqat chiqindisi oddiy qopga solinmaydi. Suvini to‘kib, to‘q sariq oziq-ovqat chiqindisi qopidan foydalaning.`,
  wasteT:`Chiqindini saralash`,change:`O‘zgartirish`,tonight:`BUGUN KECHQURUN`,tonightNone:`Bugun kechqurun yig‘ilmaydi`,canTonight:`Bugun kechqurun chiqarsangiz bo‘ladi`,weekT:`Shu hafta`,rest:`Yo‘q`,
  gen:`Umumiy`,food:`Oziq-ovqat`,rec:`Qayta ishlash`,genL:`Umumiy chiqindi`,foodL:`Oziq-ovqat chiqindisi`,recL:`Qayta ishlanadigan`,bagW:`Sutrang oq pullik chiqindi qopi`,bagO:`To‘q sariq oziq-ovqat chiqindisi qopi`,bagC:`Shaffof plastik qop`,bulky:`Katta buyumlar`,bulkyS:`Avval ariza bering · Du va Pa olib ketiladi`,ask:`Rasm bilan so‘rash`,
@@ -673,7 +694,7 @@ uz:{cont:`Davom etish`,contSub:'다음 단계로',menu:`Menyu`,welcome:`Ansanga 
  origView:`Asl matn (koreyscha)`,transView:`Tarjimani ko‘rish`,autoTr:`Avtomatik tarjima · xato bo‘lishi mumkin`,readMore:`Batafsil`,addHome:`Ansan Life’ni bosh ekranga qo‘shish`,addHomeS:`Ilova kabi oching, internetsiz ham`,iosHome:`“Ulashish” ni, keyin “Bosh ekranga qo‘shish” ni bosing`,offline:`Internet yo‘q · saqlangan ma'lumot ko‘rsatilmoqda`,photoConsent:`Rasmlar faqat buyumni aniqlash uchun ishlatiladi va saqlanmaydi.`,locConsent:`Joylashuvingiz faqat manzilingizni topish uchun (Naver Maps orqali) ishlatiladi va serverimizda saqlanmaydi.`,
  destPh:'Joy yoki manzilni qidiring',routeNote:'Yo‘nalish Naver Map ilovasida avtobus va metro vaqtlari bilan ochiladi.',adLbl:'REKLAMA',lang:'UZ'},
 mn:{cont:'Үргэлжлүүлэх',contSub:'다음 단계로',menu:'Цэс',welcome:'Ансанд тавтай морил',homeT:'Ансан дахь амьдрал',
- items:['Хог ангилах','Автобус ба тээвэр','Төрийн байгууллага','Эмнэлэг','Мэдээ ба арга хэмжээ','Санал асуулга'],
+ items:['Хог ангилах','Автобус ба тээвэр','Төрийн байгууллага','Эмнэлэг','Мэдээ ба арга хэмжээ','Санал асуулга','Хөршүүд'],
  sponsored:'ЗАР · ЖИШЭЭ',adT:'Гэр рүүгээ хямд мөнгө илгээх',adS:'Жишээ зар · мөнгөн гуйвуулга, утасны багц, ойрын дэлгүүр',tipT:'Өнөөдрийн зөвлөгөө',tipB:'Хүнсний хогийг энгийн уутанд хэзээ ч бүү хий. Усыг нь шүүгээд улбар шар хүнсний хогийн уутанд хийнэ үү.',
  wasteT:'Хог ангилах',change:'Солих',tonight:'ӨНӨӨ ОРОЙ',tonightNone:'Өнөө орой хог ачихгүй',canTonight:'Өнөө орой гаргаж болно',weekT:'Энэ долоо хоног',rest:'Амралт',
  gen:'Энгийн',food:'Хүнсний',rec:'Дахин боловсруулах',genL:'Энгийн хог',foodL:'Хүнсний хог',recL:'Дахин боловсруулах хог',bagW:'Сүүн цагаан төлбөртэй хогийн уут',bagO:'Улбар шар хүнсний хогийн уут',bagC:'Тунгалаг гялгар уут',bulky:'Том оврын хог',bulkyS:'Урьдчилан бүртгүүлэх · Да ба Пү ачна',ask:'Зургаар асуух',
@@ -731,6 +752,7 @@ const fmtDay=d=>st.lang==='uz'?`${d.getDate()}-${UZ_MON[d.getMonth()]}, ${DAYLON
 const isKo=()=>st.lang==='ko';
 const cur=()=>st.stack[st.stack.length-1];
 /* 언어 기억: 다시 들어오면 나라 선택 없이 홈으로 */
+try{const cc=localStorage.getItem('al_country');if(cc&&COUNTRIES.some(c=>c.c===cc))st.sel=cc;}catch(e){}
 try{const l=localStorage.getItem('al_lang');if(l&&COUNTRIES.some(c=>c.lang===l)){st.lang=l;st.stack=['home'];}}catch(e){}
 function go(n){if(!SURVEY_ON&&/^(surv|sq|sdone)$/.test(n))return;if(/^w\d$|^rules$/.test(n)&&!wasteOn())return;if(/^b[1-6]$/.test(n)&&!busOn())return;st.stack.push(n);render();}
 function back(){if(st.stack.length>1)st.stack.pop();render();}
@@ -1018,7 +1040,7 @@ SCR.priv=()=>{const p=PT();const on=gpsPref()==='on';
   <span class="micro muted">${p.kor}</span>
   <button class="card row" data-act="clrdata" style="text-align:left;gap:12px">${dotI('trash','#B4372B','#fff',36)}<span class="col grow" style="gap:3px"><span class="b">${p.clear}</span><span class="tiny muted">${p.clearS}</span></span></button>
   <div class="spacer"></div></div>${foot}</div>`;};
-SCR.home=()=>{const t=T();const icons=['trash','bus','office','med','mega','survey'];const to=['w1','b1','offices','hosp','news','surv'];const ko=S.ko.items;
+SCR.home=()=>{const t=T();const icons=['trash','bus','office','med','mega','survey','chat'];const to=['w1','b1','offices','hosp','news','surv','board'];const ko=S.ko.items;
  return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu,{menu:true,right:langPill()})}
  ${ttl(t.homeT,`<span>${fmtDay(new Date())}</span>`,{eye:t.welcome})}
  <div class="sheet">${topBanner()}<nav class="toc">${t.items.map((x,i)=>{const off=(i===5&&!SURVEY_ON)||(i===0&&!wasteOn())||(i===1&&!busOn());return `<button ${off?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:off?`<em class="adnote">${(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중')} · ${esc(RNAME())}</em>`:''}</span><span class="n">0${i+1}</span></button>`}).join('')}</nav>
@@ -1537,6 +1559,95 @@ async function loadBanners(){const key=bnKey();
   const box=document.getElementById('bnslot');if(box&&bnKey()===key){box.outerHTML=topBanner();tagFx(app);}}
  bnMount();}
 
+/* ---------- 주민 이야기 (시별 게시판) ----------
+   지금 있는 곳(GPS, 안 되면 저장한 주소)의 시·군 사람끼리. 가입 없이 닉네임 + 비밀번호, IP 앞 두 자리 표시(디시인사이드 방식).
+   어떤 언어로 써도 읽는 사람의 언어로 번역해서 보여줌 (원문 보기 가능). 서버: /board/* */
+const BT={
+ en:{t:'Neighbors',sub:c=>`Only people in ${c}`,write:'Write',empty:'No posts yet. Say hello to your neighbors!',more:'Load more',nick:'Nickname',pw:'Password',pwNote:'Needed to delete it later · 4+ characters',title:'Title',body:'What would you like to share?',post:'Post',cmts:'Comments',cmtPh:'Write a comment',send:'Comment',del:'Delete',report:'Report',reported:'Reported. Thank you.',delAsk:'Password you used',wrongPw:'Wrong password',deleted:'Deleted',tr:'Translated',orig:'See original',seeTr:'See translation',rules:'Be kind. Don’t share phone numbers or other personal details. Posts reported by several people are hidden.',ipNote:'Like Korean community boards, the first part of your IP address is shown.',gps:'Your current location',home:'Your saved address',err:'Couldn’t load. Try again.',retry:'Try again',noApi:'Neighbors opens when the server is connected.',needNick:'Nickname: 2–12 characters',needPw:'Password: 4 or more characters',needText:'Write a title and some text',sent:'Posted',rate:'Too many tries. Please wait a minute.',cancel:'Cancel',ok:'Delete',noCmt:'No comments yet.',back:'Neighbors',gone:'This post was deleted.'},
+ vi:{t:'Hàng xóm',sub:c=>`Chỉ dành cho người ở ${c}`,write:'Viết bài',empty:'Chưa có bài nào. Hãy chào hàng xóm nhé!',more:'Xem thêm',nick:'Biệt danh',pw:'Mật khẩu',pwNote:'Dùng để xóa sau này · từ 4 ký tự',title:'Tiêu đề',body:'Bạn muốn chia sẻ điều gì?',post:'Đăng',cmts:'Bình luận',cmtPh:'Viết bình luận',send:'Bình luận',del:'Xóa',report:'Báo cáo',reported:'Đã báo cáo. Cảm ơn bạn.',delAsk:'Mật khẩu bạn đã dùng',wrongPw:'Sai mật khẩu',deleted:'Đã xóa',tr:'Đã dịch',orig:'Xem bản gốc',seeTr:'Xem bản dịch',rules:'Hãy lịch sự. Đừng đăng số điện thoại hay thông tin cá nhân. Bài bị nhiều người báo cáo sẽ bị ẩn.',ipNote:'Giống các diễn đàn Hàn Quốc, phần đầu địa chỉ IP của bạn sẽ hiển thị.',gps:'Vị trí hiện tại',home:'Địa chỉ đã lưu',err:'Không tải được. Thử lại.',retry:'Thử lại',noApi:'Mục Hàng xóm sẽ mở khi máy chủ được kết nối.',needNick:'Biệt danh: 2–12 ký tự',needPw:'Mật khẩu: từ 4 ký tự',needText:'Hãy viết tiêu đề và nội dung',sent:'Đã đăng',rate:'Thử quá nhiều lần. Vui lòng đợi một phút.',cancel:'Hủy',ok:'Xóa',noCmt:'Chưa có bình luận.',back:'Hàng xóm',gone:'Bài này đã bị xóa.'},
+ ko:{t:'주민 이야기',sub:c=>`${c} 주민끼리`,write:'글쓰기',empty:'아직 글이 없어요. 이웃에게 먼저 인사해 보세요!',more:'더 보기',nick:'닉네임',pw:'비밀번호',pwNote:'나중에 지울 때 필요해요 · 4자 이상',title:'제목',body:'이웃과 나누고 싶은 이야기를 적어 주세요',post:'올리기',cmts:'댓글',cmtPh:'댓글 쓰기',send:'등록',del:'삭제',report:'신고',reported:'신고했어요. 고마워요.',delAsk:'쓸 때 넣은 비밀번호',wrongPw:'비밀번호가 맞지 않아요',deleted:'지웠어요',tr:'번역됨',orig:'원문 보기',seeTr:'번역 보기',rules:'서로 예의를 지켜 주세요. 전화번호 같은 개인정보는 쓰지 마세요. 여러 명이 신고한 글은 숨겨져요.',ipNote:'한국 커뮤니티처럼 IP 주소 앞부분이 함께 보여요.',gps:'지금 있는 곳 기준',home:'저장한 주소 기준',err:'불러오지 못했어요. 다시 시도해 주세요.',retry:'다시 시도',noApi:'서버가 연결되면 주민 이야기가 열려요.',needNick:'닉네임은 2~12자',needPw:'비밀번호는 4자 이상',needText:'제목과 내용을 적어 주세요',sent:'올렸어요',rate:'너무 자주 시도했어요. 1분 뒤에 다시 해 주세요.',cancel:'취소',ok:'삭제',noCmt:'아직 댓글이 없어요.',back:'주민 이야기',gone:'지워진 글이에요.'},
+ zh:{t:'邻里故事',sub:c=>`仅限${c}的居民`,write:'发帖',empty:'还没有帖子。先和邻居打个招呼吧！',more:'加载更多',nick:'昵称',pw:'密码',pwNote:'以后删除时需要 · 至少4位',title:'标题',body:'想和邻居分享什么？',post:'发布',cmts:'评论',cmtPh:'写评论',send:'评论',del:'删除',report:'举报',reported:'已举报，谢谢。',delAsk:'发帖时的密码',wrongPw:'密码错误',deleted:'已删除',tr:'已翻译',orig:'查看原文',seeTr:'查看译文',rules:'请文明交流。不要发布电话号码等个人信息。被多人举报的帖子会被隐藏。',ipNote:'和韩国论坛一样，会显示你IP地址的前半部分。',gps:'按当前位置',home:'按保存的地址',err:'加载失败，请重试。',retry:'重试',noApi:'服务器连接后即可使用邻里故事。',needNick:'昵称：2–12个字',needPw:'密码：至少4位',needText:'请填写标题和内容',sent:'已发布',rate:'尝试次数过多，请一分钟后再试。',cancel:'取消',ok:'删除',noCmt:'还没有评论。',back:'邻里故事',gone:'该帖子已删除。'},
+ ru:{t:'Соседи',sub:c=>`Только для жителей: ${c}`,write:'Написать',empty:'Пока нет записей. Поздоровайтесь с соседями!',more:'Ещё',nick:'Ник',pw:'Пароль',pwNote:'Нужен, чтобы потом удалить · от 4 символов',title:'Заголовок',body:'Чем хотите поделиться?',post:'Опубликовать',cmts:'Комментарии',cmtPh:'Написать комментарий',send:'Отправить',del:'Удалить',report:'Пожаловаться',reported:'Жалоба отправлена. Спасибо.',delAsk:'Пароль, который вы указали',wrongPw:'Неверный пароль',deleted:'Удалено',tr:'Переведено',orig:'Оригинал',seeTr:'Перевод',rules:'Будьте вежливы. Не публикуйте номера телефонов и личные данные. Записи с несколькими жалобами скрываются.',ipNote:'Как на корейских форумах, показывается начало вашего IP-адреса.',gps:'По текущему местоположению',home:'По сохранённому адресу',err:'Не удалось загрузить. Попробуйте ещё раз.',retry:'Повторить',noApi:'Раздел «Соседи» откроется после подключения сервера.',needNick:'Ник: 2–12 символов',needPw:'Пароль: от 4 символов',needText:'Напишите заголовок и текст',sent:'Опубликовано',rate:'Слишком много попыток. Подождите минуту.',cancel:'Отмена',ok:'Удалить',noCmt:'Комментариев пока нет.',back:'Соседи',gone:'Запись удалена.'},
+ uz:{t:`Qo‘shnilar`,sub:c=>`Faqat ${c} aholisi uchun`,write:`Yozish`,empty:`Hozircha post yo‘q. Qo‘shnilaringiz bilan salomlashing!`,more:`Yana`,nick:`Taxallus`,pw:`Parol`,pwNote:`Keyin o‘chirish uchun kerak · kamida 4 belgi`,title:`Sarlavha`,body:`Nima bilan bo‘lishmoqchisiz?`,post:`Joylash`,cmts:`Izohlar`,cmtPh:`Izoh yozing`,send:`Yuborish`,del:`O‘chirish`,report:`Shikoyat`,reported:`Shikoyat yuborildi. Rahmat.`,delAsk:`Yozganda kiritgan parolingiz`,wrongPw:`Parol noto‘g‘ri`,deleted:`O‘chirildi`,tr:`Tarjima`,orig:`Asl matn`,seeTr:`Tarjimani ko‘rish`,rules:`Odobli bo‘ling. Telefon raqami va shaxsiy ma'lumotlarni yozmang. Ko‘p shikoyat qilingan postlar yashiriladi.`,ipNote:`Koreya forumlaridagi kabi IP manzilingizning boshi ko‘rsatiladi.`,gps:`Hozirgi joylashuv bo‘yicha`,home:`Saqlangan manzil bo‘yicha`,err:`Yuklab bo‘lmadi. Qayta urinib ko‘ring.`,retry:`Qayta urinish`,noApi:`Server ulanganda Qo‘shnilar bo‘limi ochiladi.`,needNick:`Taxallus: 2–12 belgi`,needPw:`Parol: kamida 4 belgi`,needText:`Sarlavha va matn yozing`,sent:`Joylandi`,rate:`Juda ko‘p urinish. Bir daqiqa kuting.`,cancel:`Bekor qilish`,ok:`O‘chirish`,noCmt:`Hozircha izoh yo‘q.`,back:`Qo‘shnilar`,gone:`Bu post o‘chirilgan.`},
+ mn:{t:'Хөршүүд',sub:c=>`Зөвхөн ${c}-ийн оршин суугчид`,write:'Бичих',empty:'Одоохондоо пост алга. Хөршүүддээ сайн уу гэж хэлээрэй!',more:'Цааш үзэх',nick:'Хоч нэр',pw:'Нууц үг',pwNote:'Дараа устгахад хэрэгтэй · 4-өөс дээш тэмдэгт',title:'Гарчиг',body:'Юу хуваалцмаар байна?',post:'Нийтлэх',cmts:'Сэтгэгдэл',cmtPh:'Сэтгэгдэл бичих',send:'Илгээх',del:'Устгах',report:'Мэдээлэх',reported:'Мэдээллээ. Баярлалаа.',delAsk:'Бичихдээ оруулсан нууц үг',wrongPw:'Нууц үг буруу',deleted:'Устгалаа',tr:'Орчуулсан',orig:'Эх хувь',seeTr:'Орчуулга',rules:'Эелдэг байгаарай. Утасны дугаар болон хувийн мэдээлэл бүү бич. Олон хүн мэдээлсэн пост нуугдана.',ipNote:'Солонгос форумуудын адил таны IP хаягийн эхний хэсэг харагдана.',gps:'Одоогийн байршлаар',home:'Хадгалсан хаягаар',err:'Ачаалж чадсангүй. Дахин оролдоно уу.',retry:'Дахин оролдох',noApi:'Сервер холбогдсоны дараа Хөршүүд нээгдэнэ.',needNick:'Хоч нэр: 2–12 тэмдэгт',needPw:'Нууц үг: 4-өөс дээш тэмдэгт',needText:'Гарчиг, агуулгаа бичнэ үү',sent:'Нийтэллээ',rate:'Хэт олон оролдлого. Нэг минут хүлээнэ үү.',cancel:'Болих',ok:'Устгах',noCmt:'Сэтгэгдэл алга.',back:'Хөршүүд',gone:'Энэ пост устгагдсан.'}};
+const BTT=()=>BT[st.lang]||BT.en;
+const LANG_NATIVE={ko:'한국어',en:'English',vi:'Tiếng Việt',zh:'中文',ru:'Русский',uz:'O‘zbekcha',mn:'Монгол'};
+const LANG_FLAG={ko:'kr',en:'en',vi:'vn',zh:'cn',ru:'ru',uz:'uz',mn:'mn'};
+st.bd={region:null,src:null,list:null,more:false,err:false,sel:null,post:null,orig:{},ask:null};
+const myCountry=()=>st.sel||LANG_FLAG[st.lang]||'en';
+const bdPref=k=>{try{return localStorage.getItem('al_bd_'+k)||''}catch(e){return ''}};
+const bdSave=(k,v)=>{try{localStorage.setItem('al_bd_'+k,v)}catch(e){}};
+function ago(iso){const s=(Date.now()-new Date(iso).getTime())/1000;const L=st.lang==='zh'?'zh-CN':st.lang;
+ try{const f=new Intl.RelativeTimeFormat(L,{numeric:'auto'});if(s<60)return f.format(0,'second');if(s<3600)return f.format(-Math.floor(s/60),'minute');if(s<86400)return f.format(-Math.floor(s/3600),'hour');if(s<604800)return f.format(-Math.floor(s/86400),'day');}catch(e){}
+ const d=new Date(iso);return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;}
+const bdWho=x=>`<span class="bd-who"><span class="bd-fl">${flag(x.country in FL?x.country:'en',16)}</span><b>${esc(x.nick)}</b><span class="bd-ip">(${esc(x.ip)})</span><span class="bd-dot">·</span><span>${esc(ago(x.at))}</span></span>`;
+const bdShow=(x,f)=>x.tr&&!st.bd.orig[x.id]&&x.tr[f]!=null&&x.tr[f]!==''?x.tr[f]:x[f];
+const bdRegionName=()=>{const r=regionOf(st.bd.region?st.bd.region+' ':'');return isKo()?r.koFull||r.ko:(r[st.lang]||r.en);};
+async function bdApi(path,body){const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),25000);
+ try{const r=await fetch(API_URL+path,{method:body?'POST':'GET',headers:apiHeaders(body?{'content-type':'application/json'}:{}),body:body?JSON.stringify(body):undefined,signal:ctl.signal});let j={};try{j=await r.json()}catch(e){}return {ok:r.ok,status:r.status,j};}
+ catch(e){return {ok:false,status:0,j:{}}}finally{clearTimeout(to)}}
+const bdErr=r=>{const b=BTT();return r.status===429?b.rate:r.j.error==='nick'?b.needNick:r.j.error==='pw'?(r.status===403?b.wrongPw:b.needPw):r.j.error==='empty'?b.needText:r.j.error==='gone'?b.gone:b.err;};
+// 지금 있는 시: GPS 동의했으면 GPS → 네이버 역지오코딩, 아니면 저장한 주소
+async function bdRegion(){if(st.bd.region)return;let key=null,src='home';
+ if(gpsPref()==='on'&&window.isSecureContext&&navigator.geolocation){try{const p=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:false,timeout:9000,maximumAge:300000}));
+  const N=await loadNaver();const a=N?await revGeo(N,p.coords.latitude,p.coords.longitude):null;if(a&&a.inKorea){key=regionOf(a.full).key;src='gps';}}catch(e){}}
+ if(!key)key=RG().key;st.bd.region=key;st.bd.src=src;}
+async function bdLoad(more){const b=st.bd;if(!hasApi()){b.err='noapi';return bdPaint();}await bdRegion();
+ const before=more&&b.list&&b.list.length?b.list[b.list.length-1].id:0;
+ const r=await bdApi(`/board/list?region=${enc(b.region)}&lang=${st.lang}${before?`&before=${before}`:''}`);
+ if(!r.ok){b.err=true;return bdPaint();}b.err=false;b.list=more?[...(b.list||[]),...r.j.items]:r.j.items;b.more=!!r.j.more;bdPaint();}
+function bdPaint(){const box=document.getElementById('bdlist');if(!box)return;const b=st.bd,t=BTT();const sub=document.getElementById('bdsub');if(sub&&b.region)sub.innerHTML=`${esc(t.sub(bdRegionName()))} · ${b.src==='gps'?t.gps:t.home}`;
+ if(b.err==='noapi'){box.innerHTML=`<p class="small muted">${t.noApi}</p>`;return;}
+ if(b.err){box.innerHTML=`<div class="col" style="gap:10px;align-items:flex-start"><span class="small muted">${t.err}</span><button class="btn line" data-act="bdretry">${t.retry}</button></div>`;return;}
+ if(!b.list){box.innerHTML='<div class="mskel"></div><div class="mskel"></div><div class="mskel"></div>';return;}
+ if(!b.list.length){box.innerHTML=`<div class="bd-empty">${dotI('chat','var(--bg)','#22393A',44)}<span class="small muted">${t.empty}</span></div>`;return;}
+ box.innerHTML=b.list.map(p=>`<button class="bd-item" data-bpost="${p.id}"><span class="bd-t">${esc(bdShow(p,'title'))}</span><span class="bd-ex">${esc(bdShow(p,'body'))}</span><span class="bd-meta">${bdWho(p)}${p.comments?`<span class="bd-c">${ic('chat',13,'#6E7472')}${p.comments}</span>`:''}${p.tr?`<span class="bd-tr">${ic('globe',12,'#6E7472')}${t.tr}</span>`:''}</span></button>`).join('')+(b.more?`<button class="btn line" data-act="bdmore">${t.more}</button>`:'');tagFx(box);}
+SCR.board=()=>{const t=BTT();return `<div class="scr ${isKo()?'ko':''}">${nav(T().menu,{right:`<button class="ibtn" data-act="bdretry" aria-label="${t.retry}">${ic('refresh',20)}</button>`})}
+ ${ttl(t.t,`<span id="bdsub">${st.bd.region?esc(t.sub(bdRegionName())):''}</span>`,{pin:true})}
+ <div class="sheet" style="gap:14px">${hasApi()?`<button class="btn dark" data-go="bwrite">${ic('pen',18,'#fff')}${t.write}</button>`:''}<div id="bdlist" class="col" style="gap:10px"></div><div class="spacer"></div></div>${foot}</div>`;};
+async function bdOpen(id){const b=st.bd;b.post=null;const r=await bdApi(`/board/post?id=${id}&lang=${st.lang}`);
+ if(cur()!=='bpost')return;if(!r.ok){b.post={err:r.status===404?'gone':true};}else b.post=r.j;render();}
+const bdAskBox=(type,id)=>{const t=BTT(),a=st.bd.ask;if(!a||a.type!==type||a.id!==id)return '';
+ return `<form class="bd-ask" data-bdask="${type}:${id}"><input class="in" type="password" name="pw" placeholder="${esc(t.delAsk)}" autocomplete="off" required><button type="button" class="btn line sm" data-act="bdaskx">${t.cancel}</button><button class="btn dark sm" type="submit">${t.ok}</button></form>`;};
+SCR.bpost=()=>{const t=BTT(),d=st.bd.post;
+ const head=`<div class="scr ${isKo()?'ko':''}">${nav(t.back)}`;
+ if(!d)return head+`<div class="sheet" style="margin-top:40px"><div class="mskel"></div><div class="mskel"></div></div>${foot}</div>`;
+ if(d.err)return head+`<div class="sheet" style="margin-top:40px"><p class="small muted">${d.err==='gone'?t.gone:t.err}</p></div>${foot}</div>`;
+ const p=d.post,o=!!st.bd.orig[p.id];
+ return head+`${ttl(esc(bdShow(p,'title')),bdWho(p))}
+ <div class="sheet" style="gap:14px">
+  ${p.tr?`<div class="row" style="justify-content:space-between"><span class="tiny muted">${o?LANG_NATIVE[p.lang]||'':`${t.tr} · ${LANG_NATIVE[p.lang]||''}`}</span><button class="b small" data-bdorig="${p.id}">${ic('globe',14,'#22393A')} ${o?t.seeTr:t.orig}</button></div>`:''}
+  <div class="bd-body">${esc(bdShow(p,'body'))}</div>
+  <div class="row" style="gap:8px;justify-content:flex-end"><button class="b tiny muted" data-bdrep="post:${p.id}">${ic('alert',13,'#6E7472')} ${t.report}</button><button class="b tiny muted" data-bddel="post:${p.id}">${ic('trash',13,'#6E7472')} ${t.del}</button></div>
+  ${bdAskBox('post',p.id)}
+  ${h2(t.cmts,'',String(d.comments.length))}
+  <div class="col" style="gap:12px">${d.comments.length?d.comments.map(c=>`<div class="bd-cmt">${bdWho(c)}<div class="bd-cb">${esc(c.tr&&!st.bd.orig[p.id]?c.tr.body:c.body)}</div><div class="row" style="gap:10px;justify-content:flex-end">${c.tr?`<span class="tiny muted">${o?LANG_NATIVE[c.lang]||'':t.tr}</span><span class="grow"></span>`:''}<button class="b micro muted" data-bdrep="comment:${c.id}">${t.report}</button><button class="b micro muted" data-bddel="comment:${c.id}">${t.del}</button></div>${bdAskBox('comment',c.id)}</div>`).join(''):`<span class="small muted">${t.noCmt}</span>`}</div>
+  <form class="bd-form card col" id="bdcf" style="gap:8px">
+   <div class="row" style="gap:8px"><input class="in" name="nick" maxlength="12" placeholder="${t.nick}" value="${esc(bdPref('nick'))}" autocomplete="nickname" required><input class="in" name="pw" type="password" maxlength="40" placeholder="${t.pw}" autocomplete="new-password" required></div>
+   <textarea class="in" name="body" maxlength="500" rows="3" placeholder="${t.cmtPh}" required></textarea>
+   <button class="btn dark" type="submit">${t.send}</button><span class="micro muted">${t.ipNote}</span></form>
+  <div class="spacer"></div></div>${foot}</div>`;};
+SCR.bwrite=()=>{const t=BTT();return `<div class="scr ${isKo()?'ko':''}">${nav(t.back)}
+ ${ttl(t.write,`<span>${esc(t.sub(bdRegionName()))}</span>`,{pin:true})}
+ <div class="sheet"><form class="col" id="bdwf" style="gap:12px">
+  <div class="row" style="gap:8px"><span class="bd-fl" title="${esc(myCountry())}">${flag(myCountry() in FL?myCountry():'en',24)}</span><input class="in grow" name="nick" maxlength="12" placeholder="${t.nick}" value="${esc(bdPref('nick'))}" autocomplete="nickname" required></div>
+  <input class="in" name="pw" type="password" maxlength="40" placeholder="${t.pw}" autocomplete="new-password" required><span class="micro muted" style="margin-top:-6px">${t.pwNote}</span>
+  <input class="in" name="title" maxlength="60" placeholder="${t.title}" required>
+  <textarea class="in" name="body" maxlength="2000" rows="8" placeholder="${t.body}" required></textarea>
+  <div class="soft-accent tiny" style="line-height:1.55">${t.rules}<br>${t.ipNote}</div>
+  <button class="btn dark" type="submit" id="bdsend">${t.post}</button></form><div class="spacer"></div></div>${foot}</div>`;};
+async function bdSubmitPost(f){const t=BTT(),v=Object.fromEntries(new FormData(f));const btn=f.querySelector('[type=submit]');
+ if([...v.nick.trim()].length<2)return toast(t.needNick);if(v.pw.length<4)return toast(t.needPw);if(!v.title.trim()||!v.body.trim())return toast(t.needText);
+ btn.disabled=true;await bdRegion();const r=await bdApi('/board/write',{region:st.bd.region,nick:v.nick.trim(),pw:v.pw,title:v.title,body:v.body,country:myCountry(),lang:st.lang});btn.disabled=false;
+ if(!r.ok)return toast(bdErr(r));bdSave('nick',v.nick.trim());toast(t.sent);st.bd.list=null;st.stack.pop();st.bd.sel=r.j.id;st.stack.push('bpost');render();bdOpen(r.j.id);}
+async function bdSubmitCmt(f){const t=BTT(),v=Object.fromEntries(new FormData(f));const p=st.bd.post&&st.bd.post.post;if(!p)return;
+ if([...v.nick.trim()].length<2)return toast(t.needNick);if(v.pw.length<4)return toast(t.needPw);if(!v.body.trim())return;
+ f.querySelector('[type=submit]').disabled=true;const r=await bdApi('/board/comment',{post_id:p.id,nick:v.nick.trim(),pw:v.pw,body:v.body,country:myCountry(),lang:st.lang});
+ if(!r.ok){f.querySelector('[type=submit]').disabled=false;return toast(bdErr(r));}bdSave('nick',v.nick.trim());st.bd.list=null;bdOpen(p.id);}
+async function bdDelete(type,id,pw){const t=BTT();const r=await bdApi('/board/delete',{type,id,pw});if(!r.ok)return toast(bdErr(r));toast(t.deleted);st.bd.ask=null;st.bd.list=null;
+ if(type==='post'){back();}else bdOpen(st.bd.post.post.id);}
+async function bdReport(type,id){const r=await bdApi('/board/report',{type,id});toast(r.ok?BTT().reported:bdErr(r));}
+
 /* survey answers → Supabase (실패하면 기기에 모아 두었다가 다음 실행 때 다시 보냄) */
 const SURVEY_ID='commute-2026';
 async function sendSurvey(rows){try{await sb('survey_responses',{method:'POST',headers:{prefer:'return=minimal'},body:JSON.stringify(rows)});return true}catch(e){return false}}
@@ -1680,6 +1791,10 @@ function render(){syncHist();syncBrand();clearInterval(bgTimer);clearTimeout(sca
  if(n==='w3')runScan();
  if(n==='home'||n==='news')loadAd();
  if(n==='home')loadBanners();
+ if(n==='board'){bdPaint();if(!st.bd.list||st.bd.err)bdLoad();}
+ if(n==='bpost'&&(!st.bd.post||(st.bd.post.post&&st.bd.post.post.id!==st.bd.sel)))bdOpen(st.bd.sel);
+ if(n==='bwrite'||n==='bpost'){const f=document.getElementById(n==='bwrite'?'bdwf':'bdcf');f&&f.addEventListener('submit',e=>{e.preventDefault();n==='bwrite'?bdSubmitPost(f):bdSubmitCmt(f);});
+  app.querySelectorAll('.bd-ask').forEach(f=>f.addEventListener('submit',e=>{e.preventDefault();const [ty,id]=f.dataset.bdask.split(':');bdDelete(ty,+id,f.querySelector('input').value);}));}
  if(n==='home'&&okKey(NAVER_KEY)){const pre=()=>loadNaver();window.requestIdleCallback?requestIdleCallback(pre,{timeout:3000}):setTimeout(pre,1500);} // 지도 스크립트 미리 받아 두기 (병원·버스 지도 첫 표시 4~5초 → 단축)
  if(n==='b2'){const f=document.getElementById('destf');f&&f.addEventListener('submit',e=>{e.preventDefault();const v=document.getElementById('dest').value.trim().slice(0,80);if(v)routeTo(v,/(로|길|동|구)\s*\d/.test(v)?(/안산/.test(v)?v:'경기도 안산시 '+v):null);});}
  if(n==='news'&&(hasApi()||hasSb()))loadNews();
@@ -1709,14 +1824,18 @@ function bindIntro(start=true){const A=document.getElementById('bgA'),B=document
  rail.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){rail.scrollLeft+=e.deltaY;e.preventDefault();}},{passive:false});
 }
 let dragMoved=false;
-app.addEventListener('click',e=>{const el=e.target.closest('[data-sel],[data-go],[data-act],[data-naver],[data-ans],[data-cand],[data-day],[data-stop],[data-news],[data-route],[data-mtab],[data-med],[data-mnav],#goBtn,#remind,#ntf');if(!el)return;
+app.addEventListener('click',e=>{const el=e.target.closest('[data-sel],[data-go],[data-act],[data-naver],[data-ans],[data-cand],[data-day],[data-stop],[data-news],[data-route],[data-mtab],[data-med],[data-mnav],[data-bpost],[data-bdorig],[data-bdrep],[data-bddel],#goBtn,#remind,#ntf');if(!el)return;
  if(el.dataset.mtab){st.med.tab=el.dataset.mtab;paintMed();return;}
+ if(el.dataset.bpost){st.bd.sel=+el.dataset.bpost;st.bd.post=null;st.bd.ask=null;go('bpost');return;}
+ if(el.dataset.bdorig){const k=el.dataset.bdorig;st.bd.orig[k]=!st.bd.orig[k];render();return;}
+ if(el.dataset.bdrep){const [ty,id]=el.dataset.bdrep.split(':');bdReport(ty,+id);return;}
+ if(el.dataset.bddel){const [ty,id]=el.dataset.bddel.split(':');st.bd.ask={type:ty,id:+id};render();const i=app.querySelector('.bd-ask input');i&&i.focus();return;}
  if(el.dataset.med){const it=medPick(el.dataset.med);if(it){st.med.sel=it;go('hdetail');}return;}
  if(el.dataset.mnav){const it=el.dataset.mnav==='sel'?st.med.sel:medPick(el.dataset.mnav);if(it)medNaver(it);return;}
  if(el.dataset.sel){if(dragMoved)return;const keep=document.getElementById('rail').scrollLeft;const A0=document.getElementById('bgA');const orangeOn=A0&&A0.style.opacity!=='0';st.sel=el.dataset.sel;clearInterval(bgTimer);app.innerHTML=SCR.intro().replace('class="scr intro"','class="scr intro" style="animation:none"');
   const A=document.getElementById('bgA'),B=document.getElementById('bgB');A.style.transition=B.style.transition='none';A.style.opacity=orangeOn?1:0;B.style.opacity=orangeOn?0:1;void A.offsetWidth;A.style.transition=B.style.transition='';
   bindIntro(orangeOn);document.getElementById('rail').scrollLeft=keep;return;}
- if(el.id==='goBtn'){const c=COUNTRIES.find(x=>x.c===st.sel);if(c&&c.lang){st.lang=c.lang;try{localStorage.setItem('al_lang',c.lang)}catch(e){}home();}return;}
+ if(el.id==='goBtn'){const c=COUNTRIES.find(x=>x.c===st.sel);if(c&&c.lang){st.lang=c.lang;try{localStorage.setItem('al_lang',c.lang);localStorage.setItem('al_country',c.c)}catch(e){}home();}return;}
  if(el.id==='remind'){st.remind=!st.remind;render();return;}
  if(el.id==='ntf'){st.notify=!st.notify;el.setAttribute('aria-pressed',st.notify);return;}
  if(el.dataset.naver){openNaver(el.dataset.naver);return;}
@@ -1738,6 +1857,9 @@ app.addEventListener('click',e=>{const el=e.target.closest('[data-sel],[data-go]
  else if(a==='instx'){try{localStorage.setItem('al_inst','1')}catch(e){}render();}
  else if(a==='retry'){st.stack.pop();st.photo=null;render();}
  else if(a==='medretry'){loadMed(true);}
+ else if(a==='bdretry'){st.bd.list=null;st.bd.err=false;st.bd.region=null;bdPaint();bdLoad();}
+ else if(a==='bdmore'){bdLoad(true);}
+ else if(a==='bdaskx'){st.bd.ask=null;render();}
  else if(a==='gpstoggle'){setGps(gpsPref()==='on'?'off':'on');if(st.med){st.med.pos=null;st.med.at=0;}render();}
  else if(a==='clrdata'){try{['al_lang','al_addr','al_gps','al_rules','al_inst','al_adfree','al_always'].forEach(k=>localStorage.removeItem(k));Object.keys(localStorage).filter(k=>/^al_/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}toast(PT().cleared);setTimeout(()=>location.reload(),900);}
  else if(a==='pick'){st.stack.splice(-2,2);go('w5');}else if(a==='intro'){st.stack=['intro'];render();}

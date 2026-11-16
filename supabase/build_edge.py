@@ -60,6 +60,8 @@ const DEFAULTS = {
   ALLOWED_ORIGIN: 'https://sari.kr,https://www.sari.kr,https://gogeangs.github.io,https://eugenekimkim.github.io',
   NOTICES_URL: SB_URL ? `${SB_URL}/rest/v1/notices?select=id,type,title,body,date,url,sample,region&published=is.true&order=sort.desc,created_at.desc&limit=80` : '',
   NOTICES_KEY: SB_ANON,
+  SB_REST_URL: SB_URL ? `${SB_URL}/rest/v1` : '',   // 주민 이야기 게시판
+  SB_SERVICE_KEY: SB_SERVICE,
 };
 const ENV = new Proxy({}, {
   get(_, k) {
