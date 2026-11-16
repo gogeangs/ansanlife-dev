@@ -723,6 +723,8 @@ async function boardRoute(req, url, env, h) {
       return json({ post, comments }, 200, { ...h, 'cache-control': 'no-store' });
     }
     if (req.method !== 'POST') return json({ error: 'method' }, 405, h);
+    // 개정 처리방침 시행(2026-11-24 0시 KST) 전에는 글·댓글을 받지 않음 (앱도 메뉴를 닫아 둠)
+    if (Date.now() < Date.parse('2026-11-24T00:00:00+09:00')) return json({ error: 'closed' }, 403, h);
     const b = await readJson(req);
     const ipHash = await sha(`board\n${ip}\n${env.SB_SERVICE_KEY.slice(-12)}`);
     if (url.pathname === '/board/write' || url.pathname === '/board/comment') {

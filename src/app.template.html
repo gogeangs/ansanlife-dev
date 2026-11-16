@@ -728,6 +728,10 @@ try{localStorage.removeItem('al_naver')}catch(e){} // 예전 '항상 이 방법�
 st.adFreeUntil=0;try{st.adFreeUntil=+localStorage.getItem('al_adfree')||0}catch(e){}
 /* 설문: 보상(광고 제거·기프트카드) 지급 방식이 정해질 때까지 꺼 둠. 켜려면 true */
 const SURVEY_ON=false;
+/* 주민 이야기: 개정 개인정보 처리방침 시행일(7일 전 공지)에 맞춰 자동으로 열림 */
+const BOARD_OPEN_AT=Date.parse('2026-11-24T00:00:00+09:00');
+const boardOn=()=>Date.now()>=BOARD_OPEN_AT||/[?&]boardpreview\b/.test(location.search);
+const OPEN_ON={ko:'11월 24일 열려요',en:'Opens Nov 24',vi:'Mở ngày 24/11',zh:'11月24日开放',ru:'Откроется 24 ноября',uz:'24-noyabrda ochiladi',mn:'11-р сарын 24-нд нээгдэнэ'};
 const SOON={ko:'준비 중',en:'Coming soon',vi:'Sắp ra mắt',zh:'即将推出',ru:'Скоро',uz:'Tez orada',mn:'Тун удахгүй'};
 const adFree=()=>SURVEY_ON&&Date.now()<st.adFreeUntil;
 const hhmm=ms=>{const t=fmtTime(new Date(ms));if(new Date(ms).toDateString()===new Date().toDateString())return t;return S[st.lang||'en'].tomorrow(t);};
@@ -745,7 +749,7 @@ const cur=()=>st.stack[st.stack.length-1];
 /* 언어 기억: 다시 들어오면 나라 선택 없이 홈으로 */
 try{const cc=localStorage.getItem('al_country');if(cc&&COUNTRIES.some(c=>c.c===cc))st.sel=cc;}catch(e){}
 try{const l=localStorage.getItem('al_lang');if(l&&COUNTRIES.some(c=>c.lang===l)){st.lang=l;st.stack=['home'];}}catch(e){}
-function go(n){if(!SURVEY_ON&&/^(surv|sq|sdone)$/.test(n))return;if(/^w\d$|^rules$/.test(n)&&!wasteOn())return;if(/^b[1-6]$/.test(n)&&!busOn())return;st.stack.push(n);render();}
+function go(n){if(!SURVEY_ON&&/^(surv|sq|sdone)$/.test(n))return;if(/^(board|bpost|bwrite)$/.test(n)&&!boardOn())return;if(/^w\d$|^rules$/.test(n)&&!wasteOn())return;if(/^b[1-6]$/.test(n)&&!busOn())return;st.stack.push(n);render();}
 function back(){if(st.stack.length>1)st.stack.pop();render();}
 function home(){st.stack=['home'];render();}
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1034,7 +1038,7 @@ SCR.priv=()=>{const p=PT();const on=gpsPref()==='on';
 SCR.home=()=>{const t=T();const icons=['trash','bus','office','med','mega','survey','chat'];const to=['w1','b1','offices','hosp','news','surv','board'];const ko=S.ko.items;
  return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu,{menu:true,right:langPill()})}
  ${ttl(t.homeT,`<span>${fmtDay(new Date())}</span>`,{eye:t.welcome})}
- <div class="sheet">${topBanner()}<nav class="toc">${[0,1,2,3,4,6,5].map((i,k)=>{const x=t.items[i];const off=(i===5&&!SURVEY_ON)||(i===0&&!wasteOn())||(i===1&&!busOn());return `<button ${off?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:off?`<em class="adnote">${(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중')} · ${esc(RNAME())}</em>`:''}</span><span class="n">0${k+1}</span></button>`}).join('')}</nav>
+ <div class="sheet">${topBanner()}<nav class="toc">${[0,1,2,3,4,6,5].map((i,k)=>{const x=t.items[i];const off=(i===5&&!SURVEY_ON)||(i===0&&!wasteOn())||(i===1&&!busOn())||(i===6&&!boardOn());return `<button ${off?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:i===6&&off?`<em class="adnote">${(OPEN_ON[st.lang]||OPEN_ON.en)+(isKo()?'':' · 11월 24일 열려요')}</em>`:off?`<em class="adnote">${(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중')} · ${esc(RNAME())}</em>`:''}</span><span class="n">0${k+1}</span></button>`}).join('')}</nav>
  <div style="margin-top:8px;display:flex;flex-direction:column;gap:12px">${installCard()}${adSlot()}</div>
  ${wasteOn()?`<div class="quote"><div class="col" style="gap:6px"><span class="serif" style="font-size:16px">${t.tipT}</span><span class="small muted" style="line-height:1.55">${t.tipB}</span></div></div>`:''}
  <button class="row tiny muted" data-go="priv" style="gap:6px;align-self:flex-start;padding:4px 0">${ic('lock',13,'#6E7472')}<span style="text-decoration:underline">${PT().row}</span></button>
