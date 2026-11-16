@@ -1393,7 +1393,7 @@ SCR.offices=()=>{const t=T();if(!RD().offices){return `<div class="scr ${isKo()?
  return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)}${ttl(t.offT,`<span>${t.offS}</span>`,{pin:true})}
  <div class="sheet" style="gap:18px">${miniMap('offices')}${t.offices.map(([a,k,d],i)=>{const o=OFFICE_INFO[i]||{};return `<div class="col" style="gap:8px"><button class="col" style="gap:8px;text-align:left" data-naver="${S.ko.offices[i][0]}"><span class="row" style="gap:10px"><span style="width:16px;height:1.5px;background:var(--ink)"></span><span class="serif grow ${isKo()?'kr':''}" style="font-size:16px">${a}</span></span><span class="ticket" style="width:100%"><span class="col grow" style="gap:4px"><span class="tiny muted kr">${k}</span><span class="small">${d}</span>${o.addr?`<span class="micro muted kr" style="user-select:all">${esc(o.addr)}</span>`:''}</span><span class="dash"></span><span class="idot" style="background:var(--accent)">${ic('map',16,'#fff',2)}</span></span></button>${o.tel?`<a class="row small" href="tel:${o.tel.replace(/[^\d]/g,'')}" style="gap:8px;padding:2px 2px 0 26px">${ic('phone',15,'#6E7472')}<span class="muted">${t.tel}</span><span class="b" style="text-decoration:underline">${o.tel}</span></a>`:''}</div>`}).join('')}<div class="spacer"></div></div>${foot}</div>`;};
 SCR.news=()=>{const t=T();const cached=(hasApi()||hasSb())&&st.news[newsKey()];return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)}${ttl(t.newsT,koSub('공지·행사'))}
- <div class="sheet" style="gap:20px"><div id="newslist" class="col" style="gap:20px">${cached?newsList(cached.notices||[]):t.newsItems.map(([a,b],i)=>`<div class="quote"><div class="col" style="gap:6px"><span class="row cap" style="gap:6px;color:var(--deep)">${ic(i?'cal':'mega',13,'#22393A',2)}${i?t.event:t.official} · ${t.sample}</span><span class="serif" style="font-size:17px">${a}</span><span class="small muted">${b}</span></div></div>`).join('')}</div>
+ <div class="sheet" style="gap:20px">${citySiteCard()}<div id="newslist" class="col" style="gap:20px">${cached?newsList(cached.notices||[]):t.newsItems.map(([a,b],i)=>`<div class="quote"><div class="col" style="gap:6px"><span class="row cap" style="gap:6px;color:var(--deep)">${ic(i?'cal':'mega',13,'#22393A',2)}${i?t.event:t.official} · ${t.sample}</span><span class="serif" style="font-size:17px">${a}</span><span class="small muted">${b}</span></div></div>`).join('')}</div>
  <span class="micro muted" style="line-height:1.5">${t.notOfficial}</span>
  ${adSlot()}
  <div class="spacer"></div></div>${foot}</div>`;};
@@ -1494,6 +1494,13 @@ SCR.ndetail=()=>{const t=T();const n=(st.news[newsKey()]&&st.news[newsKey()].not
   ${n.url&&/^https:\/\//.test(n.url)?`<a class="btn line" href="${esc(n.url)}" target="_blank" rel="noopener">${ic('ext',16)}${t.readMore}</a>`:''}
   <div class="spacer"></div>
  </div>${foot}</div>`;};
+
+/* 시청 홈페이지 공지: 공공누리 제3유형(출처표시·변경금지)이라 본문을 가져와 번역하지 않고 원문 사이트로 이동만 함 (QA 저작권 항목, 2026-11-16).
+   홈페이지 주소를 확인한 시는 바로, 나머지는 네이버 검색으로 */
+const CITY_SITE={'경기도 안산시':'https://www.ansan.go.kr/'};
+const CSITE={en:['City Hall notices',h=>`Official ${h} website · in Korean. Use your browser’s translate.`],vi:['Thông báo của tòa thị chính',h=>`Trang chính thức ${h} · tiếng Hàn. Hãy dùng chức năng dịch của trình duyệt.`],ko:['시청 홈페이지 공지',h=>`${h} 공식 홈페이지로 이동해요`],zh:['市政府公告',h=>`${h}官方网站 · 韩语，可使用浏览器翻译。`],ru:['Объявления мэрии',h=>`Официальный сайт: ${h} · на корейском. Используйте перевод в браузере.`],uz:[`Hokimiyat e’lonlari`,h=>`${h} rasmiy sayti · koreys tilida. Brauzer tarjimasidan foydalaning.`],mn:['Хотын захиргааны мэдээ',h=>`${h}-ийн албан ёсны сайт · солонгос хэлээр. Хөтчийн орчуулгыг ашиглана уу.`]};
+function citySiteCard(){const r=RG(),L=CSITE[st.lang]||CSITE.en;const url=CITY_SITE[r.key]||`https://search.naver.com/search.naver?query=${enc(r.hall+' 공지사항')}`;
+ return `<a class="card row" href="${esc(url)}" target="_blank" rel="noopener" style="gap:12px">${dotI('office','#2F3B3A','#fff',36)}<span class="col grow" style="gap:3px"><span class="b">${L[0]}</span><span class="tiny muted">${esc(L[1](r.hall))}</span></span>${ic('ext',16,'#6E7472')}</a>`;}
 
 /* ads: 직접 계약 광고(Supabase) → 없으면 애드센스 → 없으면 비움. Supabase 미설정(시제품)일 때만 예시 광고 */
 st.ad={};
