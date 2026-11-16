@@ -139,7 +139,7 @@ textarea.in{resize:vertical;line-height:1.6}
 .cn-pin{color:var(--accent);font-size:9px;margin-right:5px;vertical-align:2px}
 .cn-tr{font-size:12px;color:var(--ink);opacity:.75;line-height:1.4}
 .bd-item{display:flex;flex-direction:column;gap:5px;text-align:left;width:100%;padding:14px 16px;border-radius:16px;background:var(--bg)}
-.bd-t{font-family:var(--serif);font-size:16px;line-height:1.3}.ko .bd-t{font-family:var(--serif-ko)}
+.bd-t,.bd-h{font-family:var(--sans);font-size:18px;font-weight:700;line-height:1.4;letter-spacing:-.02em;word-break:break-word}.bd-h{margin:0}
 .bd-ex{font-size:13px;color:var(--muted);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:pre-line}
 .bd-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
 .bd-who{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);flex-wrap:wrap}
@@ -149,9 +149,9 @@ textarea.in{resize:vertical;line-height:1.6}
 .bd-fl svg{width:100%;height:100%}
 #bdwf .bd-fl{width:24px;height:24px}
 .bd-c,.bd-tr{display:inline-flex;align-items:center;gap:3px}
-.bd-body{white-space:pre-line;line-height:1.75;font-size:15px;word-break:break-word}
+.bd-body{letter-spacing:-.02em;white-space:pre-line;line-height:1.75;font-size:15px;word-break:break-word}
 .bd-cmt{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:14px;background:var(--bg)}
-.bd-cb{white-space:pre-line;font-size:14px;line-height:1.6;word-break:break-word}
+.bd-cb{letter-spacing:-.02em;white-space:pre-line;font-size:14px;line-height:1.6;word-break:break-word}
 .bd-ask{display:flex;gap:6px;align-items:center}.bd-ask .in{flex:1;min-width:0}
 .bd-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 0;text-align:center}
 .bnwrap{position:relative;margin:0 0 8px}
@@ -1034,7 +1034,7 @@ SCR.priv=()=>{const p=PT();const on=gpsPref()==='on';
 SCR.home=()=>{const t=T();const icons=['trash','bus','office','med','mega','survey','chat'];const to=['w1','b1','offices','hosp','news','surv','board'];const ko=S.ko.items;
  return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu,{menu:true,right:langPill()})}
  ${ttl(t.homeT,`<span>${fmtDay(new Date())}</span>`,{eye:t.welcome})}
- <div class="sheet">${topBanner()}<nav class="toc">${t.items.map((x,i)=>{const off=(i===5&&!SURVEY_ON)||(i===0&&!wasteOn())||(i===1&&!busOn());return `<button ${off?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:off?`<em class="adnote">${(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중')} · ${esc(RNAME())}</em>`:''}</span><span class="n">0${i+1}</span></button>`}).join('')}</nav>
+ <div class="sheet">${topBanner()}<nav class="toc">${[0,1,2,3,4,6,5].map((i,k)=>{const x=t.items[i];const off=(i===5&&!SURVEY_ON)||(i===0&&!wasteOn())||(i===1&&!busOn());return `<button ${off?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:off?`<em class="adnote">${(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중')} · ${esc(RNAME())}</em>`:''}</span><span class="n">0${k+1}</span></button>`}).join('')}</nav>
  <div style="margin-top:8px;display:flex;flex-direction:column;gap:12px">${installCard()}${adSlot()}</div>
  ${wasteOn()?`<div class="quote"><div class="col" style="gap:6px"><span class="serif" style="font-size:16px">${t.tipT}</span><span class="small muted" style="line-height:1.55">${t.tipB}</span></div></div>`:''}
  <button class="row tiny muted" data-go="priv" style="gap:6px;align-self:flex-start;padding:4px 0">${ic('lock',13,'#6E7472')}<span style="text-decoration:underline">${PT().row}</span></button>
@@ -1625,18 +1625,18 @@ SCR.bpost=()=>{const t=BTT(),d=st.bd.post;
  if(!d)return head+`<div class="sheet" style="margin-top:40px"><div class="mskel"></div><div class="mskel"></div></div>${foot}</div>`;
  if(d.err)return head+`<div class="sheet" style="margin-top:40px"><p class="small muted">${d.err==='gone'?t.gone:t.err}</p></div>${foot}</div>`;
  const p=d.post,o=!!st.bd.orig[p.id];
- return head+`${ttl(esc(bdShow(p,'title')),bdWho(p))}
+ return head+`<div class="ttl"><h1 class="bd-h">${esc(bdShow(p,'title'))}</h1><div class="sub">${bdWho(p)}</div></div>
  <div class="sheet" style="gap:14px">
   ${p.tr?`<div class="row" style="justify-content:space-between"><span class="tiny muted">${o?LANG_NATIVE[p.lang]||'':`${t.tr} · ${LANG_NATIVE[p.lang]||''}`}</span><button class="b small" data-bdorig="${p.id}">${ic('globe',14,'#22393A')} ${o?t.seeTr:t.orig}</button></div>`:''}
   <div class="bd-body">${esc(bdShow(p,'body'))}</div>
   <div class="row" style="gap:8px;justify-content:flex-end"><button class="b tiny muted" data-bdrep="post:${p.id}">${ic('alert',13,'#6E7472')} ${t.report}</button><button class="b tiny muted" data-bddel="post:${p.id}">${ic('trash',13,'#6E7472')} ${t.del}</button></div>
   ${bdAskBox('post',p.id)}
-  ${h2(t.cmts,'',String(d.comments.length))}
+  <div class="h2"><span>${t.cmts}</span><span class="serif" style="font-size:13px">${d.comments.length}</span></div>
   <div class="col" style="gap:12px">${d.comments.length?d.comments.map(c=>`<div class="bd-cmt">${bdWho(c)}<div class="bd-cb">${esc(c.tr&&!st.bd.orig[p.id]?c.tr.body:c.body)}</div><div class="row" style="gap:10px;justify-content:flex-end">${c.tr?`<span class="tiny muted">${o?LANG_NATIVE[c.lang]||'':t.tr}</span><span class="grow"></span>`:''}<button class="b micro muted" data-bdrep="comment:${c.id}">${t.report}</button><button class="b micro muted" data-bddel="comment:${c.id}">${t.del}</button></div>${bdAskBox('comment',c.id)}</div>`).join(''):`<span class="small muted">${t.noCmt}</span>`}</div>
   <form class="bd-form card col" id="bdcf" style="gap:8px">
    <div class="row" style="gap:8px"><input class="in" name="nick" maxlength="12" placeholder="${t.nick}" value="${esc(bdPref('nick'))}" autocomplete="nickname" required><input class="in" name="pw" type="password" maxlength="40" placeholder="${t.pw}" autocomplete="new-password" required></div>
    <textarea class="in" name="body" maxlength="500" rows="3" placeholder="${t.cmtPh}" required></textarea>
-   <button class="btn dark" type="submit">${t.send}</button><span class="micro muted">${t.ipNote}</span></form>
+   <button class="btn dark" type="submit">${t.send}</button></form>
   <div class="spacer"></div></div>${foot}</div>`;};
 SCR.bwrite=()=>{const t=BTT();return `<div class="scr ${isKo()?'ko':''}">${nav(t.back)}
  ${ttl(t.write,`<span>${esc(t.sub(bdRegionName()))}</span>`,{pin:true})}
@@ -1645,7 +1645,7 @@ SCR.bwrite=()=>{const t=BTT();return `<div class="scr ${isKo()?'ko':''}">${nav(t
   <input class="in" name="pw" type="password" maxlength="40" placeholder="${t.pw}" autocomplete="new-password" required><span class="micro muted" style="margin-top:-6px">${t.pwNote}</span>
   <input class="in" name="title" maxlength="60" placeholder="${t.title}" required>
   <textarea class="in" name="body" maxlength="2000" rows="8" placeholder="${t.body}" required></textarea>
-  <div class="soft-accent tiny" style="line-height:1.55">${t.rules}<br>${t.ipNote}</div>
+  <div class="soft-accent tiny" style="line-height:1.55">${t.rules}</div>
   <button class="btn dark" type="submit" id="bdsend">${t.post}</button></form><div class="spacer"></div></div>${foot}</div>`;};
 async function bdSubmitPost(f){const t=BTT(),v=Object.fromEntries(new FormData(f));const btn=f.querySelector('[type=submit]');
  if([...v.nick.trim()].length<2)return toast(t.needNick);if(v.pw.length<4)return toast(t.needPw);if(!v.title.trim()||!v.body.trim())return toast(t.needText);
