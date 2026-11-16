@@ -1384,7 +1384,7 @@ SCR.offices=()=>{const t=T();if(!RD().offices){return `<div class="scr ${isKo()?
  return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)}${ttl(t.offT,`<span>${t.offS}</span>`,{pin:true})}
  <div class="sheet" style="gap:18px">${miniMap('offices')}${t.offices.map(([a,k,d],i)=>{const o=OFFICE_INFO[i]||{};return `<div class="col" style="gap:8px"><button class="col" style="gap:8px;text-align:left" data-naver="${S.ko.offices[i][0]}"><span class="row" style="gap:10px"><span style="width:16px;height:1.5px;background:var(--ink)"></span><span class="serif grow ${isKo()?'kr':''}" style="font-size:16px">${a}</span></span><span class="ticket" style="width:100%"><span class="col grow" style="gap:4px"><span class="tiny muted kr">${k}</span><span class="small">${d}</span>${o.addr?`<span class="micro muted kr" style="user-select:all">${esc(o.addr)}</span>`:''}</span><span class="dash"></span><span class="idot" style="background:var(--accent)">${ic('map',16,'#fff',2)}</span></span></button>${o.tel?`<a class="row small" href="tel:${o.tel.replace(/[^\d]/g,'')}" style="gap:8px;padding:2px 2px 0 26px">${ic('phone',15,'#6E7472')}<span class="muted">${t.tel}</span><span class="b" style="text-decoration:underline">${o.tel}</span></a>`:''}</div>`}).join('')}<div class="spacer"></div></div>${foot}</div>`;};
 SCR.news=()=>{const t=T();const cached=(hasApi()||hasSb())&&st.news[newsKey()];return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)}${ttl(t.newsT,koSub('공지·행사'))}
- <div class="sheet" style="gap:20px">${cityNewsBox()}<div id="newslist" class="col" style="gap:20px">${cached?newsList(cached.notices||[]):t.newsItems.slice(1).map(([a,b],i0)=>{const i=i0+1;return `<div class="quote"><div class="col" style="gap:6px"><span class="row cap" style="gap:6px;color:var(--deep)">${ic(i?'cal':'mega',13,'#22393A',2)}${i?t.event:t.official} · ${t.sample}</span><span class="serif" style="font-size:17px">${a}</span><span class="small muted">${b}</span></div></div>`}).join('')}</div>
+ <div class="sheet" style="gap:20px">${topBanner()}${cityNewsBox()}<div id="newslist" class="col" style="gap:20px">${cached?newsList(cached.notices||[]):t.newsItems.slice(1).map(([a,b],i0)=>{const i=i0+1;return `<div class="quote"><div class="col" style="gap:6px"><span class="row cap" style="gap:6px;color:var(--deep)">${ic(i?'cal':'mega',13,'#22393A',2)}${i?t.event:t.official} · ${t.sample}</span><span class="serif" style="font-size:17px">${a}</span><span class="small muted">${b}</span></div></div>`}).join('')}</div>
  <span class="micro muted notoff" style="line-height:1.5">${t.notOfficial}</span>
  ${adSlot()}
  <div class="spacer"></div></div>${foot}</div>`;};
@@ -1619,7 +1619,7 @@ SCR.board=()=>{const t=BTT();return `<div class="scr ${isKo()?'ko':''}">${nav(T(
 async function bdOpen(id){const b=st.bd;b.post=null;const r=await bdApi(`/board/post?id=${id}&lang=${st.lang}`);
  if(cur()!=='bpost')return;if(!r.ok){b.post={err:r.status===404?'gone':true};}else b.post=r.j;render();}
 const bdAskBox=(type,id)=>{const t=BTT(),a=st.bd.ask;if(!a||a.type!==type||a.id!==id)return '';
- return `<form class="bd-ask" data-bdask="${type}:${id}"><input class="in" type="password" name="pw" placeholder="${esc(t.delAsk)}" autocomplete="off" required><button type="button" class="btn line sm" data-act="bdaskx">${t.cancel}</button><button class="btn dark sm" type="submit">${t.ok}</button></form>`;};
+ return `<form class="bd-ask" data-bdask="${type}:${id}"><input class="in" type="password" name="pw" placeholder="${esc(t.delAsk)}" value="${esc(bdPref('pw'))}" autocomplete="off" required><button type="button" class="btn line sm" data-act="bdaskx">${t.cancel}</button><button class="btn dark sm" type="submit">${t.ok}</button></form>`;};
 SCR.bpost=()=>{const t=BTT(),d=st.bd.post;
  const head=`<div class="scr ${isKo()?'ko':''}">${nav(t.back)}`;
  if(!d)return head+`<div class="sheet" style="margin-top:40px"><div class="mskel"></div><div class="mskel"></div></div>${foot}</div>`;
@@ -1634,7 +1634,7 @@ SCR.bpost=()=>{const t=BTT(),d=st.bd.post;
   <div class="h2"><span>${t.cmts}</span><span class="serif" style="font-size:13px">${d.comments.length}</span></div>
   <div class="col" style="gap:12px">${d.comments.length?d.comments.map(c=>`<div class="bd-cmt">${bdWho(c)}<div class="bd-cb">${esc(c.tr&&!st.bd.orig[p.id]?c.tr.body:c.body)}</div><div class="row" style="gap:10px;justify-content:flex-end">${c.tr?`<span class="tiny muted">${o?LANG_NATIVE[c.lang]||'':t.tr}</span><span class="grow"></span>`:''}<button class="b micro muted" data-bdrep="comment:${c.id}">${t.report}</button><button class="b micro muted" data-bddel="comment:${c.id}">${t.del}</button></div>${bdAskBox('comment',c.id)}</div>`).join(''):`<span class="small muted">${t.noCmt}</span>`}</div>
   <form class="bd-form card col" id="bdcf" style="gap:8px">
-   <div class="row" style="gap:8px"><input class="in" name="nick" maxlength="12" placeholder="${t.nick}" value="${esc(bdPref('nick'))}" autocomplete="nickname" required><input class="in" name="pw" type="password" maxlength="40" placeholder="${t.pw}" autocomplete="new-password" required></div>
+   <div class="row" style="gap:8px"><input class="in" name="nick" maxlength="12" placeholder="${t.nick}" value="${esc(bdPref('nick'))}" autocomplete="nickname" required><input class="in" name="pw" type="password" maxlength="40" placeholder="${t.pw}" value="${esc(bdPref('pw'))}" autocomplete="new-password" required></div>
    <textarea class="in" name="body" maxlength="500" rows="3" placeholder="${t.cmtPh}" required></textarea>
    <button class="btn dark" type="submit">${t.send}</button></form>
   <div class="spacer"></div></div>${foot}</div>`;};
@@ -1642,7 +1642,7 @@ SCR.bwrite=()=>{const t=BTT();return `<div class="scr ${isKo()?'ko':''}">${nav(t
  ${ttl(t.write,`<span>${esc(t.sub(bdRegionName()))}</span>`,{pin:true})}
  <div class="sheet"><form class="col" id="bdwf" style="gap:12px">
   <div class="row" style="gap:8px"><span class="bd-fl" title="${esc(myCountry())}">${flag(myCountry() in FL?myCountry():'en',24)}</span><input class="in grow" name="nick" maxlength="12" placeholder="${t.nick}" value="${esc(bdPref('nick'))}" autocomplete="nickname" required></div>
-  <input class="in" name="pw" type="password" maxlength="40" placeholder="${t.pw}" autocomplete="new-password" required><span class="micro muted" style="margin-top:-6px">${t.pwNote}</span>
+  <input class="in" name="pw" type="password" maxlength="40" placeholder="${t.pw}" value="${esc(bdPref('pw'))}" autocomplete="new-password" required><span class="micro muted" style="margin-top:-6px">${t.pwNote}</span>
   <input class="in" name="title" maxlength="60" placeholder="${t.title}" required>
   <textarea class="in" name="body" maxlength="2000" rows="8" placeholder="${t.body}" required></textarea>
   <div class="soft-accent tiny" style="line-height:1.55">${t.rules}</div>
@@ -1650,11 +1650,11 @@ SCR.bwrite=()=>{const t=BTT();return `<div class="scr ${isKo()?'ko':''}">${nav(t
 async function bdSubmitPost(f){const t=BTT(),v=Object.fromEntries(new FormData(f));const btn=f.querySelector('[type=submit]');
  if([...v.nick.trim()].length<2)return toast(t.needNick);if(v.pw.length<4)return toast(t.needPw);if(!v.title.trim()||!v.body.trim())return toast(t.needText);
  btn.disabled=true;await bdRegion();const r=await bdApi('/board/write',{region:st.bd.region,nick:v.nick.trim(),pw:v.pw,title:v.title,body:v.body,country:myCountry(),lang:st.lang});btn.disabled=false;
- if(!r.ok)return toast(bdErr(r));bdSave('nick',v.nick.trim());toast(t.sent);st.bd.list=null;st.stack.pop();st.bd.sel=r.j.id;st.stack.push('bpost');render();bdOpen(r.j.id);}
+ if(!r.ok)return toast(bdErr(r));bdSave('nick',v.nick.trim());bdSave('pw',v.pw);toast(t.sent);st.bd.list=null;st.stack.pop();st.bd.sel=r.j.id;st.stack.push('bpost');render();bdOpen(r.j.id);}
 async function bdSubmitCmt(f){const t=BTT(),v=Object.fromEntries(new FormData(f));const p=st.bd.post&&st.bd.post.post;if(!p)return;
  if([...v.nick.trim()].length<2)return toast(t.needNick);if(v.pw.length<4)return toast(t.needPw);if(!v.body.trim())return;
  f.querySelector('[type=submit]').disabled=true;const r=await bdApi('/board/comment',{post_id:p.id,nick:v.nick.trim(),pw:v.pw,body:v.body,country:myCountry(),lang:st.lang});
- if(!r.ok){f.querySelector('[type=submit]').disabled=false;return toast(bdErr(r));}bdSave('nick',v.nick.trim());st.bd.list=null;bdOpen(p.id);}
+ if(!r.ok){f.querySelector('[type=submit]').disabled=false;return toast(bdErr(r));}bdSave('nick',v.nick.trim());bdSave('pw',v.pw);st.bd.list=null;bdOpen(p.id);}
 async function bdDelete(type,id,pw){const t=BTT();const r=await bdApi('/board/delete',{type,id,pw});if(!r.ok)return toast(bdErr(r));toast(t.deleted);st.bd.ask=null;st.bd.list=null;
  if(type==='post'){back();}else bdOpen(st.bd.post.post.id);}
 async function bdReport(type,id){const r=await bdApi('/board/report',{type,id});toast(r.ok?BTT().reported:bdErr(r));}
@@ -1801,7 +1801,7 @@ function render(){syncHist();syncBrand();clearInterval(bgTimer);clearTimeout(sca
  if(n==='intro')bindIntro();
  if(n==='w3')runScan();
  if(n==='home'||n==='news')loadAd();
- if(n==='home'||n==='board')loadBanners();
+ if(n==='home'||n==='board'||n==='news')loadBanners();
  if(n==='board'){bdPaint();if(!st.bd.list||st.bd.err)bdLoad();}
  if(n==='bpost'&&(!st.bd.post||(st.bd.post.post&&st.bd.post.post.id!==st.bd.sel)))bdOpen(st.bd.sel);
  if(n==='bwrite'||n==='bpost'){const f=document.getElementById(n==='bwrite'?'bdwf':'bdcf');f&&f.addEventListener('submit',e=>{e.preventDefault();n==='bwrite'?bdSubmitPost(f):bdSubmitCmt(f);});
