@@ -86,3 +86,7 @@ drop policy if exists "board comments: admin" on public.board_comments;
 create policy "board comments: admin" on public.board_comments for all to authenticated using (public.is_admin()) with check (public.is_admin());
 drop policy if exists "board reports: admin" on public.board_reports;
 create policy "board reports: admin" on public.board_reports for select to authenticated using (public.is_admin());
+
+-- API 서버(service_role)만 읽고 씀. 이 프로젝트는 새 표에 service_role 권한이 자동으로 붙지 않아 직접 줌 (2026-11-17)
+grant select, insert, update, delete on public.board_posts, public.board_comments, public.board_reports to service_role;
+grant execute on function public.board_report_count(text, bigint, integer) to service_role;
