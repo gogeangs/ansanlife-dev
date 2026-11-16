@@ -429,7 +429,10 @@ function bDel(){const a=$('#bdel');a.innerHTML=bs.confirmDel?`<div class="confir
 /* ---------- 주민 이야기 관리 (신고·숨김 처리) ----------
    board_posts · board_comments 는 관리자만 RLS 로 읽고 고칠 수 있음 (supabase/board.sql). 앱 사용자는 API 서버로만 씀.
    신고 5건이면 서버가 자동으로 숨김(hidden). 여기서 다시 보이게 하거나, 숨기거나, 완전히 지움 */
-const gs={list:[],sel:null,filter:'flag',q:'',comments:[],confirmDel:false};
+const gs={list:[],sel:null,filter:'flag',q:'',comments:[],confirmDel:false,blocks:new Set(),blockRows:[]};
+async function gBlocks(){const {data,error}=await sb.from('board_blocks').select('ip_hash,note,created_at').order('created_at',{ascending:false}).limit(200);gs.blockRows=error?[]:(data||[]);gs.blocks=new Set(gs.blockRows.map(b=>b.ip_hash));const box=$('#gblk');if(!box)return;
+ box.innerHTML=error?`<p class="hint">차단 표가 아직 없어요 (<code>supabase/board_blocks.sql</code>).</p>`:gs.blockRows.length?gs.blockRows.map(b=>`<div class="row" style="gap:8px;font-size:12px"><span style="flex:1">${esc(b.note||'차단')} · ${gWhen(b.created_at)}</span><button class="btn line sm" data-gunb="${esc(b.ip_hash)}">해제</button></div>`).join(''):'<p class="hint">차단한 IP 가 없어요.</p>';
+ box.querySelectorAll('[data-gunb]').forEach(b=>b.addEventListener('click',async()=>{const {error}=await sb.from('board_blocks').delete().eq('ip_hash',b.dataset.gunb);if(error){toast('해제하지 못했어요');return;}toast('차단을 풀었어요');await gBlocks();if(gs.sel)gOpen(gs.sel);}));}
 const gWhen=v=>{try{return new Date(v).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}catch(e){return ''}};
 const gState=p=>p.deleted?['글쓴이 삭제','b-hid']:p.hidden?(p.report_count>=5?['신고로 숨김','b-sm']:['숨김','b-hid']):p.report_count?[`신고 ${p.report_count}`,'b-ev']:['보이는 중','b-live'];
 async function gLoad(keepId){
@@ -454,11 +457,14 @@ function boardView(){
   <aside class="pv"><div class="h2"><span>처리 기준</span><span class="ln"></span></div>
    <p class="hint note" style="margin-top:0">신고가 <b>5건</b> 모이면 자동으로 숨겨져요. 확인해서 문제가 없으면 <b>다시 보이기</b>, 문제가 있으면 숨긴 채로 두거나 <b>지우기</b>를 누르세요.<br><br>
    지우면 되돌릴 수 없어요. 법적 분쟁 가능성이 있는 글(명예훼손·불법 정보 등)은 지우지 말고 <b>숨김</b>으로 두고 원문을 보관하세요.<br><br>
-   IP 는 앞 두 자리만 저장돼요. 전체 IP 가 필요하면 수사기관 요청 절차를 따르세요.</p></aside>
+   IP 는 앞 두 자리와 확인용 해시만 저장돼요. 전체 IP 가 필요하면 수사기관 요청 절차를 따르세요.<br><br>
+   <b>권리 침해 신고</b>(명예훼손·사생활 침해 등)가 메일로 오면 해당 글을 바로 <b>숨김</b>(임시조치, 최대 30일)으로 바꾸고, 글쓴이 의견을 받은 뒤 지울지 다시 보일지 정하세요.</p>
+   <div class="h2" style="margin-top:14px"><span>차단한 IP</span><span class="ln"></span></div><div id="gblk" class="col" style="gap:6px"></div></aside>
  </main>`;
  bindOut();
  root.querySelectorAll('[data-gf]').forEach(b=>b.addEventListener('click',async()=>{gs.filter=b.dataset.gf;root.querySelectorAll('[data-gf]').forEach(x=>x.setAttribute('aria-pressed',x===b));await gLoad();}));
  let t;$('#gq').addEventListener('input',e=>{clearTimeout(t);t=setTimeout(()=>{gs.q=e.target.value.trim().replace(/[%,()]/g,'');gLoad();},350);});
+ gBlocks();
 }
 function gRenderList(){
  const box=$('#glist');if(!box)return;$('#gcnt').textContent=`${gs.list.length}건`;
@@ -468,19 +474,22 @@ function gRenderList(){
  box.querySelectorAll('[data-gid]').forEach(el=>{const open=()=>gOpen(+el.dataset.gid);el.addEventListener('click',open);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});});
 }
 async function gOpen(id){gs.sel=id;gs.confirmDel=false;gRenderList();const box=$('#gedc');box.innerHTML='<div class="skel"></div><div class="skel"></div>';
- const [{data:p},{data:cs}]=await Promise.all([sb.from('board_posts').select('*').eq('id',id).single(),sb.from('board_comments').select('id,nick,ip_mask,country,body,report_count,hidden,deleted,created_at').eq('post_id',id).order('id')]);
+ const [{data:p},{data:cs}]=await Promise.all([sb.from('board_posts').select('*').eq('id',id).single(),sb.from('board_comments').select('id,nick,ip_mask,ip_hash,country,body,report_count,hidden,deleted,created_at').eq('post_id',id).order('id')]);
  if(!p){box.innerHTML='<p class="empty">글을 찾지 못했어요.</p>';return;}
  gs.comments=cs||[];const [t,cl]=gState(p);
  box.innerHTML=`<div class="ed"><div class="meta"><span class="badge ${cl}">${t}</span><span>${esc(p.region)}</span><span>· ${esc(p.nick)} (${esc(p.ip_mask)}) · ${esc(p.country)}</span><span>· ${gWhen(p.created_at)}${p.edited_at?' (수정됨)':''}</span></div>
   <h2 style="margin:0;font-size:18px">${esc(p.title)}</h2><div style="white-space:pre-wrap;line-height:1.7;font-size:14px">${esc(p.body)}</div>
-  <div class="acts">${p.hidden?`<button class="btn dark sm" data-gact="show" data-t="post" data-id="${p.id}">다시 보이기</button>`:`<button class="btn line sm" data-gact="hide" data-t="post" data-id="${p.id}">숨기기</button>`}<span class="grow"></span><button class="btn danger sm" id="gdel">글 지우기</button></div>
+  <div class="acts">${p.hidden?`<button class="btn dark sm" data-gact="show" data-t="post" data-id="${p.id}">다시 보이기</button>`:`<button class="btn line sm" data-gact="hide" data-t="post" data-id="${p.id}">숨기기</button>`}<button class="btn line sm" data-gblock="${esc(p.ip_hash||'')}" data-gnote="글 ${p.id}">${gs.blocks.has(p.ip_hash)?'차단됨':'이 IP 차단'}</button><span class="grow"></span><button class="btn danger sm" id="gdel">글 지우기</button></div>
   <div id="gdela"></div>
   <div class="h2" style="margin-top:6px"><span>댓글 ${gs.comments.length}</span><span class="ln"></span></div>
   ${gs.comments.length?gs.comments.map(c=>`<div class="item ${c.hidden?'off':''}" style="cursor:default"><div class="body"><span class="meta"><span class="badge ${gState({...c,report_count:c.report_count})[1]}">${gState(c)[0]}</span><span>${esc(c.nick)} (${esc(c.ip_mask)})</span><span>· ${gWhen(c.created_at)}</span></span><span style="white-space:pre-wrap;font-size:13px;line-height:1.6">${esc(c.body)}</span></div>
-   ${c.hidden?`<button class="btn line sm" data-gact="show" data-t="comment" data-id="${c.id}">보이기</button>`:`<button class="btn line sm" data-gact="hide" data-t="comment" data-id="${c.id}">숨기기</button>`}</div>`).join(''):'<p class="empty">댓글이 없어요.</p>'}</div>`;
+   <div class="col" style="gap:4px">${c.hidden?`<button class="btn line sm" data-gact="show" data-t="comment" data-id="${c.id}">보이기</button>`:`<button class="btn line sm" data-gact="hide" data-t="comment" data-id="${c.id}">숨기기</button>`}<button class="btn line sm" data-gblock="${esc(c.ip_hash||'')}" data-gnote="댓글 ${c.id}">${gs.blocks.has(c.ip_hash)?'차단됨':'IP 차단'}</button></div></div>`).join(''):'<p class="empty">댓글이 없어요.</p>'}</div>`;
  box.querySelectorAll('[data-gact]').forEach(b=>b.addEventListener('click',async()=>{const tb=b.dataset.t==='post'?'board_posts':'board_comments';const on=b.dataset.gact==='hide';
   const {error}=await sb.from(tb).update({hidden:on}).eq('id',+b.dataset.id);if(error){toast('바꾸지 못했어요');return;}toast(on?'숨겼어요':'다시 보이게 했어요');await gLoad(id);}));
  $('#gdel').addEventListener('click',()=>{gs.confirmDel=true;gDel(id);});
+ box.querySelectorAll('[data-gblock]').forEach(b=>b.addEventListener('click',async()=>{const h=b.dataset.gblock;if(!h){toast('IP 정보가 없어요');return;}if(gs.blocks.has(h)){toast('이미 차단된 IP예요');return;}
+  if(!window.confirm('이 IP 에서는 글·댓글·신고를 더 할 수 없게 돼요. 차단할까요?'))return;
+  const {error}=await sb.from('board_blocks').insert({ip_hash:h,note:b.dataset.gnote});if(error){toast('차단하지 못했어요. supabase/board_blocks.sql 을 실행했는지 확인해 주세요');return;}toast('차단했어요');await gBlocks();gOpen(id);}));
 }
 function gDel(id){const a=$('#gdela');a.innerHTML=gs.confirmDel?`<div class="confirm" role="alertdialog"><span style="flex:1">이 글과 댓글을 모두 지울까요? 되돌릴 수 없어요. 분쟁 가능성이 있으면 숨김으로 두세요.</span><button class="btn line sm" type="button" id="gdn">취소</button><button class="btn danger sm" type="button" id="gdy">지우기</button></div>`:'';
  if(!gs.confirmDel)return;$('#gdn').addEventListener('click',()=>{gs.confirmDel=false;gDel(id);});

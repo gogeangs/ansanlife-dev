@@ -702,6 +702,24 @@ async function readJson(req, max = 8000) {
   if (t.length > max) throw new Error('size');
   return JSON.parse(t || '{}');
 }
+/* 금칙어·스팸: 개인 연락처·메신저 아이디, 통장·계좌 거래, 도박, 성매매 알선을 글·댓글·닉네임에서 막음.
+   걸리면 저장하지 않고 이유 코드만 돌려줌(앱이 7개 언어로 안내). 오탐이 보이면 여기 규칙을 고치세요 */
+const SPAM_RULES = [
+  ['phone', /(?:\+?82[\s.-]?|0)1[016789][\s.-]?\d{3,4}[\s.-]?\d{4}/],
+  ['messenger', /open\.kakao\.com|(?:^|\W)t\.me\/|telegram\.me\/|wa\.me\/|zalo\.me\/|line\.me\/ti\//i],
+  ['messenger', /(카톡|카카오톡|오픈\s*채팅|텔레그램|텔레|telegram|kakao\s*talk|wechat|위챗|zalo|whatsapp|line)\s*(아이디|id)?\s*[:：@]\s*[\w.@-]{3,}/i],
+  ['account', /대포\s*(통장|폰|유심)|(통장|계좌|체크카드|유심)\s*(삽니다|팝니다|매입|구매|판매|임대|대여|빌려|양도)|(?:계좌|통장|account|tài khoản|счёт|счет)[^\n]{0,15}\d[\d\s-]{9,}\d/i],
+  ['gamble', /토토|카지노|바카라|먹튀|홀덤\s*(사이트|펍)?|파워볼|casino|baccarat|sports\s*toto|cá cược|казино/i],
+  ['sex', /조건\s*만남|출장\s*(안마|마사지)|성매매|애인\s*대행|유흥\s*알바|sugar\s*daddy/i],
+];
+function boardSpam(...texts) {
+  const t = texts.map(x => String(x || '')).join('\n').replace(/[​-‍﻿]/g, '').replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+  for (const [why, re] of SPAM_RULES) if (re.test(t)) return why;
+  return null;
+}
+async function boardBlocked(db, ipHash) {
+  try { const r = await db(`board_blocks?select=ip_hash&ip_hash=eq.${encodeURIComponent(ipHash)}&limit=1`); return r.length > 0; } catch { return false; }
+}
 async function boardRoute(req, url, env, h) {
   const db = boardDb(env);
   if (!db) return json({ error: 'config' }, 503, h);
@@ -734,6 +752,8 @@ async function boardRoute(req, url, env, h) {
     if (Date.now() < Date.parse('2026-11-24T00:00:00+09:00')) return json({ error: 'closed' }, 403, h);
     const b = await readJson(req);
     const ipHash = await sha(`board\n${ip}\n${env.SB_SERVICE_KEY.slice(-12)}`);
+    // 운영자가 차단한 IP 는 글·댓글·수정·신고 모두 받지 않음 (관리 페이지 '이 IP 차단')
+    if (await boardBlocked(db, ipHash)) return json({ error: 'blocked' }, 403, h);
     if (url.pathname === '/board/write' || url.pathname === '/board/comment') {
       const nick = cleanText(b.nick, 12).replace(/\s+/g, ' '), pw = String(b.pw || '');
       const country = BOARD_COUNTRIES.includes(b.country) ? b.country : 'en';
@@ -744,6 +764,8 @@ async function boardRoute(req, url, env, h) {
       const isPost = url.pathname === '/board/write', since = new Date(Date.now() - 3600e3).toISOString();
       const recent = await db(`${isPost ? 'board_posts' : 'board_comments'}?select=id&ip_hash=eq.${encodeURIComponent(ipHash)}&created_at=gt.${encodeURIComponent(since)}&limit=31`);
       if (recent.length >= (isPost ? 5 : 30)) return json({ error: 'rate' }, 429, { ...h, 'retry-after': '3600' });
+      const spam = boardSpam(nick, b.title, b.body);
+      if (spam) return json({ error: 'spam', why: spam }, 400, h);
       const base = { nick, pw_hash: await pwHash(pw), ip_mask: ipMask(ip), ip_hash: ipHash, country, lang: wl };
       if (url.pathname === '/board/write') {
         const region = String(b.region || '').trim(), title = cleanText(b.title, 60).replace(/\n/g, ' '), body = cleanText(b.body, 2000);
@@ -766,6 +788,8 @@ async function boardRoute(req, url, env, h) {
       if (table !== 'board_posts') return json({ error: 'type' }, 400, h);
       const title = cleanText(b.title, 60).replace(/\n/g, ' '), body = cleanText(b.body, 2000);
       if (!title || !body) return json({ error: 'empty' }, 400, h);
+      const spamE = boardSpam(title, body);
+      if (spamE) return json({ error: 'spam', why: spamE }, 400, h);
       const [row] = await db(`board_posts?select=id,pw_hash&id=eq.${id}&hidden=is.false`);
       if (!row) return json({ error: 'gone' }, 404, h);
       if (!(await pwCheck(String(b.pw || ''), row.pw_hash))) return json({ error: 'pw' }, 403, h);
