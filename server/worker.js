@@ -728,6 +728,10 @@ async function boardRoute(req, url, env, h) {
       const wl = BOARD_LANGS.includes(b.lang) ? b.lang : 'en';
       if ([...nick].length < 2) return json({ error: 'nick' }, 400, h);
       if (pw.length < 4 || pw.length > 40) return json({ error: 'pw' }, 400, h);
+      // 같은 IP 도배 막기: 한 시간에 글 5개 · 댓글 30개까지 (IP 해시로 셈, 전체 IP 는 저장 안 함)
+      const isPost = url.pathname === '/board/write', since = new Date(Date.now() - 3600e3).toISOString();
+      const recent = await db(`${isPost ? 'board_posts' : 'board_comments'}?select=id&ip_hash=eq.${encodeURIComponent(ipHash)}&created_at=gt.${encodeURIComponent(since)}&limit=31`);
+      if (recent.length >= (isPost ? 5 : 30)) return json({ error: 'rate' }, 429, { ...h, 'retry-after': '3600' });
       const base = { nick, pw_hash: await pwHash(pw), ip_mask: ipMask(ip), ip_hash: ipHash, country, lang: wl };
       if (url.pathname === '/board/write') {
         const region = String(b.region || '').trim(), title = cleanText(b.title, 60).replace(/\n/g, ' '), body = cleanText(b.body, 2000);
@@ -762,7 +766,7 @@ async function boardRoute(req, url, env, h) {
       const [row] = await db(`${table}?select=id,pw_hash&id=eq.${id}&hidden=is.false`);
       if (!row) return json({ error: 'gone' }, 404, h);
       if (!(await pwCheck(String(b.pw || ''), row.pw_hash))) return json({ error: 'pw' }, 403, h);
-      await db(`${table}?id=eq.${id}`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ hidden: true, deleted: true }) });
+      await db(`${table}?id=eq.${id}`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ hidden: true, deleted: true, deleted_at: new Date().toISOString() }) });
       return json({ ok: true }, 200, h);
     }
     if (url.pathname === '/board/report') {
