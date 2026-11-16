@@ -73,7 +73,6 @@ create trigger notices_touch before update on public.notices for each row execut
 -- 예시 데이터 (앱 화면 확인용. 실제 운영 전 지우거나 published=false 로)
 insert into public.notices (type, title, body, published, sample, sort)
 select * from (values
-  ('official', '외국인 주민 무료 한국어 교실', '예시 공지입니다. 실제 공지를 한국어 원문 그대로 넣으면 앱이 사용자의 언어로 번역해 보여줍니다.', true, true, 2),
   ('event', '근로자 주말 건강검진', '예시 행사입니다. 장소, 날짜, 시간, 신청 방법을 한국어로 적어 주세요.', true, true, 1)
 ) v(type, title, body, published, sample, sort)
 where not exists (select 1 from public.notices);   -- 처음 한 번만
