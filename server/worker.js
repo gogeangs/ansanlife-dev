@@ -553,7 +553,14 @@ async function wasteData(env) {
 // 표준데이터에 빠진 구: 구청 누리집 직접 확인(2026-11-15). 요일 0=일. 공휴일 전날 배출 금지는 off 에 적음
 const WASTE_EXTRA = {
   '서울특별시 도봉': [{ g: [0, 1, 2, 3, 4, 5], f: [0, 1, 2, 3, 4, 5], r: [0, 1, 2, 3, 4, 5], from: '18:00', to: '00:00', off: '토요일+공휴일 전날', dept: '자원순환과', tel: '02-2091-3262', bulky: '구청 누리집에서 온라인 신청 후 배출(금·토·공휴일 전날 배출 금지)', date: '2026-11-15', n: 1, areas: '도봉구 전역', src: 'dobong.go.kr/subsite/waste' }],
-  '서울특별시 강동': [{ g: [0, 1, 2, 3, 4, 5], f: [0, 1, 2, 3, 4, 5], r: [0, 1, 2, 3, 4, 5], from: '20:00', to: '04:00', off: '토요일+공휴일 전날 · 폐비닐·투명 페트병은 목요일에만', dept: '청소행정과', tel: '02-3425-5870', bulky: '수거 2일 전까지 구청 누리집에서 온라인 신청(문의 02-472-1003)', date: '2026-11-15', n: 1, areas: '강동구 전역', src: 'gangdong.go.kr' }],
+  '서울특별시 강동': [{ g: [0, 1, 2, 3, 4, 5], f: [0, 1, 2, 3, 4, 5], r: [0, 1, 2, 3, 4, 5], from: '20:00', to: '04:00', off: '토요일+공휴일 전날 · 폐비닐·투명 페트병은 목요일에만', dept: '청소행정과', tel: '02-3425-5870', bulky: '수거 2일 전까지 구청 누리집에서 온라인 신청(문의 02-472-1003)', date: '2026-11-15', checked: '2026-11-17', n: 1, areas: '강동구 전역', src: 'gangdong.go.kr' }],
+};
+// 표준데이터를 시·구청 누리집과 대조해 고친 값 (2026-11-17 확인). 그 지역 모든 항목에 덮어씀
+//  vary: 동네마다 요일이 달라 앱이 '동네마다 다를 수 있어요' 안내 + link 로 지역 조회 페이지 연결
+const WASTE_FIX = {
+  '경기도 수원': { tel: '031-5191-3249', off: '토+일 · 재활용품·대형폐기물은 동마다 수거일이 다를 수 있음', checked: '2026-11-17', src: 'suwon.go.kr 생활쓰레기 배출(2026-01-30 수정)' },
+  '경기도 시흥': { tel: '031-310-2254', off: '일요일 수거 없음 · 투명 페트병은 목·금요일에만', checked: '2026-11-17', src: 'siheung.go.kr 생활쓰레기 배출 요령' },
+  '경기도 화성': { tel: '1577-4200', vary: true, link: 'https://h-waste.hscity.go.kr/01_vehicle/01_vehicle0101.asp', off: '지역마다 배출 요일이 달라요 — 화성특례시 청소행정포털 "우리동네 수거정보"에서 확인', checked: '2026-11-17', src: 'h-waste.hscity.go.kr 배출안내' },
 };
 // 2026-07 인천 행정체제 개편 전 이름으로 저장된 주소도 찾게
 const WASTE_ALIAS = { '인천광역시 중': '인천광역시 영종', '인천광역시 동': '인천광역시 제물포', '인천광역시 서': '인천광역시 서해' };
@@ -564,7 +571,7 @@ async function wasteRoute(url, env, h) {
     const map = await wasteData(env);
     let k = sggKey(sido, sgg);
     if (!map[k] && WASTE_ALIAS[k]) k = WASTE_ALIAS[k];
-    const entries = map[k] || WASTE_EXTRA[k] || [];
+    const entries = (map[k] || WASTE_EXTRA[k] || []).map(e => (WASTE_FIX[k] ? { ...e, ...WASTE_FIX[k] } : e));
     return json({ region: k, total: entries.reduce((a, b) => a + b.n, 0), entries }, 200, { ...h, 'cache-control': 'max-age=3600' });
   } catch (e) { return upstreamErr('waste', e, h); }
 }
