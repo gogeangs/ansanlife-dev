@@ -107,6 +107,14 @@ textarea.in{min-height:220px;resize:vertical;line-height:1.7}
 .pv .ph-link{border:1px solid var(--hair);border-radius:14px;padding:10px;text-align:center;font-size:12px;font-weight:700}
 .pv .ph-foot{background:var(--sage);color:#fff;font-size:10px;text-align:right;padding:8px 18px}
 .pv .note{margin-top:14px}
+.bn-pv{border-radius:10px;overflow:hidden;aspect-ratio:3/1;position:relative;background:var(--deep);color:#fff;display:flex;align-items:center;gap:10px;padding:10px 12px}
+.bn-pv.img{padding:0;background:#E9ECEA}.bn-pv img{width:100%;height:100%;object-fit:cover;display:block}
+.bn-pv .chip{align-self:flex-start;font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.18)}
+.bn-pv.img .chip{position:absolute;left:8px;top:8px;background:rgba(30,34,33,.62)}
+.bn-pv .tt{font-family:var(--serif);font-size:14px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bn-pv .ss{font-size:10px;opacity:.82;line-height:1.35}
+.bn-thumb{width:72px;aspect-ratio:3/1;border-radius:6px;object-fit:cover;flex:none;background:var(--deep)}
+#bmap{height:220px;border-radius:14px;background:var(--bg);overflow:hidden}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--deep);color:#fff;border-radius:16px;padding:11px 18px;font-size:14px;font-weight:600;z-index:50;box-shadow:0 10px 24px rgba(20,35,36,.25)}
 .skel{height:52px;border-radius:14px;background:linear-gradient(90deg,var(--bg),#ECEBE7,var(--bg));background-size:200% 100%;animation:sk 1.2s infinite;margin:6px 0}
 @keyframes sk{to{background-position:-200% 0}}
@@ -128,12 +136,12 @@ if(!SB_URL||SB_URL.startsWith('__')||!SB_KEY||SB_KEY.startsWith('__')||!window.s
 const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'ansanlife-admin'}});
 
 const LIMIT={title:300,body:4000};
-const st={user:null,list:[],sel:null,filter:'all',draft:null,dirty:false,confirmDel:false,busy:false};
+const st={view:'notices',admin:false,user:null,list:[],sel:null,filter:'all',draft:null,dirty:false,confirmDel:false,busy:false};
 const blank=()=>({id:null,type:'official',title:'',body:'',date:'',url:'',region:'경기도 안산시',published:true,sample:false,sort:0});
 /* 공지 지역: 비우면 전국. '경기도 안산시' · '서울특별시' 처럼 시·도 + 시·군 (서울·광역시는 시·도만) */
 const REGIONS=['경기도 안산시','경기도 수원시','경기도 화성시','경기도 시흥시','경기도 평택시','경기도 김포시','경기도 부천시','경기도 안양시','경기도 용인시','경기도 성남시','경기도 고양시','서울특별시','인천광역시','부산광역시','대구광역시','대전광역시','광주광역시','울산광역시','세종특별자치시','충청남도 천안시','충청북도 청주시','경상남도 김해시','경상남도 창원시','제주특별자치도 제주시'];
 const regionOk=v=>!v||/^[가-힣]+(특별시|광역시|특별자치시)$|^[가-힣]+(도|특별자치도) [가-힣]+[시군]$/.test(v);
-const header=()=>`<header class="top"><img class="logo" src="assets/icon-192.png" alt=""><div><h1>안산살이 관리</h1><div class="sub">공지·행사</div></div><span class="sp"></span>${st.user?`<span class="who">${esc(st.user.email)}</span><button class="lnk" id="out">로그아웃</button>`:''}</header>`;
+const header=()=>`<header class="top"><img class="logo" src="assets/icon-192.png" alt=""><div><h1>안산살이 관리</h1><div class="sub">${st.view==='banners'?'상단 배너':'공지·행사'}</div></div>${st.admin?`<div class="seg" role="group" aria-label="관리할 것" style="margin-left:10px">${[['notices','공지·행사'],['banners','상단 배너']].map(([k,l])=>`<button type="button" data-view="${k}" aria-pressed="${st.view===k}">${l}</button>`).join('')}</div>`:''}<span class="sp"></span>${st.user?`<span class="who">${esc(st.user.email)}</span><button class="lnk" id="out">로그아웃</button>`:''}</header>`;
 
 /* ---------- login ---------- */
 function loginView(msg=''){
@@ -155,10 +163,12 @@ async function boot(){
  const {data:isAdmin,error}=await sb.rpc('is_admin');
  if(error||!isAdmin){root.innerHTML=header()+`<div class="login"><div class="card"><h2>관리자 등록이 필요해요</h2><p class="hint">${esc(st.user.email)} 계정은 아직 관리자로 등록되지 않았어요. Supabase SQL Editor에서 등록한 뒤 다시 로그인하세요.</p><button class="btn line" id="out2">다른 계정으로 로그인</button></div></div>`;
   bindOut();$('#out2').addEventListener('click',logout);return;}
- mainView();await load();
+ st.admin=true;
+ go(st.view);
 }
 async function logout(){await sb.auth.signOut();st.user=null;loginView();}
-function bindOut(){const o=$('#out');o&&o.addEventListener('click',logout);}
+function bindOut(){const o=$('#out');o&&o.addEventListener('click',logout);root.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.view===st.view)return;const dirty=st.view==='banners'?bs.dirty:st.dirty;if(dirty&&!confirmLeave())return;st.dirty=false;bs.dirty=false;go(b.dataset.view);}));}
+async function go(v){st.view=v;if(v==='banners'){bannerView();await bLoad();}else{mainView();await load();}}
 
 /* ---------- data ---------- */
 async function load(keepId){
@@ -288,7 +298,135 @@ function renderPreview(){
   <div class="ph-foot">ansan life · Gyeonggi-do, Ansan</div></div>`;
 }
 
-addEventListener('beforeunload',e=>{if(st.dirty){e.preventDefault();e.returnValue='';}});
+/* ---------- 상단 배너 (지자체 행사·지역 광고) ---------- */
+const NAVER_KEY='__NAVER_KEY__';
+const BLIM={title:40,sub:60,title_en:60,sub_en:90};
+const bs={list:[],sel:null,draft:null,dirty:false,busy:false,confirmDel:false,filter:'all'};
+const bBlank=()=>({id:null,owner:'',kind:'event',region:'경기도 안산시',title:'',sub:'',title_en:'',sub_en:'',image_url:'',url:'',lat:null,lng:null,radius_km:3,geo:false,starts_at:'',ends_at:'',active:true,sort:0});
+const today=()=>new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
+const bState=b=>!b.active?['숨김','b-hid']:(b.ends_at&&b.ends_at<today())?['기간 끝','b-hid']:(b.starts_at&&b.starts_at>today())?['예약','b-ev']:['노출 중','b-live'];
+async function bLoad(keepId){
+ const {data,error}=await sb.from('banners').select('*').order('sort',{ascending:false}).order('created_at',{ascending:false});
+ if(error){$('#blist').innerHTML=`<p class="empty">배너 표가 아직 없어요. Supabase SQL Editor 에서 <code>supabase/banners.sql</code> 을 실행해 주세요.<br><small>${esc(error.message)}</small></p>`;return;}
+ bs.list=data||[];if(keepId){const n=bs.list.find(x=>x.id===keepId);if(n)bEditSet(n);}bRenderList();
+}
+const bNextSort=()=>bs.list.reduce((m,n)=>Math.max(m,n.sort||0),0)+1;
+function bannerView(){
+ root.innerHTML=header()+`<main class="wrap">
+  <section class="card tl"><div class="h2"><span>상단 배너</span><span class="n" id="bcnt"></span><span class="ln"></span><button class="btn dark sm" id="bnew">+ 새 배너</button></div>
+   <div class="tabs" role="group" aria-label="보기">${[['all','전체'],['live','노출 중'],['off','숨김·끝']].map(([k,l])=>`<button class="tab" data-bf="${k}" aria-pressed="${bs.filter===k}">${l}</button>`).join('')}</div>
+   <div id="blist"><div class="skel"></div><div class="skel"></div></div></section>
+  <section class="card" id="bedc"></section>
+  <aside class="pv" aria-label="앱 미리보기"><div class="h2"><span>앱 미리보기</span><span class="ln"></span></div><div id="bpv"></div>
+   <p class="hint note">홈 화면 맨 위, 메뉴 위에 3:1 크기로 보여요. 여러 개면 5초마다 넘어가요.<br><b>이미지</b>를 넣으면 이미지만, 없으면 제목·설명이 글자로 보여요. 외국어 사용자에게는 영어 제목이 있으면 영어로 보여요.</p></aside>
+ </main>`;
+ bindOut();
+ $('#bnew').addEventListener('click',()=>bGuard(()=>bEdit(null)));
+ root.querySelectorAll('[data-bf]').forEach(b=>b.addEventListener('click',()=>{bs.filter=b.dataset.bf;root.querySelectorAll('[data-bf]').forEach(x=>x.setAttribute('aria-pressed',x===b));bRenderList();}));
+ bEdit(null);
+}
+function bGuard(fn){if(bs.dirty&&!confirmLeave())return;fn();}
+function bRenderList(){
+ const box=$('#blist');if(!box)return;
+ const live=bs.list.filter(b=>bState(b)[0]==='노출 중').length;$('#bcnt').textContent=`노출 ${live} · 전체 ${bs.list.length}`;
+ const rows=bs.list.filter(b=>bs.filter==='all'||(bs.filter==='live'?bState(b)[0]==='노출 중':bState(b)[0]!=='노출 중'));
+ if(!rows.length){box.innerHTML=`<p class="empty">${bs.list.length?'이 보기에는 배너가 없어요.':'아직 배너가 없어요. "+ 새 배너"로 지자체 행사나 지역 광고를 올려 보세요.'}</p>`;return;}
+ box.innerHTML=rows.map(b=>{const [st_,cl]=bState(b);const where=b.lat!=null?`반경 ${b.radius_km}km`:(b.region||'전국');
+  return `<div class="item ${b.id===bs.sel?'sel':''} ${st_==='노출 중'?'':'off'}" data-bid="${b.id}" tabindex="0" role="button">
+  ${b.image_url?`<img class="bn-thumb" src="${esc(b.image_url)}" alt="">`:`<span class="bn-thumb"></span>`}
+  <div class="body"><span class="t">${esc(b.title)}</span><span class="meta"><span class="badge ${b.kind==='ad'?'b-sm':'b-ev'}">${b.kind==='ad'?'광고':'행사'}</span><span class="badge ${cl}">${st_}</span><span>${esc(where)}</span>${b.ends_at?`<span>~${esc(b.ends_at)}</span>`:''}${b.owner?`<span>· ${esc(b.owner)}</span>`:''}</span></div></div>`;}).join('');
+ box.querySelectorAll('[data-bid]').forEach(el=>{const open=()=>bGuard(()=>{const n=bs.list.find(x=>x.id===el.dataset.bid);if(n)bEdit(n)});el.addEventListener('click',open);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});});
+}
+function bEditSet(n){bs.sel=n?n.id:null;bs.draft=n?{...bBlank(),...n,geo:n.lat!=null,title_en:n.title_en||'',sub_en:n.sub_en||'',image_url:n.image_url||'',url:n.url||'',starts_at:n.starts_at||'',ends_at:n.ends_at||'',region:n.region||''}:bBlank();}
+function bEdit(n){bEditSet(n);bs.dirty=false;bs.confirmDel=false;bRenderEditor();bRenderList();}
+function bRenderEditor(){
+ const d=bs.draft,isNew=!d.id;
+ $('#bedc').innerHTML=`<div class="h2"><span>${isNew?'새 배너':'배너 고치기'}</span><span class="ln"></span></div>
+ <form class="ed" id="bf" novalidate>
+  <div class="row"><div class="seg" role="group" aria-label="종류">${[['event','행사'],['ad','광고']].map(([k,l])=>`<button type="button" data-kind="${k}" aria-pressed="${d.kind===k}">${l}</button>`).join('')}</div>
+   <span style="flex:1"></span><label class="sw"><input type="checkbox" id="b-act" ${d.active?'checked':''}><span class="tr"></span><span style="font-size:14px;font-weight:700">앱에 노출</span></label></div>
+  <p class="hint" style="margin:-6px 0 0">행사 = 지자체·공공기관 행사 (앱에 "행사"), 광고 = 돈을 받고 싣는 광고 (앱에 "광고" 표시).</p>
+  <div class="fld"><label for="b-owner">의뢰 기관·광고주 (관리용, 앱에 안 보임)</label><input class="in" id="b-owner" maxlength="80" value="${esc(d.owner)}" placeholder="예: 안산시 외국인주민지원본부"></div>
+  <div class="fld"><label for="b-title">제목</label><input class="in" id="b-title" maxlength="${BLIM.title}" value="${esc(d.title)}" placeholder="예: 2026 안산 세계인의 날 축제" required><div class="cnt" id="bc-title"></div></div>
+  <div class="fld"><label for="b-sub">한 줄 설명 (선택)</label><input class="in" id="b-sub" maxlength="${BLIM.sub}" value="${esc(d.sub)}" placeholder="예: 5월 17일(일) 원곡동 다문화음식거리"><div class="cnt" id="bc-sub"></div></div>
+  <div class="grid2"><div class="fld"><label for="b-ten">영어 제목 (선택)</label><input class="in" id="b-ten" maxlength="${BLIM.title_en}" value="${esc(d.title_en)}" placeholder="Ansan World Day Festival"></div>
+   <div class="fld"><label for="b-sen">영어 설명 (선택)</label><input class="in" id="b-sen" maxlength="${BLIM.sub_en}" value="${esc(d.sub_en)}" placeholder="Sun, May 17 · Wongok-dong food street"></div></div>
+  <div class="fld"><label for="b-img">이미지 (선택 · 3:1, 권장 1200×400, 2MB 이하)</label><div class="row" style="flex-wrap:nowrap"><input class="in" id="b-img" type="url" value="${esc(d.image_url)}" placeholder="https://… 또는 오른쪽 버튼으로 올리기"><label class="btn line sm" style="flex:none">올리기<input type="file" id="b-file" accept="image/jpeg,image/png,image/webp" hidden></label></div></div>
+  <div class="fld"><label for="b-url">누르면 열 링크 (선택)</label><input class="in" id="b-url" type="url" value="${esc(d.url)}" placeholder="https://www.ansan.go.kr/…"></div>
+  <div class="grid2"><div class="fld"><label for="b-s">시작일 (선택)</label><input class="in" id="b-s" type="date" value="${esc(d.starts_at)}"></div><div class="fld"><label for="b-e">종료일 (선택)</label><input class="in" id="b-e" type="date" value="${esc(d.ends_at)}"></div></div>
+  <div class="fld"><span class="lbl">누구에게 보여줄까요</span><div class="seg" role="group">${[[false,'지역(시·군)'],[true,'내 근처 (위치 기반)']].map(([k,l])=>`<button type="button" data-geo="${k}" aria-pressed="${d.geo===k}">${l}</button>`).join('')}</div></div>
+  <div id="b-where"></div>
+  <div class="err" id="bfe" role="alert"></div><div id="bdel"></div>
+  <div class="acts"><button class="btn dark grow" type="submit" id="bsave">${isNew?'배너 올리기':'저장'}</button>${isNew?'':`<button class="btn danger" type="button" id="bdelb">삭제</button>`}</div>
+ </form>`;
+ const f=$('#bf');
+ const sync=()=>{d.owner=$('#b-owner').value;d.title=$('#b-title').value;d.sub=$('#b-sub').value;d.title_en=$('#b-ten').value;d.sub_en=$('#b-sen').value;d.image_url=$('#b-img').value.trim();d.url=$('#b-url').value.trim();d.starts_at=$('#b-s').value;d.ends_at=$('#b-e').value;d.active=$('#b-act').checked;const r=$('#b-region');if(r)d.region=r.value.trim();const rk=$('#b-rad');if(rk)d.radius_km=+rk.value;bs.dirty=true;bCounts();bPreview();};
+ ['#b-owner','#b-title','#b-sub','#b-ten','#b-sen','#b-img','#b-url','#b-s','#b-e'].forEach(x=>$(x).addEventListener('input',sync));$('#b-act').addEventListener('change',sync);
+ f.querySelectorAll('[data-kind]').forEach(b=>b.addEventListener('click',()=>{d.kind=b.dataset.kind;f.querySelectorAll('[data-kind]').forEach(x=>x.setAttribute('aria-pressed',x===b));bs.dirty=true;bPreview();}));
+ f.querySelectorAll('[data-geo]').forEach(b=>b.addEventListener('click',()=>{d.geo=b.dataset.geo==='true';f.querySelectorAll('[data-geo]').forEach(x=>x.setAttribute('aria-pressed',x===b));bs.dirty=true;bWhere(sync);bPreview();}));
+ $('#b-file').addEventListener('change',e=>bUpload(e.target.files[0],sync));
+ f.addEventListener('submit',e=>{e.preventDefault();bSave();});
+ if(!isNew)$('#bdelb').addEventListener('click',()=>{bs.confirmDel=true;bDel();});
+ bWhere(sync);bCounts();bPreview();
+}
+function bWhere(sync){const d=bs.draft,box=$('#b-where');
+ if(!d.geo){box.innerHTML=`<div class="fld"><label for="b-region">지역</label><input class="in" id="b-region" list="regions" value="${esc(d.region||'')}" placeholder="비우면 전국 (예: 경기도 안산시, 서울특별시)"><datalist id="regions">${REGIONS.map(r=>`<option value="${esc(r)}">`).join('')}</datalist><p class="hint">사용자 주소의 시·군이 같으면 보여요.</p></div>`;$('#b-region').addEventListener('input',sync);return;}
+ box.innerHTML=`<div class="fld"><label for="b-addr">행사 장소</label><div class="row" style="flex-wrap:nowrap"><input class="in" id="b-addr" placeholder="주소 (예: 안산시 단원구 다문화길 52)"><button class="btn line sm" type="button" id="b-find" style="flex:none">찾기</button></div></div>
+  <div id="bmap"></div>
+  <div class="fld"><label for="b-rad">반경: <b id="b-radv">${d.radius_km}</b>km</label><input id="b-rad" type="range" min="0.5" max="20" step="0.5" value="${d.radius_km}"></div>
+  <p class="hint" id="b-ll">${d.lat!=null?`중심 ${(+d.lat).toFixed(5)}, ${(+d.lng).toFixed(5)}`:'주소로 찾거나 지도를 눌러 중심을 정하세요.'} 지금 위치(위치 사용을 켠 사용자는 GPS, 아니면 집 주소)가 이 반경 안이면 보여요.</p>`;
+ $('#b-rad').addEventListener('input',e=>{$('#b-radv').textContent=e.target.value;sync();bMapCircle();});
+ $('#b-find').addEventListener('click',bFind);$('#b-addr').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();bFind();}});
+ bMap();}
+let naverP=null,bm=null;
+function loadNaver(){if(!NAVER_KEY||NAVER_KEY.startsWith('__'))return Promise.resolve(null);if(naverP)return naverP;
+ naverP=new Promise(res=>{const s=document.createElement('script');s.src=`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${encodeURIComponent(NAVER_KEY)}&submodules=geocoder`;s.onload=()=>res(window.naver&&naver.maps?naver:null);s.onerror=()=>res(null);document.head.appendChild(s);});return naverP;}
+async function bMap(){const el=$('#bmap');if(!el)return;const N=await loadNaver();if(!N||!$('#bmap')){const d0=bs.draft;el.style.height='auto';el.innerHTML=`<div style="padding:14px" class="ed"><p class="hint" style="margin:0">지도를 불러오지 못했어요. 네이버지도에서 장소를 길게 눌러 나오는 좌표를 아래에 넣어 주세요.</p><div class="grid2"><div class="fld"><label for="b-lat">위도</label><input class="in" id="b-lat" inputmode="decimal" value="${d0.lat??''}" placeholder="37.3219"></div><div class="fld"><label for="b-lng">경도</label><input class="in" id="b-lng" inputmode="decimal" value="${d0.lng??''}" placeholder="126.8309"></div></div></div>`;
+  const upd=()=>{const la=parseFloat($('#b-lat').value),ln=parseFloat($('#b-lng').value);if(la>33&&la<39&&ln>124&&ln<132)bSetCenter(la,ln,false);};$('#b-lat').addEventListener('input',upd);$('#b-lng').addEventListener('input',upd);return;}
+ const d=bs.draft;const c=d.lat!=null?new N.maps.LatLng(d.lat,d.lng):new N.maps.LatLng(37.3219,126.8309);
+ const map=new N.maps.Map(el,{center:c,zoom:d.lat!=null?13:12,scaleControl:false,mapDataControl:false});
+ bm={N,map,mk:null,ci:null};if(d.lat!=null)bSetCenter(d.lat,d.lng,false);
+ N.maps.Event.addListener(map,'click',e=>bSetCenter(e.coord.y,e.coord.x,false));}
+function bSetCenter(lat,lng,pan){const d=bs.draft;d.lat=+(+lat).toFixed(6);d.lng=+(+lng).toFixed(6);bs.dirty=true;
+ const ll=$('#b-ll');if(ll)ll.firstChild.textContent=`중심 ${d.lat.toFixed(5)}, ${d.lng.toFixed(5)} `;
+ if(!bm)return;const {N,map}=bm;const p=new N.maps.LatLng(d.lat,d.lng);
+ if(!bm.mk)bm.mk=new N.maps.Marker({position:p,map});else bm.mk.setPosition(p);
+ if(pan)map.setCenter(p);bMapCircle();}
+function bMapCircle(){if(!bm||bs.draft.lat==null)return;const {N,map}=bm,d=bs.draft;const p=new N.maps.LatLng(d.lat,d.lng);
+ if(!bm.ci)bm.ci=new N.maps.Circle({map,center:p,radius:d.radius_km*1000,fillColor:'#E45C4E',fillOpacity:.12,strokeColor:'#E45C4E',strokeWeight:1.5});else{bm.ci.setCenter(p);bm.ci.setRadius(d.radius_km*1000);}
+ try{map.fitBounds(bm.ci.getBounds());}catch(e){}}
+async function bFind(){const q=$('#b-addr').value.trim();if(!q)return;const N=await loadNaver();if(!N){toast('지도 키가 없어 주소를 찾을 수 없어요');return;}
+ N.maps.Service.geocode({query:q},(status,r)=>{const a=status===N.maps.Service.Status.OK&&r.v2&&r.v2.addresses&&r.v2.addresses[0];if(!a){toast('주소를 찾지 못했어요. 도로명 주소로 다시 적어 주세요');return;}bSetCenter(+a.y,+a.x,true);toast('중심을 정했어요');});}
+async function bUpload(file,sync){if(!file)return;if(file.size>2*1024*1024){toast('2MB 이하 이미지만 올릴 수 있어요');return;}
+ const ext=(file.type.split('/')[1]||'jpg').replace('jpeg','jpg');const path=`${new Date().toISOString().slice(0,10)}/${crypto.randomUUID()}.${ext}`;
+ toast('올리는 중…');const {error}=await sb.storage.from('banners').upload(path,file,{contentType:file.type,cacheControl:'31536000',upsert:false});
+ if(error){toast('올리지 못했어요: '+error.message);return;}
+ const {data}=sb.storage.from('banners').getPublicUrl(path);$('#b-img').value=data.publicUrl;sync();toast('이미지를 올렸어요');}
+function bCounts(){const d=bs.draft;[['title','bc-title'],['sub','bc-sub']].forEach(([k,id])=>{const el=$('#'+id);if(!el)return;const n=[...(d[k]||'')].length;el.textContent=`${n} / ${BLIM[k]}`;el.classList.toggle('over',n>BLIM[k]);});}
+function bPreview(){const d=bs.draft,box=$('#bpv');if(!box)return;const chip=`${d.kind==='ad'?'광고':'행사'} · ${d.geo?'내 근처':(d.region?esc(d.region.split(' ').pop()):'전국')}`;
+ const card=d.image_url&&/^https:\/\//.test(d.image_url)?`<div class="bn-pv img"><img src="${esc(d.image_url)}" alt=""><span class="chip">${chip}</span></div>`
+  :`<div class="bn-pv"><div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1"><span class="chip">${chip}</span><span class="tt">${esc(d.title||'제목이 여기에 나와요')}</span>${d.sub?`<span class="ss">${esc(d.sub)}</span>`:''}</div></div>`;
+ box.innerHTML=`<div class="phone"><div class="ph-top">☰ <span>Menu</span><i></i></div><div class="ph-ttl"><h3>안산살이</h3><span>홈</span></div><div class="ph-sheet">${card}<div style="font-size:12px;color:var(--muted);border-top:1px solid var(--hair);padding-top:10px">01 분리배출<br>02 버스·교통<br>03 관공서</div></div></div>${d.active?'':'<p class="hint">숨김 상태라 앱에 보이지 않아요.</p>'}`;}
+function bValidate(d){if(!d.title.trim())return '제목을 적어 주세요.';
+ for(const k of ['title','sub','title_en','sub_en'])if([...(d[k]||'')].length>BLIM[k])return `${k==='title'?'제목':k==='sub'?'설명':k==='title_en'?'영어 제목':'영어 설명'}이 너무 길어요 (${BLIM[k]}자까지).`;
+ for(const k of ['image_url','url'])if(d[k]&&!/^https:\/\/[^\s]+\.[^\s]+/.test(d[k]))return '이미지·링크는 https:// 로 시작하는 주소만 넣을 수 있어요.';
+ if(d.starts_at&&d.ends_at&&d.starts_at>d.ends_at)return '종료일이 시작일보다 앞이에요.';
+ if(d.geo&&d.lat==null)return '내 근처 배너는 주소를 찾거나 지도를 눌러 중심을 정해 주세요.';
+ if(!d.geo&&!regionOk((d.region||'').trim()))return '지역은 "경기도 안산시"처럼, 서울·광역시는 "서울특별시"처럼 적어 주세요. 비우면 전국이에요.';
+ return '';}
+async function bSave(){if(bs.busy)return;const d=bs.draft;d.title=d.title.trim();const m=bValidate(d);$('#bfe').textContent=m;if(m)return;
+ bs.busy=true;$('#bsave').disabled=true;
+ const row={owner:d.owner.trim(),kind:d.kind,title:d.title,sub:d.sub.trim(),title_en:d.title_en.trim()||null,sub_en:d.sub_en.trim()||null,image_url:d.image_url||null,url:d.url||null,
+  starts_at:d.starts_at||null,ends_at:d.ends_at||null,active:d.active,
+  region:d.geo?null:((d.region||'').trim()||null),lat:d.geo?d.lat:null,lng:d.geo?d.lng:null,radius_km:d.radius_km||3};
+ const res=d.id?await sb.from('banners').update(row).eq('id',d.id).select().single():await sb.from('banners').insert({...row,sort:bNextSort()}).select().single();
+ bs.busy=false;$('#bsave').disabled=false;
+ if(res.error){$('#bfe').textContent='저장하지 못했어요: '+res.error.message;return;}
+ bs.dirty=false;toast(d.id?'저장했어요':(d.active?'배너를 올렸어요. 앱에 바로 보여요':'저장했어요 (숨김)'));await bLoad(res.data.id);bRenderEditor();}
+function bDel(){const a=$('#bdel');a.innerHTML=bs.confirmDel?`<div class="confirm" role="alertdialog"><span style="flex:1">이 배너를 지울까요? 잠시 내리려면 "앱에 노출"을 끄세요.</span><button class="btn line sm" type="button" id="bdn">취소</button><button class="btn danger sm" type="button" id="bdy">지우기</button></div>`:'';
+ if(bs.confirmDel){$('#bdn').addEventListener('click',()=>{bs.confirmDel=false;bDel();});$('#bdy').addEventListener('click',async()=>{const {error}=await sb.from('banners').delete().eq('id',bs.draft.id);if(error){toast('지우지 못했어요');return;}toast('지웠어요');await bLoad();bEdit(null);});}}
+
+addEventListener('beforeunload',e=>{if(st.dirty||bs.dirty){e.preventDefault();e.returnValue='';}});
 sb.auth.onAuthStateChange((ev)=>{if(ev==='SIGNED_OUT'&&st.user){st.user=null;loginView();}});
 boot();
 })();

@@ -129,6 +129,23 @@ a{color:inherit;text-decoration:none}
 .toprule{display:flex;align-items:center;gap:10px;padding:0 32px}
 .toprule i{display:block;width:120px;height:1px;background:var(--deep);opacity:.55}
 .welcome{padding:24px 32px 0}
+.bnwrap{position:relative;margin:0 0 8px}
+.bntrack{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;border-radius:12px;gap:0}
+.bntrack::-webkit-scrollbar{display:none}
+.bn{position:relative;flex:0 0 100%;scroll-snap-align:start;aspect-ratio:3/1;border-radius:12px;overflow:hidden;display:block;text-decoration:none;color:inherit}
+.bn.img{background:#E9ECEA}
+.bn.img img{width:100%;height:100%;object-fit:cover;display:block}
+.bn.img .bn-chip{position:absolute;left:10px;top:10px;background:rgba(30,34,33,.62);color:#fff}
+.bn.txt{background:var(--deep);color:#fff;display:flex;align-items:center;gap:12px;padding:14px 16px}
+.bn-txt{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.bn-chip{align-self:flex-start;display:inline-block;font-size:10px;font-weight:700;letter-spacing:.4px;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.16);color:#fff}
+.bn-t{font-family:var(--serif);font-size:17px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bn-t.kr{font-family:var(--serif-ko)}
+.bn-s{font-size:12px;opacity:.82;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.bn-go{width:30px;height:30px;border-radius:50%;background:var(--accent);display:grid;place-items:center;flex:none}
+.bndots{position:absolute;right:10px;bottom:8px;display:flex;gap:4px}
+.bndots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5)}
+.bndots i.on{background:#fff;width:14px;border-radius:3px}
 .adcard,.instcard{border-radius:12px}
 .roma{display:block;font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0;color:var(--muted);margin-top:1px}
 .roma.big{font-size:13px;margin-top:-2px}
@@ -991,7 +1008,7 @@ SCR.priv=()=>{const p=PT();const on=gpsPref()==='on';
 SCR.home=()=>{const t=T();const icons=['trash','bus','office','med','mega','survey'];const to=['w1','b1','offices','hosp','news','surv'];const ko=S.ko.items;
  return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu,{menu:true,right:langPill()})}
  ${ttl(t.homeT,`<span>${fmtDay(new Date())}</span>`,{eye:t.welcome})}
- <div class="sheet"><nav class="toc">${t.items.map((x,i)=>{const off=(i===5&&!SURVEY_ON)||(i===0&&!wasteOn())||(i===1&&!busOn());return `<button ${off?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:off?`<em class="adnote">${(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중')} · ${esc(RNAME())}</em>`:''}</span><span class="n">0${i+1}</span></button>`}).join('')}</nav>
+ <div class="sheet">${topBanner()}<nav class="toc">${t.items.map((x,i)=>{const off=(i===5&&!SURVEY_ON)||(i===0&&!wasteOn())||(i===1&&!busOn());return `<button ${off?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:off?`<em class="adnote">${(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중')} · ${esc(RNAME())}</em>`:''}</span><span class="n">0${i+1}</span></button>`}).join('')}</nav>
  <div style="margin-top:8px;display:flex;flex-direction:column;gap:12px">${installCard()}${adSlot()}</div>
  ${wasteOn()?`<div class="quote"><div class="col" style="gap:6px"><span class="serif" style="font-size:16px">${t.tipT}</span><span class="small muted" style="line-height:1.55">${t.tipB}</span></div></div>`:''}
  <button class="row tiny muted" data-go="priv" style="gap:6px;align-self:flex-start;padding:4px 0">${ic('lock',13,'#6E7472')}<span style="text-decoration:underline">${PT().row}</span></button>
@@ -1465,6 +1482,48 @@ async function loadAd(){if(adFree())return;if(!hasSb()){if(hasAdsense())mountAds
   const box=document.getElementById('adslot');if(box&&st.lang===lang){box.outerHTML=adSlot();tagFx(app);}}
  mountAdsense();}
 
+/* 상단 배너: 지자체 행사·지역 광고 (Supabase banners). 지역 = 사용자 주소의 시·군(서울·광역시는 시·도), 비어 있으면 전국.
+   여러 개면 가로로 넘기고 5초마다 자동으로 넘어감. 없으면 아무것도 안 보임 (디자인 확인은 주소에 ?adpreview) */
+const BNL={ko:['행사','광고'],en:['Event','Ad'],vi:['Sự kiện','Quảng cáo'],zh:['活动','广告'],ru:['Событие','Реклама'],uz:['Tadbir','Reklama'],mn:['Арга хэмжээ','Зар']};
+st.bn={};let bnTimer=null;
+const bnKey=()=>RG().key||'전국';
+const bnSample=()=>[{id:'sample',kind:'event',region:RG().key,title:'예시 · 안산 세계인 축제',sub:'예시 배너입니다. 지자체 행사를 받아 이 자리에 올려요.',title_en:'Sample · Ansan Global Festival',sub_en:'Example banner. City events go here.',image_url:null,url:null,ends_at:null}];
+function bnText(b){const ko=isKo()||!b.title_en;return {title:ko?b.title:b.title_en,sub:ko?(b.sub||''):(b.sub_en||'')};}
+function bnCard(b){const L=BNL[st.lang]||BNL.en,lab=b.kind==='ad'?L[1]:L[0],tx=bnText(b);const NEAR={ko:'내 근처',en:'Near you',vi:'Gần bạn',zh:'附近',ru:'Рядом',uz:'Yaqinda',mn:'Ойролцоо'};const rg=b.lat!=null?(NEAR[st.lang]||NEAR.en):b.region?(isKo()?RG().ko:(RG()[st.lang]||RG().en)):'';
+ const chip=`<span class="bn-chip">${esc(lab)}${rg?` · ${esc(rg)}`:''}</span>`;
+ const img=b.image_url&&/^https:\/\//.test(b.image_url);
+ const inner=img?`<img src="${esc(b.image_url)}" alt="${esc(tx.title)}" loading="lazy">${chip}`
+  :`<span class="bn-txt">${chip}<span class="bn-t ${isKo()||!b.title_en?'kr':''}">${esc(tx.title)}</span>${tx.sub?`<span class="bn-s">${esc(tx.sub)}</span>`:''}</span>${b.url?`<span class="bn-go">${ic('arrow',16,'#fff')}</span>`:''}`;
+ const cls=`bn ${img?'img':'txt'}`;
+ return b.url&&/^https:\/\//.test(b.url)?`<a class="${cls}" href="${esc(b.url)}" target="_blank" rel="noopener${b.kind==='ad'?' sponsored':''}">${inner}</a>`:`<div class="${cls}">${inner}</div>`;}
+function topBanner(){const list=st.bn[bnKey()];if(list===undefined)return '<div id="bnslot"></div>';
+ const show=list&&list.length?list:(AD_PREVIEW||!hasSb()?bnSample():[]);if(!show.length)return '<div id="bnslot"></div>';
+ return `<div id="bnslot" class="bnwrap" role="region" aria-label="${esc((BNL[st.lang]||BNL.en)[0])}"><div class="bntrack">${show.map(bnCard).join('')}</div>${show.length>1?`<div class="bndots">${show.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>`:''}</div>`;}
+function bnMount(){clearInterval(bnTimer);const w=document.querySelector('.bnwrap');if(!w)return;const tr=w.querySelector('.bntrack'),dots=[...w.querySelectorAll('.bndots i')];if(dots.length<2)return;
+ const idx=()=>Math.round(tr.scrollLeft/tr.clientWidth);let hold=false;
+ tr.addEventListener('scroll',()=>{const i=idx();dots.forEach((d,k)=>d.classList.toggle('on',k===i));},{passive:true});
+ ['pointerdown','touchstart'].forEach(ev=>tr.addEventListener(ev,()=>{hold=true;},{passive:true}));
+ bnTimer=setInterval(()=>{if(hold||!tr.isConnected){if(!tr.isConnected)clearInterval(bnTimer);return;}const n=(idx()+1)%dots.length;tr.scrollTo({left:n*tr.clientWidth,behavior:'smooth'});},5000);}
+/* 당근처럼 위치 기반: 배너에 중심 좌표 + 반경(km)이 있으면, 지금 위치(위치 사용을 켠 사람은 GPS, 아니면 집 주소)에서 그 반경 안일 때만 보임.
+   좌표가 없는 배너는 지역(region) 규칙만 따름. 위치 확인 창은 여기서 새로 띄우지 않음 */
+const kmBetween=(a,b)=>{const R=6371,r=Math.PI/180,dl=(b.lat-a.lat)*r,dn=(b.lng-a.lng)*r;const h=Math.sin(dl/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h));};
+async function bnPos(){if(gpsPref()==='on'&&window.isSecureContext&&navigator.geolocation){try{const p=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:false,timeout:6000,maximumAge:600000}));return {lat:p.coords.latitude,lng:p.coords.longitude};}catch(e){}}
+ try{return await homeLL();}catch(e){return null;}}
+async function loadBanners(){const key=bnKey();
+ if(st.bn[key]===undefined){if(!hasSb()){st.bn[key]=[];}else{try{
+   const cols='id,kind,region,title,sub,title_en,sub_en,image_url,url,ends_at,lat,lng,radius_km,sort';
+   const pos=await bnPos();
+   const byRegion=sb(`banners?select=${cols}&lat=is.null&or=(region.is.null,region.eq.${enc(RG().key)})&limit=8`).catch(()=>[]);
+   // 반경 배너: 위치를 서버에 보내지 않도록 반경 배너 목록을 통째로 받아 기기 안에서 거리로 거름 (지역 칸은 상관없음)
+   const near=pos?sb(`banners?select=${cols}&lat=not.is.null&order=sort.desc&limit=300`).catch(()=>[]):Promise.resolve([]);
+   const [a,b]=await Promise.all([byRegion,near]);
+   const inR=(b||[]).filter(x=>x.lat!=null&&x.lng!=null&&kmBetween(pos,{lat:x.lat,lng:x.lng})<=(x.radius_km||3)).map(x=>({...x,_d:kmBetween(pos,{lat:x.lat,lng:x.lng})}));
+   // 가까운 동네 배너 먼저, 그다음 지역·전국 배너 (각각 sort 큰 순)
+   st.bn[key]=[...inR.sort((x,y)=>(y.sort||0)-(x.sort||0)||x._d-y._d),...(a||[]).sort((x,y)=>(y.sort||0)-(x.sort||0))].slice(0,8);
+  }catch(e){st.bn[key]=[];}}
+  const box=document.getElementById('bnslot');if(box&&bnKey()===key){box.outerHTML=topBanner();tagFx(app);}}
+ bnMount();}
+
 /* survey answers → Supabase (실패하면 기기에 모아 두었다가 다음 실행 때 다시 보냄) */
 const SURVEY_ID='commute-2026';
 async function sendSurvey(rows){try{await sb('survey_responses',{method:'POST',headers:{prefer:'return=minimal'},body:JSON.stringify(rows)});return true}catch(e){return false}}
@@ -1607,6 +1666,7 @@ function render(){syncHist();syncBrand();clearInterval(bgTimer);clearTimeout(sca
  if(n==='intro')bindIntro();
  if(n==='w3')runScan();
  if(n==='home'||n==='news')loadAd();
+ if(n==='home')loadBanners();
  if(n==='home'&&okKey(NAVER_KEY)){const pre=()=>loadNaver();window.requestIdleCallback?requestIdleCallback(pre,{timeout:3000}):setTimeout(pre,1500);} // 지도 스크립트 미리 받아 두기 (병원·버스 지도 첫 표시 4~5초 → 단축)
  if(n==='b2'){const f=document.getElementById('destf');f&&f.addEventListener('submit',e=>{e.preventDefault();const v=document.getElementById('dest').value.trim().slice(0,80);if(v)routeTo(v,/(로|길|동|구)\s*\d/.test(v)?(/안산/.test(v)?v:'경기도 안산시 '+v):null);});}
  if(n==='news'&&(hasApi()||hasSb()))loadNews();

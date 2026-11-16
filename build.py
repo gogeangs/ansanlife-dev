@@ -98,6 +98,7 @@ def main() -> None:
     if not inline:
         adm = (ROOT / "src" / "admin.template.html").read_text(encoding="utf-8")
         adm = adm.replace("'__SUPABASE_URL__'", f"'{sb_url}'").replace("'__SUPABASE_ANON_KEY__'", f"'{sb_key}'")
+        adm = adm.replace("const NAVER_KEY='__NAVER_KEY__';", f"const NAVER_KEY='{key}';")  # 배너 위치 지정용 지도
         (ROOT / "admin.html").write_text(adm, encoding="utf-8")
     print(f"built {out.relative_to(ROOT)}  (naver map: {'on' if key else 'off'}, google map: {'on' if gkey else 'off'}, api: {analyze or 'off'}, supabase: {'on' if sb_url and sb_key else 'off'})")
 

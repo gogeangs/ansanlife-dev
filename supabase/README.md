@@ -49,6 +49,13 @@
 
 **무료 플랜 주의:** 7일 동안 요청이 없으면 프로젝트가 일시 정지됩니다(대시보드에서 Resume). 그래서 저장소 `main` 브랜치의 GitHub Actions `Supabase keep-alive`(.github/workflows/supabase-keepalive.yml)가 매일 09:41(KST) 공개 공지 목록을 한 번 읽습니다. 정식 출시 때는 Pro($25/월) 권장 — 바꾸면 이 워크플로는 지워도 됩니다.
 
+## 상단 배너 (2026-11-16)
+
+`supabase/banners.sql` 을 SQL Editor 에서 한 번 실행하세요 (다시 실행해도 안전). `banners` 표와 배너 이미지 저장소(`banners` 버킷, 공개 읽기·관리자만 올리기)가 생깁니다.
+관리 페이지 상단의 **상단 배너** 탭에서 올립니다. 지역(시·군) 또는 **내 근처**(중심 좌표 + 반경 km, 당근처럼) 중 하나로 보여줄 사람을 정해요.
+내 근처 판정은 기기 안에서만 합니다: 앱이 반경 배너 목록을 받아, 위치 사용을 켠 사람은 GPS, 아니면 집 주소 좌표로 거리를 계산하고 서버에는 위치를 보내지 않습니다.
+관리 페이지에서 주소로 장소를 찾으려면 빌드할 때 `NAVER_KEY` 가 필요합니다 (없으면 위도·경도를 직접 입력).
+
 ## 4. 운영 정리 (2026-11-15)
 
 - `supabase/hardening.sql` 실행됨: Security Advisor 경고 정리(함수 search_path 고정, `is_admin()` 은 로그인 사용자만, Supabase 기본 `rls_auto_enable()` 비공개)
