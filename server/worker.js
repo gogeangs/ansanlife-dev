@@ -766,6 +766,58 @@ async function boardRoute(req, url, env, h) {
   }
 }
 
+/* ---------- 시청 새소식 (제목만) ----------
+   시청 홈페이지 공지는 공공누리 제3유형(출처표시·변경금지)이라 본문은 가져오지 않고, 목록의 제목·날짜·부서만 읽어
+   원문 상세 화면 링크로 보냄. 제목은 읽는 사람 언어로 보조 번역을 함께 줌(원 제목이 항상 먼저).
+   한 시에 한 시간 한 번만 시청 서버를 읽음 (캐시). 시를 늘릴 때는 CITY_BBS 에 주소만 추가 (같은 게시판 틀이면 파서 그대로) */
+const CITY_BBS = {
+  '경기도 안산시': {
+    name: '안산시청 새소식',
+    list: 'https://www.ansan.go.kr/www/common/bbs/selectPageListBbs.do?bbs_code=B0214',
+    detail: 'https://www.ansan.go.kr/www/common/bbs/selectBbsDetail.do?bbs_code=B0214&bbs_seq={id}',
+    parse: 'egov',
+  },
+};
+const unhtml = s => String(s || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#(\d+);/g, (m, n) => String.fromCodePoint(+n)).replace(/\s+/g, ' ').trim();
+// 전자정부 표준형 게시판 (selectPageListBbs / fnGoDetail( 번호 ) / data-field="SJ|REGIST_DT|ADITFIELD1")
+export function parseEgovBbs(html, cfg) {
+  const out = [];
+  for (const [, tr] of String(html).matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)) {
+    const id = (tr.match(/fnGoDetail\(\s*['"]?(\d+)['"]?\s*\)/) || [])[1];
+    if (!id) continue;
+    const a = (tr.match(/<a[^>]*fnGoDetail[^>]*>([\s\S]*?)<\/a>/) || [])[1];
+    const title = unhtml(a).slice(0, 200);
+    const date = ((tr.match(/data-field="REGIST_DT"[^>]*>([\s\S]*?)<\/td>/) || [])[1] || '').replace(/[^\d-]/g, '');
+    const dept = unhtml((tr.match(/data-field="ADITFIELD1"[^>]*>([\s\S]*?)<\/td>/) || [])[1]).slice(0, 30);
+    const pinned = /p-badge[^"]*"[^>]*>\s*공지/.test(tr);
+    if (title && !out.some(x => x.id === id)) out.push({ id, title, date, dept, pinned, url: cfg.detail.replace('{id}', id) });
+  }
+  return out;
+}
+async function cityNewsRoute(url, env, h) {
+  const region = (url.searchParams.get('region') || '').trim();
+  const cfg = CITY_BBS[region];
+  if (!cfg) return json({ region, items: [], supported: false }, 200, { ...h, 'cache-control': 'max-age=3600' });
+  const lang = (BOARD_LANGS.includes(url.searchParams.get('lang')) ? url.searchParams.get('lang') : 'ko');
+  const ck = `citynews/${await sha(region)}`;
+  let items = await trGet(env, ck);
+  if (!items) {
+    try {
+      const r = await fetch(cfg.list, { headers: { 'user-agent': 'Mozilla/5.0 (compatible; SariBot/1.0; +https://sari.kr)', accept: 'text/html' } });
+      if (!r.ok) throw new Error('site ' + r.status);
+      items = parseEgovBbs(await r.text(), cfg)
+        .sort((a, b) => (b.date || '').localeCompare(a.date || '') || Number(b.id) - Number(a.id))
+        .slice(0, 15);
+      if (!items.length) throw new Error('parse');
+      await trPut(env, ck, items, 3600);
+    } catch (e) { return upstreamErr('citynews', e, h); }
+  }
+  const list = items.map(x => ({ ...x, lang: 'ko', body: '' }));
+  if (lang !== 'ko') await boardTr(list.map(x => Object.assign(x, { id: `cn-${x.id}` })), lang, env).catch(() => {});
+  const out = list.map(({ lang: _l, body: _b, tr, id, ...x }) => ({ ...x, id: String(id).replace(/^cn-/, ''), title_tr: tr && tr.title && tr.title !== x.title ? tr.title : undefined }));
+  return json({ region, name: cfg.name, list: cfg.list, items: out, supported: true }, 200, { ...h, 'cache-control': 'max-age=600' });
+}
+
 export default {
   async fetch(req, env) {
     const origin = req.headers.get('origin') || '';
@@ -774,7 +826,7 @@ export default {
     if (!h['access-control-allow-origin']) return json({ error: 'origin' }, 403, h);
     const url = new URL(req.url);
     // Origin 헤더는 브라우저 밖에서 꾸밀 수 있으므로, 비용이 드는 경로는 IP별 횟수 제한 (wrangler.toml 의 LIMITER)
-    if (env.LIMITER && (url.pathname === '/' || url.pathname === '/analyze' || url.pathname === '/notices' || url.pathname.startsWith('/board/'))) {
+    if (env.LIMITER && (url.pathname === '/' || url.pathname === '/analyze' || url.pathname === '/notices' || url.pathname === '/citynews' || url.pathname.startsWith('/board/'))) {
       const ip = req.headers.get('cf-connecting-ip') || 'unknown';
       const { success } = await env.LIMITER.limit({ key: `${ip}:${url.pathname}` });
       if (!success) return json({ error: 'rate' }, 429, { ...h, 'retry-after': '60' });
@@ -784,6 +836,7 @@ export default {
     if (req.method !== 'GET') return json({ error: 'method' }, 405, h);
     if (url.pathname === '/bus/arrivals' || url.pathname === '/bus/stops') return busRoute(url, env, h);
     if (url.pathname === '/notices') return noticesRoute(url, env, h);
+    if (url.pathname === '/citynews') return cityNewsRoute(url, env, h);
     if (url.pathname === '/med/nearby' || url.pathname === '/med/detail') return medRoute(url, env, h);
     if (url.pathname === '/waste') return wasteRoute(url, env, h);
     return json({ error: 'not_found' }, 404, h);

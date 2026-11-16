@@ -134,6 +134,10 @@ a{color:inherit;text-decoration:none}
 textarea.in{resize:vertical;line-height:1.6}
 .bd-form .in{background:#fff}
 .btn.sm{height:40px;padding:0 14px;font-size:13px;border-radius:12px}
+.cn-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:var(--bg);text-align:left}
+.cn-t{font-size:14px;font-weight:600;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cn-pin{color:var(--accent);font-size:9px;margin-right:5px;vertical-align:2px}
+.cn-tr{font-size:12px;color:var(--ink);opacity:.75;line-height:1.4}
 .bd-item{display:flex;flex-direction:column;gap:5px;text-align:left;width:100%;padding:14px 16px;border-radius:16px;background:var(--bg)}
 .bd-t{font-family:var(--serif);font-size:16px;line-height:1.3}.ko .bd-t{font-family:var(--serif-ko)}
 .bd-ex{font-size:13px;color:var(--muted);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:pre-line}
@@ -1380,7 +1384,7 @@ SCR.offices=()=>{const t=T();if(!RD().offices){return `<div class="scr ${isKo()?
  return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)}${ttl(t.offT,`<span>${t.offS}</span>`,{pin:true})}
  <div class="sheet" style="gap:18px">${miniMap('offices')}${t.offices.map(([a,k,d],i)=>{const o=OFFICE_INFO[i]||{};return `<div class="col" style="gap:8px"><button class="col" style="gap:8px;text-align:left" data-naver="${S.ko.offices[i][0]}"><span class="row" style="gap:10px"><span style="width:16px;height:1.5px;background:var(--ink)"></span><span class="serif grow ${isKo()?'kr':''}" style="font-size:16px">${a}</span></span><span class="ticket" style="width:100%"><span class="col grow" style="gap:4px"><span class="tiny muted kr">${k}</span><span class="small">${d}</span>${o.addr?`<span class="micro muted kr" style="user-select:all">${esc(o.addr)}</span>`:''}</span><span class="dash"></span><span class="idot" style="background:var(--accent)">${ic('map',16,'#fff',2)}</span></span></button>${o.tel?`<a class="row small" href="tel:${o.tel.replace(/[^\d]/g,'')}" style="gap:8px;padding:2px 2px 0 26px">${ic('phone',15,'#6E7472')}<span class="muted">${t.tel}</span><span class="b" style="text-decoration:underline">${o.tel}</span></a>`:''}</div>`}).join('')}<div class="spacer"></div></div>${foot}</div>`;};
 SCR.news=()=>{const t=T();const cached=(hasApi()||hasSb())&&st.news[newsKey()];return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu)}${ttl(t.newsT,koSub('공지·행사'))}
- <div class="sheet" style="gap:20px">${citySiteCard()}<div id="newslist" class="col" style="gap:20px">${cached?newsList(cached.notices||[]):t.newsItems.map(([a,b],i)=>`<div class="quote"><div class="col" style="gap:6px"><span class="row cap" style="gap:6px;color:var(--deep)">${ic(i?'cal':'mega',13,'#22393A',2)}${i?t.event:t.official} · ${t.sample}</span><span class="serif" style="font-size:17px">${a}</span><span class="small muted">${b}</span></div></div>`).join('')}</div>
+ <div class="sheet" style="gap:20px">${cityNewsBox()}<div id="newslist" class="col" style="gap:20px">${cached?newsList(cached.notices||[]):t.newsItems.map(([a,b],i)=>`<div class="quote"><div class="col" style="gap:6px"><span class="row cap" style="gap:6px;color:var(--deep)">${ic(i?'cal':'mega',13,'#22393A',2)}${i?t.event:t.official} · ${t.sample}</span><span class="serif" style="font-size:17px">${a}</span><span class="small muted">${b}</span></div></div>`).join('')}</div>
  <span class="micro muted" style="line-height:1.5">${t.notOfficial}</span>
  ${adSlot()}
  <div class="spacer"></div></div>${foot}</div>`;};
@@ -1488,6 +1492,19 @@ const CITY_SITE={'경기도 안산시':'https://www.ansan.go.kr/'};
 const CSITE={en:['City Hall notices',h=>`Official ${h} website · in Korean. Use your browser’s translate.`],vi:['Thông báo của tòa thị chính',h=>`Trang chính thức ${h} · tiếng Hàn. Hãy dùng chức năng dịch của trình duyệt.`],ko:['시청 홈페이지 공지',h=>`${h} 공식 홈페이지로 이동해요`],zh:['市政府公告',h=>`${h}官方网站 · 韩语，可使用浏览器翻译。`],ru:['Объявления мэрии',h=>`Официальный сайт: ${h} · на корейском. Используйте перевод в браузере.`],uz:[`Hokimiyat e’lonlari`,h=>`${h} rasmiy sayti · koreys tilida. Brauzer tarjimasidan foydalaning.`],mn:['Хотын захиргааны мэдээ',h=>`${h}-ийн албан ёсны сайт · солонгос хэлээр. Хөтчийн орчуулгыг ашиглана уу.`]};
 function citySiteCard(){const r=RG(),L=CSITE[st.lang]||CSITE.en;const url=CITY_SITE[r.key]||`https://search.naver.com/search.naver?query=${enc(r.hall+' 공지사항')}`;
  return `<a class="card row" href="${esc(url)}" target="_blank" rel="noopener" style="gap:12px">${dotI('office','#2F3B3A','#fff',36)}<span class="col grow" style="gap:3px"><span class="b">${L[0]}</span><span class="tiny muted">${esc(L[1](r.hall))}</span></span>${ic('ext',16,'#6E7472')}</a>`;}
+/* 시청 새소식: 서버(/citynews)가 시청 게시판의 제목·날짜·부서만 읽어 옴 → 누르면 원문 상세 화면(새 창). 지원 안 하는 시는 위 카드 */
+const CNT={en:['See all','Titles are machine-translated · opens the city website in Korean'],vi:['Xem tất cả','Tiêu đề được dịch tự động · mở trang web thành phố bằng tiếng Hàn'],ko:['전체 보기','누르면 시청 홈페이지 원문으로 이동해요'],zh:['查看全部','标题为机器翻译 · 点击打开韩语市政府网站'],ru:['Все','Заголовки переведены автоматически · откроется сайт мэрии на корейском'],uz:[`Hammasi`,`Sarlavhalar avtomatik tarjima qilingan · hokimiyat sayti koreys tilida ochiladi`],mn:['Бүгдийг харах','Гарчгийг автоматаар орчуулсан · хотын сайт солонгос хэлээр нээгдэнэ']};
+st.cn={};
+const cityNewsBox=()=>hasApi()?`<div id="cnbox">${cityNewsHtml()}</div>`:citySiteCard();
+function cityNewsHtml(){const k=`${RG().key}|${st.lang}`,d=st.cn[k],L=CSITE[st.lang]||CSITE.en,M=CNT[st.lang]||CNT.en;
+ if(d===undefined)return `${h2(L[0])}<div class="mskel" style="height:64px"></div>`;
+ if(!d||!d.supported||!d.items||!d.items.length)return citySiteCard();
+ return `${h2(L[0],'',`<a href="${esc(d.list)}" target="_blank" rel="noopener" class="tiny" style="text-decoration:underline;font-family:var(--sans)">${M[0]}</a>`)}
+ <div class="col" style="gap:8px">${d.items.slice(0,8).map(x=>`<a class="cn-item" href="${esc(x.url)}" target="_blank" rel="noopener"><span class="col grow" style="gap:3px;min-width:0"><span class="cn-t kr">${x.pinned?'<span class="cn-pin">●</span>':''}${esc(x.title)}</span>${x.title_tr&&!isKo()?`<span class="cn-tr">${esc(x.title_tr)}</span>`:''}<span class="micro muted">${esc(x.date||'')}${x.dept?' · <span class="kr">'+esc(x.dept)+'</span>':''}</span></span>${ic('ext',15,'#6E7472')}</a>`).join('')}</div>
+ <span class="micro muted">${M[1]} · ${esc(d.name||'')}</span>`;}
+async function loadCityNews(){const k=`${RG().key}|${st.lang}`;if(!hasApi()||st.cn[k]!==undefined)return;
+ try{st.cn[k]=await api(`/citynews?region=${enc(RG().key)}&lang=${st.lang}`,{},20000);}catch(e){st.cn[k]=null;}
+ const b=document.getElementById('cnbox');if(b)b.innerHTML=cityNewsHtml();}
 
 /* ads: 직접 계약 광고(Supabase) → 없으면 애드센스 → 없으면 비움. Supabase 미설정(시제품)일 때만 예시 광고 */
 st.ad={};
@@ -1792,6 +1809,7 @@ function render(){syncHist();syncBrand();clearInterval(bgTimer);clearTimeout(sca
  if(n==='home'&&okKey(NAVER_KEY)){const pre=()=>loadNaver();window.requestIdleCallback?requestIdleCallback(pre,{timeout:3000}):setTimeout(pre,1500);} // 지도 스크립트 미리 받아 두기 (병원·버스 지도 첫 표시 4~5초 → 단축)
  if(n==='b2'){const f=document.getElementById('destf');f&&f.addEventListener('submit',e=>{e.preventDefault();const v=document.getElementById('dest').value.trim().slice(0,80);if(v)routeTo(v,/(로|길|동|구)\s*\d/.test(v)?(/안산/.test(v)?v:'경기도 안산시 '+v):null);});}
  if(n==='news'&&(hasApi()||hasSb()))loadNews();
+ if(n==='news')loadCityNews();
  if(/^(home|w1|w6|rules)$/.test(n)&&wasteOn()&&!RD().waste)loadWaste();
  if(hasApi()){if(n==='b1')loadStops();if(n==='b4')loadArr();}
  // 위치가 필요한 기능에 들어갈 때만 위치 설정을 요청 (버스: 집 주소 기준 주변 정류장). 집 주소를 아직 안 정했으면 앱을 열 때마다 한 번 (주소 입력 또는 현재 위치)
