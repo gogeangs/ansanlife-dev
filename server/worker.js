@@ -678,7 +678,8 @@ async function boardTr(items, lang, env) {
   for (let j = 0; j < todo.length; j += 10) {
     const idx = todo.slice(j, j + 10);
     try {
-      const got = await boardTranslate(idx.map(i => need[i]), lang, env);
+      // 글과 댓글은 번호가 겹칠 수 있어(1번 글·1번 댓글) 번역 요청에는 순번을 id 로 씀
+      const got = await boardTranslate(idx.map((i, k) => ({ ...need[i], id: `t${k}` })), lang, env);
       await Promise.all(idx.map(async (i, k) => { if (got[k]) { hit[i] = got[k]; await trPut(env, keys[i], got[k]); } }));
     } catch { /* 번역 실패: 원문으로 보여줌 */ }
   }
