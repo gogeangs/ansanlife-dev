@@ -167,6 +167,26 @@ textarea.in{resize:vertical;line-height:1.6}
 .bd-cb{letter-spacing:-.02em;white-space:pre-line;font-size:14px;line-height:1.6;word-break:break-word}
 .bd-ask{display:flex;gap:6px;align-items:center}.bd-ask .in{flex:1;min-width:0}
 .bd-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 0;text-align:center}
+/* 일자리 (오퍼센트 채용공고) */
+.jf{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:none;margin:0 -24px;padding:2px 24px}
+.jf::-webkit-scrollbar{display:none}
+.jchip{flex:none;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:600;background:var(--bg);white-space:nowrap}
+.jchip[aria-pressed="true"]{background:var(--deep);color:#fff}
+.jsel{flex:none;border:0;border-radius:999px;padding:7px 10px;font:inherit;font-size:12px;font-weight:600;background:var(--bg);color:var(--ink);max-width:180px}
+.jsel.on{background:var(--deep);color:#fff}
+.jsrc{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.jsrc b{color:var(--deep)}
+.jb{display:flex;flex-direction:column;gap:4px;text-align:left;width:100%;padding:14px 16px;border-radius:16px;background:var(--bg)}
+.jb-top{font-size:11px;font-weight:700;color:var(--deep);letter-spacing:.2px}
+.jb-t{font-size:16px;font-weight:700;line-height:1.4;letter-spacing:-.02em;word-break:break-word}
+.jb-co{font-size:13px;color:var(--ink)}
+.jb-pay{font-size:13px;font-weight:700;color:var(--deep)}
+.jb-meta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11px;color:var(--muted)}
+.jfacts{display:grid;grid-template-columns:auto 1fr;gap:9px 14px;font-size:13px;line-height:1.45;margin:0}
+.jfacts dt{color:var(--muted);white-space:nowrap}
+.jfacts dd{margin:0;word-break:break-word}
+.jdesc{white-space:pre-line;line-height:1.7;font-size:15px;word-break:break-word;letter-spacing:-.01em}
+.jwarn{display:flex;gap:8px;align-items:center;padding:12px 14px;border-radius:14px;background:var(--accent-soft);font-size:13px;font-weight:600}
 .bnwrap{position:relative;margin:0 0 8px}
 .bntrack{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;border-radius:12px;gap:0}
 .bntrack::-webkit-scrollbar{display:none}
@@ -435,7 +455,7 @@ const DAYS={en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],vi:['CN','T2','T3','T
 const DAYLONG={en:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],vi:['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'],ko:['일요일','월요일','화요일','수요일','목요일','금요일','토요일'],zh:['星期日','星期一','星期二','星期三','星期四','星期五','星期六'],ru:['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'],uz:[`Yakshanba`,`Dushanba`,`Seshanba`,`Chorshanba`,`Payshanba`,`Juma`,`Shanba`],mn:['Ням','Даваа','Мягмар','Лхагва','Пүрэв','Баасан','Бямба']};
 const S={
 en:{cont:'Continue',contSub:'다음 단계로',menu:'Menu',welcome:'Welcome to Ansan',homeT:'Life in Ansan',
- items:['Waste sorting','Bus & transit','Public offices','Hospitals','News & events','Surveys','Neighbors'],
+ items:['Waste sorting','Bus & transit','Public offices','Hospitals','News & events','Surveys','Neighbors','Jobs'],
  sponsored:'SPONSORED · SAMPLE',adT:'Send money home for less',adS:'Example ad · remittance, mobile plans, local shops',tipT:"Today's tip",tipB:'Food waste never goes in the regular bag. Drain it and use the orange food-waste bag.',
  wasteT:'Waste sorting',change:'Change',tonight:'TONIGHT',tonightNone:'No collection tonight',canTonight:'You can put out tonight',weekT:'This week',rest:'Off',
  gen:'General',food:'Food',rec:'Recycling',genL:'General waste',foodL:'Food waste',recL:'Recyclables',bagW:'Milky-white pay-as-you-throw bag',bagO:'Orange food-waste bag',bagC:'Clear plastic bag',bulky:'Bulky items',bulkyS:'Apply first · pickup Mon & Thu',ask:'Ask with a photo',
@@ -472,7 +492,7 @@ en:{cont:'Continue',contSub:'다음 단계로',menu:'Menu',welcome:'Welcome to A
  origView:'View original (Korean)',transView:'View translation',autoTr:'Auto-translated · may contain errors',readMore:'Read more',addHome:'Add Ansan Life to home screen',addHomeS:'Open it like an app, even offline',iosHome:'Tap Share, then “Add to Home Screen”',offline:'You’re offline · showing saved info',photoConsent:'Photos are used only to identify the item and are not stored.',locConsent:'Your location is used only to find your address (via Naver Maps) and is not saved on our server.',
  destPh:'Search a place or address',routeNote:'Directions open in Naver Map with bus and subway times.',adLbl:'SPONSORED',lang:'EN'},
 vi:{cont:'Tiếp tục',contSub:'다음 단계로',menu:'Menu',welcome:'Chào mừng đến Ansan',homeT:'Cuộc sống ở Ansan',
- items:['Phân loại rác','Xe buýt','Cơ quan','Bệnh viện','Tin tức & sự kiện','Khảo sát','Hàng xóm'],
+ items:['Phân loại rác','Xe buýt','Cơ quan','Bệnh viện','Tin tức & sự kiện','Khảo sát','Hàng xóm','Việc làm'],
  sponsored:'QUẢNG CÁO · MẪU',adT:'Chuyển tiền về nhà phí thấp',adS:'Quảng cáo mẫu · chuyển tiền, viễn thông, cửa hàng',tipT:'Mẹo hôm nay',tipB:'Không bỏ rác thực phẩm vào túi rác thường. Chắt nước và bỏ vào túi màu cam.',
  wasteT:'Phân loại rác',change:'Đổi',tonight:'TỐI NAY',tonightNone:'Tối nay không thu gom',canTonight:'오늘 밤 배출 가능',weekT:'Lịch tuần này',rest:'Nghỉ',
  gen:'Thường',food:'Thực phẩm',rec:'Tái chế',genL:'Rác thường',foodL:'Rác thực phẩm',recL:'Rác tái chế',bagW:'Túi trắng sữa (종량제)',bagO:'Túi màu cam',bagC:'Túi nilon trong suốt',bulky:'Đồ cồng kềnh',bulkyS:'Đăng ký trước · thu gom T2, T5',ask:'Chụp ảnh để hỏi',
@@ -509,7 +529,7 @@ vi:{cont:'Tiếp tục',contSub:'다음 단계로',menu:'Menu',welcome:'Chào m�
  origView:'Xem bản gốc (tiếng Hàn)',transView:'Xem bản dịch',autoTr:'Dịch tự động · có thể có lỗi',readMore:'Xem thêm',addHome:'Thêm Ansan Life vào màn hình chính',addHomeS:'Mở như ứng dụng, kể cả khi không có mạng',iosHome:'Nhấn Chia sẻ, rồi “Thêm vào MH chính”',offline:'Đang ngoại tuyến · hiện thông tin đã lưu',photoConsent:'Ảnh chỉ dùng để nhận diện đồ vật và không được lưu.',locConsent:'Vị trí chỉ dùng để tìm địa chỉ (qua Naver Maps) và không được lưu trên máy chủ của chúng tôi.',
  destPh:'Tìm địa điểm hoặc địa chỉ',routeNote:'Chỉ đường mở trong Naver Map, có giờ xe buýt và tàu điện.',adLbl:'QUẢNG CÁO',lang:'VI'},
 ko:{cont:'다음',contSub:'안산살이 시작하기',menu:'메뉴',welcome:'Welcome to Ansan',homeT:'안산 생활 안내',
- items:['분리배출','버스·교통','관공서','병원·약국','공지·행사','설문 참여','주민 이야기'],
+ items:['분리배출','버스·교통','관공서','병원·약국','공지·행사','설문 참여','주민 이야기','일자리'],
  sponsored:'광고 · 예시',adT:'해외송금 수수료 아끼기',adS:'예시 광고 · 송금, 통신, 지역 상점',tipT:'오늘의 생활 팁',tipB:'음식물 쓰레기는 일반 종량제 봉투에 넣지 말고, 물기를 빼서 주황색 음식물 봉투에 버려요.',
  wasteT:'분리배출',change:'변경',tonight:'오늘 밤',tonightNone:'오늘 밤은 수거하지 않아요',canTonight:'오늘 밤 배출 가능',weekT:'이번 주 배출 요일',rest:'쉼',
  gen:'일반',food:'음식물',rec:'재활용',genL:'일반쓰레기',foodL:'음식물쓰레기',recL:'재활용품',bagW:'유백색 일반 종량제 봉투',bagO:'주황색 음식물 봉투',bagC:'투명 비닐봉투',bulky:'대형폐기물',bulkyS:'사전 신고 · 월·목 수거',ask:'사진으로 물어보기',
@@ -546,7 +566,7 @@ ko:{cont:'다음',contSub:'안산살이 시작하기',menu:'메뉴',welcome:'Wel
  origView:'원문 보기',transView:'번역 보기',autoTr:'',readMore:'자세히 보기',addHome:'안산살이 홈 화면에 추가',addHomeS:'앱처럼 열고 오프라인에서도 볼 수 있어요',iosHome:'공유 버튼 → "홈 화면에 추가"를 누르세요',offline:'오프라인 상태예요 · 저장된 정보를 보여드려요',photoConsent:'사진은 품목 판별에만 쓰이고 저장하지 않아요.',locConsent:'위치는 주소를 찾는 데만 쓰이고(네이버 지도) 저희 서버에 저장하지 않아요.',
  destPh:'장소나 주소 검색',routeNote:'길찾기는 네이버지도에서 버스·지하철 시간과 함께 열려요.',adLbl:'광고',lang:'KO'},
 zh:{cont:'继续',contSub:'다음 단계로',menu:'菜单',welcome:'欢迎来到安山',homeT:'安山生活',
- items:['垃圾分类','公交·交通','政府机关','医院','新闻·活动','问卷调查','邻里故事'],
+ items:['垃圾分类','公交·交通','政府机关','医院','新闻·活动','问卷调查','邻里故事','招聘'],
  sponsored:'广告 · 示例',adT:'汇款回家更省钱',adS:'示例广告 · 汇款、手机套餐、本地商店',tipT:'今日小贴士',tipB:'厨余垃圾不能放进普通垃圾袋。沥干水分后，装进橙色厨余垃圾袋。',
  wasteT:'垃圾分类',change:'更改',tonight:'今晚',tonightNone:'今晚不收垃圾',canTonight:'今晚可以扔',weekT:'本周',rest:'不收',
  gen:'一般',food:'厨余',rec:'回收',genL:'一般垃圾',foodL:'厨余垃圾',recL:'可回收物',bagW:'乳白色计量制垃圾袋',bagO:'橙色厨余垃圾袋',bagC:'透明塑料袋',bulky:'大件垃圾',bulkyS:'需先申请 · 周一、周四收',ask:'拍照提问',
@@ -584,7 +604,7 @@ zh:{cont:'继续',contSub:'다음 단계로',menu:'菜单',welcome:'欢迎来到
  destPh:'搜索地点或地址',routeNote:'路线将在Naver地图中打开，可查看公交和地铁时间。',adLbl:'广告',lang:'ZH'},
 ru:{
 cont:'Продолжить',contSub:'다음 단계로',menu:'Меню',welcome:'Добро пожаловать в Ансан',homeT:'Жизнь в Ансане',
-items:['Сортировка мусора','Автобусы и транспорт','Госучреждения','Больницы','Новости и события','Опросы','Соседи'],
+items:['Сортировка мусора','Автобусы и транспорт','Госучреждения','Больницы','Новости и события','Опросы','Соседи','Работа'],
 sponsored:'РЕКЛАМА · ПРИМЕР',adT:'Переводы домой дешевле',adS:'Пример рекламы · переводы, мобильная связь, местные магазины',
 tipT:'Совет дня',tipB:'Пищевые отходы нельзя класть в обычный мешок. Слейте воду и используйте оранжевый мешок для пищевых отходов.',
 wasteT:'Сортировка мусора',change:'Изменить',tonight:'СЕГОДНЯ ВЕЧЕРОМ',tonightNone:'Сегодня вечером вывоза нет',canTonight:'Сегодня вечером можно выносить',
@@ -661,7 +681,7 @@ locConsent:'Местоположение используется только �
 destPh:'Найдите место или адрес',routeNote:'Маршрут откроется в Naver Map с временем автобусов и метро.',adLbl:'РЕКЛАМА',lang:'RU'
 },
 uz:{cont:`Davom etish`,contSub:'다음 단계로',menu:`Menyu`,welcome:`Ansanga xush kelibsiz`,homeT:`Ansanda hayot`,
- items:[`Chiqindini saralash`,`Avtobus va transport`,`Davlat idoralari`,`Shifoxonalar`,`Yangiliklar va tadbirlar`,`So‘rovnomalar`,`Qo‘shnilar`],
+ items:[`Chiqindini saralash`,`Avtobus va transport`,`Davlat idoralari`,`Shifoxonalar`,`Yangiliklar va tadbirlar`,`So‘rovnomalar`,`Qo‘shnilar`,`Ish o‘rinlari`],
  sponsored:`REKLAMA · NAMUNA`,adT:`Uyga arzonroq pul yuboring`,adS:`Namuna reklama · pul o‘tkazish, mobil tariflar, mahalliy do‘konlar`,tipT:`Bugungi maslahat`,tipB:`Oziq-ovqat chiqindisi oddiy qopga solinmaydi. Suvini to‘kib, to‘q sariq oziq-ovqat chiqindisi qopidan foydalaning.`,
  wasteT:`Chiqindini saralash`,change:`O‘zgartirish`,tonight:`BUGUN KECHQURUN`,tonightNone:`Bugun kechqurun yig‘ilmaydi`,canTonight:`Bugun kechqurun chiqarsangiz bo‘ladi`,weekT:`Shu hafta`,rest:`Yo‘q`,
  gen:`Umumiy`,food:`Oziq-ovqat`,rec:`Qayta ishlash`,genL:`Umumiy chiqindi`,foodL:`Oziq-ovqat chiqindisi`,recL:`Qayta ishlanadigan`,bagW:`Sutrang oq pullik chiqindi qopi`,bagO:`To‘q sariq oziq-ovqat chiqindisi qopi`,bagC:`Shaffof plastik qop`,bulky:`Katta buyumlar`,bulkyS:`Avval ariza bering · Du va Pa olib ketiladi`,ask:`Rasm bilan so‘rash`,
@@ -698,7 +718,7 @@ uz:{cont:`Davom etish`,contSub:'다음 단계로',menu:`Menyu`,welcome:`Ansanga 
  origView:`Asl matn (koreyscha)`,transView:`Tarjimani ko‘rish`,autoTr:`Avtomatik tarjima · xato bo‘lishi mumkin`,readMore:`Batafsil`,addHome:`Ansan Life’ni bosh ekranga qo‘shish`,addHomeS:`Ilova kabi oching, internetsiz ham`,iosHome:`“Ulashish” ni, keyin “Bosh ekranga qo‘shish” ni bosing`,offline:`Internet yo‘q · saqlangan ma'lumot ko‘rsatilmoqda`,photoConsent:`Rasmlar faqat buyumni aniqlash uchun ishlatiladi va saqlanmaydi.`,locConsent:`Joylashuvingiz faqat manzilingizni topish uchun (Naver Maps orqali) ishlatiladi va serverimizda saqlanmaydi.`,
  destPh:'Joy yoki manzilni qidiring',routeNote:'Yo‘nalish Naver Map ilovasida avtobus va metro vaqtlari bilan ochiladi.',adLbl:'REKLAMA',lang:'UZ'},
 mn:{cont:'Үргэлжлүүлэх',contSub:'다음 단계로',menu:'Цэс',welcome:'Ансанд тавтай морил',homeT:'Ансан дахь амьдрал',
- items:['Хог ангилах','Автобус ба тээвэр','Төрийн байгууллага','Эмнэлэг','Мэдээ ба арга хэмжээ','Санал асуулга','Хөршүүд'],
+ items:['Хог ангилах','Автобус ба тээвэр','Төрийн байгууллага','Эмнэлэг','Мэдээ ба арга хэмжээ','Санал асуулга','Хөршүүд','Ажлын байр'],
  sponsored:'ЗАР · ЖИШЭЭ',adT:'Гэр рүүгээ хямд мөнгө илгээх',adS:'Жишээ зар · мөнгөн гуйвуулга, утасны багц, ойрын дэлгүүр',tipT:'Өнөөдрийн зөвлөгөө',tipB:'Хүнсний хогийг энгийн уутанд хэзээ ч бүү хий. Усыг нь шүүгээд улбар шар хүнсний хогийн уутанд хийнэ үү.',
  wasteT:'Хог ангилах',change:'Солих',tonight:'ӨНӨӨ ОРОЙ',tonightNone:'Өнөө орой хог ачихгүй',canTonight:'Өнөө орой гаргаж болно',weekT:'Энэ долоо хоног',rest:'Амралт',
  gen:'Энгийн',food:'Хүнсний',rec:'Дахин боловсруулах',genL:'Энгийн хог',foodL:'Хүнсний хог',recL:'Дахин боловсруулах хог',bagW:'Сүүн цагаан төлбөртэй хогийн уут',bagO:'Улбар шар хүнсний хогийн уут',bagC:'Тунгалаг гялгар уут',bulky:'Том оврын хог',bulkyS:'Урьдчилан бүртгүүлэх · Да ба Пү ачна',ask:'Зургаар асуух',
@@ -762,7 +782,7 @@ const cur=()=>st.stack[st.stack.length-1];
 /* 언어 기억: 다시 들어오면 나라 선택 없이 홈으로 */
 try{const cc=localStorage.getItem('al_country');if(cc&&COUNTRIES.some(c=>c.c===cc))st.sel=cc;}catch(e){}
 try{const l=localStorage.getItem('al_lang');if(l&&COUNTRIES.some(c=>c.lang===l)){st.lang=l;st.stack=['home'];}}catch(e){}
-function go(n){if(!SURVEY_ON&&/^(surv|sq|sdone)$/.test(n))return;if(/^(board|bpost|bwrite)$/.test(n)&&!boardOn())return;if(/^w\d$|^rules$/.test(n)&&!wasteOn())return;if(/^b[1-6]$/.test(n)&&!busOn())return;st.stack.push(n);render();}
+function go(n){if(!SURVEY_ON&&/^(surv|sq|sdone)$/.test(n))return;if(/^(board|bpost|bwrite)$/.test(n)&&!boardOn())return;if(/^w\d$|^rules$/.test(n)&&!wasteOn())return;if(/^b[1-6]$/.test(n)&&!busOn())return;if(/^(jobs|jdetail)$/.test(n)&&!jobsOn())return;st.stack.push(n);render();}
 function back(){if(st.stack.length>1)st.stack.pop();render();}
 function home(){st.stack=['home'];render();}
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1048,10 +1068,10 @@ SCR.priv=()=>{const p=PT();const on=gpsPref()==='on';
   <span class="micro muted">${p.kor}</span>
   <button class="card row" data-act="clrdata" style="text-align:left;gap:12px">${dotI('trash','#B4372B','#fff',36)}<span class="col grow" style="gap:3px"><span class="b">${p.clear}</span><span class="tiny muted">${p.clearS}</span></span></button>
   <div class="spacer"></div></div>${foot}</div>`;};
-SCR.home=()=>{const t=T();const icons=['trash','bus','office','med','mega','survey','chat'];const to=['w1','b1','offices','hosp','news','surv','board'];const ko=S.ko.items;
+SCR.home=()=>{const t=T();const icons=['trash','bus','office','med','mega','survey','chat','work'];const to=['w1','b1','offices','hosp','news','surv','board','jobs'];const ko=S.ko.items;
  return `<div class="scr ${isKo()?'ko':''}">${nav(t.menu,{menu:true,right:langPill()})}
  ${ttl(t.homeT,`<span>${fmtDay(new Date())}</span>`,{eye:t.welcome})}
- <div class="sheet">${topBanner()}<nav class="toc">${[0,1,2,3,4,6,5].map((i,k)=>{const x=t.items[i];const off=(i===5&&!SURVEY_ON)||(i===0&&!wasteOn())||(i===1&&!busOn())||(i===6&&!boardOn());return `<button ${off?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:i===6&&off?`<em class="adnote">${(OPEN_ON[st.lang]||OPEN_ON.en)+(isKo()?'':' · 11월 24일 열려요')}</em>`:off?`<em class="adnote">${(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중')} · ${esc(RNAME())}</em>`:''}</span><span class="n">0${k+1}</span></button>`}).join('')}</nav>
+ <div class="sheet">${topBanner()}<nav class="toc">${[0,1,2,3,4,6,7,5].filter(i=>i!==7||jobsOn()).map((i,k)=>{const x=t.items[i];const off=(i===5&&!SURVEY_ON)||(i===0&&!wasteOn())||(i===1&&!busOn())||(i===6&&!boardOn());return `<button ${off?`disabled aria-disabled="true" class="off"`:`data-go="${to[i]}"`}>${dotI(icons[i],'#2F3B3A','#fff',28)}<span class="lab" style="flex-wrap:wrap;row-gap:2px">${x}${isKo()?'':`<small>${ko[i]}</small>`}${i===5?`<em class="adnote">${!SURVEY_ON?(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중'):adFree()?t.adFreeOn(hhmm(st.adFreeUntil)):t.survNote}</em>`:i===6&&off?`<em class="adnote">${(OPEN_ON[st.lang]||OPEN_ON.en)+(isKo()?'':' · 11월 24일 열려요')}</em>`:off?`<em class="adnote">${(SOON[st.lang]||SOON.en)+(isKo()?'':' · 준비 중')} · ${esc(RNAME())}</em>`:''}</span><span class="n">0${k+1}</span></button>`}).join('')}</nav>
  <div style="margin-top:8px;display:flex;flex-direction:column;gap:12px">${installCard()}${adSlot()}</div>
  ${wasteOn()?`<div class="quote"><div class="col" style="gap:6px"><span class="serif" style="font-size:16px">${t.tipT}</span><span class="small muted" style="line-height:1.55">${t.tipB}</span></div></div>`:''}
  <button class="row tiny muted" data-go="priv" style="gap:6px;align-self:flex-start;padding:4px 0">${ic('lock',13,'#6E7472')}<span style="text-decoration:underline">${PT().row}</span></button>
@@ -1829,6 +1849,151 @@ addEventListener('popstate',()=>{if(hSkip){hSkip--;if(!hSkip&&hPend){hPend=false
  const ov=document.querySelector('.sheetover');
  if(ov){ov.remove();history.pushState({al:hDepth},'');return;} // 열린 시트부터 닫기
  if(st.stack.length>1){st.stack.pop();hDepth=st.stack.length-1;render();}});
+/* ---------- 일자리: 오퍼센트 채용공고 (오퍼센트_채용공고_API_가이드 §3-1 브라우저에서 부르기 · §6 지원 링크 · §7 싣는 규칙) ----------
+   - 서버 없이 화면에서 바로 부름(브라우저 key, 허용 도메인으로 묶임 · 화면 소스에 보여도 되는 key). key 는 빌드 때 넣음(build.env)
+     운영 key = 허용 도메인 sari.kr, 테스트 key = localhost:8000 에서만. 이 주소에 맞는 key 가 없으면 메뉴를 숨김
+   - key 의 분당 한도(기본 60회)를 방문자 모두가 함께 씀 → 받은 응답(코드표·목록 페이지·한 건 확인)을 10분 동안 기기에 두고 씀(localStorage).
+     429 면 Retry-After 동안 부르지 않음. 503·네트워크/CORS 오류(오퍼센트 배포 중)는 잠깐의 오류로 보고 받아 둔 목록을 1시간까지 그대로 보여줌
+   - 싣는 규칙: 공고 곁에 '오퍼센트' · 지원은 applyUrl 그대로(안산살이는 지원서를 받지 않음) · 내용 번역 금지
+     (우즈베크어·몽골어 화면은 lang=en 원문, 공지 번역 기능을 거치지 않음) · description 은 글자(esc + 줄바꿈만) · closesAt 지남·한 건 404 는 바로 내림 */
+const OPC='https://api.opercent.ai/api/ext/v1/jobs';
+const OPC_LIVE='opc_live_zcoCfvjROMBor3aferGx6GOOy3TdTM2Q',OPC_TEST='';
+const opcKey=()=>/^(localhost|127\.0\.0\.1)$/.test(location.hostname)?(okKey(OPC_TEST)?OPC_TEST:''):(okKey(OPC_LIVE)?OPC_LIVE:'');
+const jobsOn=()=>!!opcKey();
+const JOB_LANG={ko:'ko',en:'en',vi:'vi',zh:'zh',ru:'ru',uz:'en',mn:'en'};
+const jLang=()=>JOB_LANG[st.lang]||'en';
+const JOB_TTL=10*60e3,JOB_STALE=60*60e3;
+const JT_={
+ ko:{t:'일자리',all:'전체 지역',allTypes:'전체',klOk:'한국어 기초까지',visa:'체류자격',visaAny:'체류자격 전체',srcBy:'채용공고 제공',count:n=>`공고 ${n}건`,empty:'조건에 맞는 공고가 없어요',emptyNear:r=>`지금 ${r}에 올라온 공고가 없어요`,seeAll:'전체 지역 보기',more:'더 보기',err:'공고를 불러오지 못했어요',retry:'다시 시도',busy:'요청이 많아요. 1분 뒤에 다시 시도해 주세요.',off:'지금은 일자리 공고를 볼 수 없어요.',stale:'새 목록을 받지 못해 조금 전에 받은 목록을 보여드려요.',apply:'오퍼센트에서 지원하기',applyNote:'오퍼센트 회원만 지원할 수 있어요. 로그인하지 않았다면 로그인·가입 후 이 공고로 돌아와요.',gone:'마감되었거나 내려간 공고예요.',checking:'지금도 지원받는 공고인지 확인하고 있어요…',pay:'급여',payPolicy:'회사 내규에 따름',type:'고용형태',industry:'업종',where:'근무지',days:'근무 요일',hours:'근무 시간',hc:'모집 인원',people:x=>`${x}명`,few:['○명 (한 자릿수)','○○명 (두 자릿수)'],kl:'한국어',visas:'지원 가능 체류자격',anyVisa:'체류자격 제한 없음',fiveL:'사업장 규모',five:['상시 근로자 5인 이상','상시 근로자 5인 미만'],closes:'마감',always:'상시 모집',posted:'게시',desc:'상세 내용',map:'지도',note:b=>`지원은 오퍼센트에서 받습니다. ${b}는 지원서·이력서를 받지 않아요. 공고 내용은 사업주가 오퍼센트에 올린 그대로입니다.`},
+ en:{t:'Jobs',all:'All regions',allTypes:'All',klOk:'Little or no Korean',visa:'Visa',visaAny:'Any visa',srcBy:'Job postings by',count:n=>`${n} job${n===1?'':'s'}`,empty:'No jobs match these filters',emptyNear:r=>`No jobs in ${r} right now`,seeAll:'See all regions',more:'Show more',err:'Couldn’t load jobs',retry:'Try again',busy:'Too many requests. Please try again in a minute.',off:'Job listings are not available right now.',stale:'Couldn’t refresh — showing the list loaded a little earlier.',apply:'Apply on Opercent',applyNote:'Only Opercent members can apply. If you are not signed in, you will sign in or sign up and come back to this job.',gone:'This job is closed or no longer posted.',checking:'Checking that this job is still open…',pay:'Pay',payPolicy:'Per company policy',type:'Job type',industry:'Industry',where:'Workplace',days:'Work days',hours:'Hours',hc:'Openings',people:x=>`${x}`,few:['A few (1–9)','10–99'],kl:'Korean',visas:'Visas accepted',anyVisa:'No visa restriction',fiveL:'Workplace size',five:['5 or more employees','Fewer than 5 employees'],closes:'Closes',always:'Always hiring',posted:'Posted',desc:'Details',map:'Map',note:b=>`Applications are handled by Opercent. ${b} does not receive applications or résumés. Job details are shown as the employer posted them on Opercent.`},
+ vi:{t:'Việc làm',all:'Tất cả khu vực',allTypes:'Tất cả',klOk:'Không cần/ít tiếng Hàn',visa:'Visa',visaAny:'Mọi loại visa',srcBy:'Tin tuyển dụng từ',count:n=>`${n} việc làm`,empty:'Không có việc làm phù hợp',emptyNear:r=>`Hiện chưa có việc làm ở ${r}`,seeAll:'Xem tất cả khu vực',more:'Xem thêm',err:'Không tải được tin tuyển dụng',retry:'Thử lại',busy:'Quá nhiều yêu cầu. Vui lòng thử lại sau một phút.',off:'Hiện không xem được tin tuyển dụng.',stale:'Không cập nhật được — đang hiển thị danh sách đã tải trước đó.',apply:'Ứng tuyển trên Opercent',applyNote:'Chỉ thành viên Opercent mới ứng tuyển được. Nếu chưa đăng nhập, bạn sẽ đăng nhập hoặc đăng ký rồi quay lại tin này.',gone:'Tin này đã hết hạn hoặc đã bị gỡ.',checking:'Đang kiểm tra tin còn nhận hồ sơ…',pay:'Lương',payPolicy:'Theo quy định công ty',type:'Hình thức',industry:'Ngành nghề',where:'Nơi làm việc',days:'Ngày làm việc',hours:'Giờ làm việc',hc:'Số lượng tuyển',people:x=>`${x} người`,few:['Vài người (1–9)','10–99 người'],kl:'Tiếng Hàn',visas:'Visa được nhận',anyVisa:'Không giới hạn visa',fiveL:'Quy mô',five:['Từ 5 lao động trở lên','Dưới 5 lao động'],closes:'Hạn nộp',always:'Tuyển liên tục',posted:'Ngày đăng',desc:'Chi tiết',map:'Bản đồ',note:b=>`Việc ứng tuyển do Opercent tiếp nhận. ${b} không nhận hồ sơ hay CV. Nội dung tin được hiển thị đúng như nhà tuyển dụng đăng trên Opercent.`},
+ zh:{t:'招聘',all:'全部地区',allTypes:'全部',klOk:'不需要/基础韩语',visa:'签证',visaAny:'全部签证',srcBy:'招聘信息来源',count:n=>`共 ${n} 个职位`,empty:'没有符合条件的职位',emptyNear:r=>`${r}目前没有职位`,seeAll:'查看全部地区',more:'查看更多',err:'无法加载职位',retry:'重试',busy:'请求过多，请一分钟后再试。',off:'目前无法查看招聘信息。',stale:'无法刷新，显示稍早加载的列表。',apply:'在 Opercent 申请',applyNote:'仅 Opercent 会员可以申请。未登录时，请先登录或注册，然后会回到此职位。',gone:'该职位已截止或已下架。',checking:'正在确认该职位是否仍在招聘…',pay:'薪资',payPolicy:'按公司规定',type:'雇佣形式',industry:'行业',where:'工作地点',days:'工作日',hours:'工作时间',hc:'招聘人数',people:x=>`${x}人`,few:['若干名（1–9）','10–99名'],kl:'韩语',visas:'可申请签证',anyVisa:'签证不限',fiveL:'企业规模',five:['常用员工5人以上','常用员工不足5人'],closes:'截止',always:'常年招聘',posted:'发布',desc:'详细内容',map:'地图',note:b=>`申请由 Opercent 受理。${b}不接收申请或简历。职位内容按雇主在 Opercent 发布的原文显示。`},
+ ru:{t:'Работа',all:'Все регионы',allTypes:'Все',klOk:'Без корейского / базовый',visa:'Виза',visaAny:'Любая виза',srcBy:'Вакансии от',count:n=>`Вакансий: ${n}`,empty:'Нет вакансий по этим условиям',emptyNear:r=>`Сейчас нет вакансий: ${r}`,seeAll:'Все регионы',more:'Показать ещё',err:'Не удалось загрузить вакансии',retry:'Повторить',busy:'Слишком много запросов. Попробуйте через минуту.',off:'Сейчас вакансии недоступны.',stale:'Не удалось обновить — показан список, загруженный чуть раньше.',apply:'Откликнуться на Opercent',applyNote:'Откликаться могут только участники Opercent. Если вы не вошли, войдите или зарегистрируйтесь и вернитесь к этой вакансии.',gone:'Вакансия закрыта или снята.',checking:'Проверяем, открыта ли вакансия…',pay:'Оплата',payPolicy:'По правилам компании',type:'Занятость',industry:'Отрасль',where:'Место работы',days:'Рабочие дни',hours:'Часы работы',hc:'Мест',people:x=>`${x}`,few:['Несколько (1–9)','10–99'],kl:'Корейский',visas:'Подходящие визы',anyVisa:'Без ограничений по визе',fiveL:'Размер компании',five:['5 и более сотрудников','Менее 5 сотрудников'],closes:'До',always:'Набор постоянно',posted:'Опубликовано',desc:'Подробнее',map:'Карта',note:b=>`Отклики принимает Opercent. ${b} не принимает отклики и резюме. Вакансии показаны так, как работодатель разместил их на Opercent.`},
+ uz:{t:`Ish o‘rinlari`,all:`Barcha hududlar`,allTypes:`Hammasi`,klOk:`Koreys tili kerak emas / boshlang‘ich`,visa:`Viza`,visaAny:`Har qanday viza`,srcBy:`E’lonlar manbasi:`,count:n=>`${n} ta e’lon`,empty:`Mos ish topilmadi`,emptyNear:r=>`Hozircha ${r} hududida ish yo‘q`,seeAll:`Barcha hududlarni ko‘rish`,more:`Yana ko‘rsatish`,err:`Ish e’lonlarini yuklab bo‘lmadi`,retry:`Qayta urinish`,busy:`So‘rovlar juda ko‘p. Bir daqiqadan keyin qayta urinib ko‘ring.`,off:`Hozir ish e’lonlarini ko‘rib bo‘lmaydi.`,stale:`Yangilab bo‘lmadi — biroz oldin yuklangan ro‘yxat ko‘rsatilmoqda.`,apply:`Opercent’da ariza berish`,applyNote:`Faqat Opercent a’zolari ariza bera oladi. Kirmagan bo‘lsangiz, kiring yoki ro‘yxatdan o‘ting va shu e’longa qaytasiz.`,gone:`Bu e’lon yopilgan yoki olib tashlangan.`,checking:`E’lon hali ochiqligi tekshirilmoqda…`,pay:`Maosh`,payPolicy:`Kompaniya qoidasiga ko‘ra`,type:`Ish turi`,industry:`Soha`,where:`Ish joyi`,days:`Ish kunlari`,hours:`Ish vaqti`,hc:`Bo‘sh o‘rinlar`,people:x=>`${x}`,few:[`Bir necha (1–9)`,`10–99`],kl:`Koreys tili`,visas:`Mos vizalar`,anyVisa:`Viza cheklovi yo‘q`,fiveL:`Korxona hajmi`,five:[`5 va undan ortiq xodim`,`5 tadan kam xodim`],closes:`Muddati`,always:`Doimiy qabul`,posted:`Joylangan`,desc:`Batafsil`,map:`Xarita`,contentLang:`E’lonlar ingliz tilida ko‘rsatiladi (asl matn).`,note:b=>`Arizalarni Opercent qabul qiladi. ${b} ariza va rezyume qabul qilmaydi. E’lonlar ish beruvchi Opercent’ga joylagan holida ko‘rsatiladi.`},
+ mn:{t:'Ажлын байр',all:'Бүх бүс нутаг',allTypes:'Бүгд',klOk:'Солонгос хэлгүй / анхан шат',visa:'Виз',visaAny:'Бүх виз',srcBy:'Ажлын зарын эх сурвалж:',count:n=>`${n} зар`,empty:'Тохирох ажил алга',emptyNear:r=>`Одоогоор ${r}-д ажлын зар алга`,seeAll:'Бүх бүс нутгийг харах',more:'Цааш үзэх',err:'Ажлын зарыг ачаалж чадсангүй',retry:'Дахин оролдох',busy:'Хүсэлт хэт олон байна. Нэг минутын дараа дахин оролдоно уу.',off:'Одоогоор ажлын зар харах боломжгүй.',stale:'Шинэчилж чадсангүй — түрүүн ачаалсан жагсаалтыг харуулж байна.',apply:'Opercent дээр өргөдөл гаргах',applyNote:'Зөвхөн Opercent-ийн гишүүд өргөдөл гаргана. Нэвтрээгүй бол нэвтэрч эсвэл бүртгүүлээд энэ зар руу буцна.',gone:'Энэ зар хаагдсан эсвэл устгагдсан.',checking:'Зар нээлттэй эсэхийг шалгаж байна…',pay:'Цалин',payPolicy:'Компанийн журмын дагуу',type:'Ажлын төрөл',industry:'Салбар',where:'Ажлын байршил',days:'Ажлын өдөр',hours:'Ажлын цаг',hc:'Авах хүний тоо',people:x=>`${x}`,few:['Цөөн (1–9)','10–99'],kl:'Солонгос хэл',visas:'Тохирох виз',anyVisa:'Визийн хязгааргүй',fiveL:'Байгууллагын хэмжээ',five:['5 ба түүнээс дээш ажилтантай','5-аас цөөн ажилтантай'],closes:'Дуусах',always:'Байнга авна',posted:'Нийтэлсэн',desc:'Дэлгэрэнгүй',map:'Газрын зураг',contentLang:'Ажлын зарыг англи хэлээр (эх хувиар) харуулна.',note:b=>`Өргөдлийг Opercent хүлээн авна. ${b} өргөдөл, анкет хүлээн авдаггүй. Ажлын зарыг ажил олгогч Opercent-д нийтэлсэн хэвээр нь харуулна.`}};
+const JT=()=>JT_[st.lang]||JT_.en;
+const JSRC='오퍼센트';
+/* 받은 응답 보관 (기기 단위 localStorage — 다른 탭·다음 방문도 10분 안이면 다시 부르지 않음 · 1시간 넘은 것은 지움 · 1.5MB 를 넘으면 오래된 것부터) */
+const JC=(()=>{let m=null;const K='al_jobs';
+ const load=()=>{if(m)return m;try{m=JSON.parse(localStorage.getItem(K)||'null')}catch(e){m=null}if(!m||typeof m!=='object'||!m.q)m={q:{},gone:{},wait:0};return m;};
+ const save=()=>{const now=Date.now();Object.keys(m.q).forEach(k=>{if(now-m.q[k].at>JOB_STALE)delete m.q[k]});Object.keys(m.gone).forEach(k=>{if(now-m.gone[k]>JOB_STALE)delete m.gone[k]});
+  try{let s=JSON.stringify(m);const ks=Object.keys(m.q).sort((a,b)=>m.q[a].at-m.q[b].at);while(s.length>1.5e6&&ks.length){delete m.q[ks.shift()];s=JSON.stringify(m);}localStorage.setItem(K,s);}catch(e){/* 저장소를 못 쓰면 이 화면에서만 */}};
+ return {get:k=>load().q[k],set:(k,body)=>{load().q[k]={at:Date.now(),body};save();},gone:id=>!!load().gone[id],drop:id=>{load().gone[id]=Date.now();save();},wait:()=>load().wait||0,setWait:t=>{load().wait=t;save();}};})();
+const jErr=(idea,temp)=>Object.assign(new Error(idea),{idea,temp});
+async function opc(path,nc){const now=Date.now();const c=nc?null:JC.get(path);
+ if(c&&now-c.at<JOB_TTL)return {body:c.body};
+ const old=c&&now-c.at<JOB_STALE?c.body:null;
+ const temp=idea=>{if(old)return {body:old,stale:true};throw jErr(idea,true);}; // 잠깐의 오류: 받아 둔 것이 있으면 그대로(내리지 않음)
+ if(JC.wait()>now)return temp('RATE_LIMITED');
+ let r,body=null;const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),15000);
+ try{r=await fetch(OPC+path,{headers:{'X-API-KEY':opcKey()},credentials:'omit',signal:ctl.signal});try{body=await r.json()}catch(e){}}
+ catch(e){return temp('NETWORK');} // CORS 오류(오퍼센트 배포·재시작 중 포함)·끊김
+ finally{clearTimeout(to)}
+ const idea=body&&body.idea||'';
+ if(r.ok&&idea==='OK'){if(!nc)JC.set(path,body);return {body};}
+ if(r.status===404&&idea==='POSTING_NOT_FOUND')return {gone:true};
+ if(r.status===429)JC.setWait(now+Math.min(600,Number(r.headers.get('retry-after'))||60)*1000);
+ if(r.status===429||r.status===503)return temp(idea||'BUSY');
+ console.warn('[opercent]',r.status,idea,body&&body.data&&body.data.message||''); // KEY_* · SCOPE_DENIED · DOMAIN_NOT_ALLOWED 등은 개발자 도구에서 확인
+ throw jErr(idea||'HTTP_'+r.status,false);}
+/* 내 지역 → 오퍼센트 시군구 코드 (앞 두 자리 = 시·도, 이름표 '안산 단원구' · '부천시' · 서울은 구 이름) */
+const SIDO_CODE=[['서울',11],['부산',21],['대구',22],['인천',23],['광주',24],['대전',25],['울산',26],['세종',29],['경기',31],['강원',32],['충청북',33],['충북',33],['충청남',34],['충남',34],['전라북',35],['전북',35],['전라남',36],['전남',36],['경상북',37],['경북',37],['경상남',38],['경남',38],['제주',39]];
+function jRegionMatch(key){const [a1='',a2='']=String(key||'').trim().split(/\s+/);const s=SIDO_CODE.find(([p])=>a1.startsWith(p));if(!s)return null;
+ const pre=String(s[1]),metro=/(특별시|광역시|특별자치시)$/.test(a1)||!a2,base=a2.replace(/(시|군)$/,'');
+ return (code,label)=>{if(!String(code||'').startsWith(pre))return false;if(metro)return true;label=String(label||'');return label===a2||label===base+'시'||label===base+'군'||label.startsWith(base+' ');};}
+/* 내 지역: 공고의 시군구 코드(앞 두 자리 = 시·도, 이름표) 또는 근무지 주소의 시·도 + 시·군 이름으로 판단 */
+const sidoOf=a=>{const x=SIDO_CODE.find(([p])=>String(a||'').startsWith(p));return x?x[1]:0;};
+function jNearFn(){const key=RG().key,m=jRegionMatch(key);const [k1='',k2='']=String(key||'').trim().split(/\s+/);const ks=sidoOf(k1),metro=/(특별시|광역시|특별자치시)$/.test(k1)||!k2;
+ return p=>{if(m&&p.region&&m(p.region.code,p.region.label))return true;const [a1='',a2='']=String(p.workAddress||'').trim().split(/\s+/);return !!ks&&sidoOf(a1)===ks&&(metro||a2===k2);};}
+const kstIso=s=>/[zZ]|[+-]\d\d:?\d\d$/.test(String(s))?String(s):String(s)+'+09:00'; // 오퍼센트 일시 = 한국 시각, 시간대 표시 없음
+const jOpen=p=>!!p&&(!p.closesAt||!(Date.parse(kstIso(p.closesAt))<=Date.now()));
+const jShown=list=>list.filter(p=>jOpen(p)&&!JC.gone(p.id));
+const jDate=s=>String(s||'').slice(0,10).replace(/-/g,'.');
+const JDAY={SUN:0,MON:1,TUE:2,WED:3,THU:4,FRI:5,SAT:6};
+const jDays=p=>(Array.isArray(p.workDays)?p.workDays:[]).map(d=>(DAYS[st.lang]||DAYS.en)[JDAY[d]]).filter(Boolean).join('·');
+const jHours=p=>p.workStart||p.workEnd?`${p.workStart||''}–${p.workEnd||''}`:'';
+const jPay=p=>{const t=JT(),l=p.payType&&p.payType.label||'';if(p.payAmount==null)return l?`${l} · ${t.payPolicy}`:'';const n=Number(p.payAmount).toLocaleString('en-US');return isKo()?`${l} ${n}원`.trim():`₩${n}${l?' · '+l:''}`;};
+const jHead=p=>{const t=JT(),h=String(p.headcount||'');return h==='0'?t.few[0]:h==='00'?t.few[1]:h?t.people(h):'';};
+const jVisas=(p,max)=>{const v=Array.isArray(p.visaTypes)?p.visaTypes:[];if(!v.length)return JT().anyVisa;const l=v.map(x=>x&&x.label).filter(Boolean);return max&&l.length>max?l.slice(0,max).join(', ')+' …':l.join(', ');};
+const jPref=k=>{try{return localStorage.getItem('al_job_'+k)||''}catch(e){return ''}};
+const jSave=(k,v)=>{try{v?localStorage.setItem('al_job_'+k,v):localStorage.removeItem('al_job_'+k)}catch(e){}};
+st.jobs={near:true,type:'',kl:jPref('kl')==='1',visa:jPref('visa'),codes:null,data:null,err:null,stale:false,loading:false,show:20,sel:null,item:null,check:{}};
+let jSeq=0;
+/* 언어별 전체 목록을 한 번에 받아(50건씩, 최대 JOB_PAGES 쪽) 10분 보관하고, 탭·고용형태·한국어·체류자격 거르기는 기기 안에서 함.
+   → 거르기를 눌러도 오퍼센트를 다시 부르지 않음 (분당 한도를 방문자 모두가 함께 쓰므로). 500건을 넘게 되면 한도와 함께 다시 정할 것 */
+const JOB_PAGES=10,JKL=['NONE','BASIC'];
+/* 전체 목록: 페이지를 따로 보관하면 10분 경계에서 새 페이지·옛 페이지가 섞여 공고가 빠질 수 있어, 다 받은 목록을 한 덩어리로 보관.
+   중간 페이지에서 잠깐의 오류가 나면: 받아 둔 전체 목록(1시간 안)이 있으면 그것을, 없으면 지금까지 받은 페이지만(보관하지 않음) */
+async function jFetchList(lang,alive){const key=`/list?lang=${lang}`,now=Date.now(),c=JC.get(key);
+ if(c&&now-c.at<JOB_TTL)return c.body;
+ const old=c&&now-c.at<JOB_STALE?c.body:null;const seen=new Set(),items=[];let total=0;
+ try{for(let page=0;page<JOB_PAGES;page++){const b=(await opc(`/postings?lang=${lang}&size=50&page=${page}`,true)).body;if(!alive())throw jErr('CANCELLED',false);
+   const list=Array.isArray(b.data)?b.data:[];total=Number(b.totalCount)||0;
+   list.forEach(x=>{if(x&&x.id!=null&&!seen.has(String(x.id))){seen.add(String(x.id));items.push(x);}}); // 같은 id 가 두 페이지에 나오면 하나만
+   if(!list.length||Number(b.page)!==page||(page+1)*50>=total)break;}}
+ catch(e){if(!e.temp)throw e;if(old)return {...old,stale:true};if(items.length)return {items,total,partial:e};throw e;}
+ const body={items,total};JC.set(key,body);return body;}
+async function jLoad(){const J=st.jobs,seq=++jSeq,lang=jLang(),alive=()=>seq===jSeq;
+ J.data=null;J.err=null;J.loading=true;jPaint();
+ try{const cr=await opc(`/codes?lang=${lang}`);if(!alive())return;J.codes=cr.body.data||{};
+  if(J.visa&&!(J.codes.visaTypes||[]).some(v=>v.code===J.visa)){J.visa='';jSave('visa','');} // 코드표에 없는 체류자격은 풀기
+  const l=await jFetchList(lang,alive);if(!alive())return;
+  J.data={lang,items:l.items,total:l.total,at:l.partial?0:Date.now()};J.stale=!!(cr.stale||l.stale);J.err=l.partial||null;} // 일부만 받았으면 다음에 다시 받음
+ catch(e){if(!alive())return;J.err=e;}
+ J.loading=false;J.show=20;jPaint();}
+const jMatch=(p,J)=>(!J.type||!!(p.employmentType&&p.employmentType.code===J.type))&&(!J.kl||!!(p.koreanLevel&&JKL.includes(p.koreanLevel.code)))
+ &&(!J.visa||!(Array.isArray(p.visaTypes)&&p.visaTypes.length)||p.visaTypes.some(v=>v&&v.code===J.visa)); // 체류자격 제한 없는 공고(빈 목록)는 누구나
+function jList(){const J=st.jobs;if(!J.data)return [];const near=J.near?jNearFn():null;return jShown(J.data.items).filter(p=>(!near||near(p))&&jMatch(p,J));}
+const jErrBox=e=>{const t=JT();const busy=/RATE_LIMITED|DAILY_LIMIT|BUSY/.test(e.idea||'');return `<div class="col" style="gap:10px;align-items:flex-start;padding:6px 0"><span class="small muted">${busy?t.busy:e.temp?t.err:t.off}</span>${e.temp?`<button class="btn line sm" data-act="jretry">${t.retry}</button>`:''}</div>`;};
+function jFilters(){const J=st.jobs,t=JT(),c=J.codes||{};
+ const types=[['',t.allTypes],...(c.employmentTypes||[]).map(x=>[x.code,x.label])];const visas=c.visaTypes||[];
+ return types.map(([k,l])=>`<button class="jchip" data-jtype="${esc(k)}" aria-pressed="${J.type===k}">${esc(l)}</button>`).join('')
+  +`<button class="jchip" data-act="jkl" aria-pressed="${J.kl}">${t.klOk}</button>`
+  +(visas.length?`<select class="jsel ${J.visa?'on':''}" id="jvisa" aria-label="${t.visa}"><option value="">${t.visaAny}</option>${visas.map(v=>`<option value="${esc(v.code)}" ${J.visa===v.code?'selected':''}>${esc(v.label)}${v.note?` · ${esc(v.note)}`:''}</option>`).join('')}</select>`:'');}
+const jCard=p=>{const t=JT();const top=[p.employmentType&&p.employmentType.label,p.region&&p.region.label].filter(Boolean).map(esc).join(' · ');const pay=jPay(p);
+ const meta=[jDays(p),jHours(p),p.closesAt?`${t.closes} ${jDate(p.closesAt)}`:t.always,jVisas(p,3)].filter(Boolean);
+ return `<button class="jb" data-job="${esc(p.id)}">${top?`<span class="jb-top">${top}</span>`:''}<span class="jb-t">${esc(p.title)}</span><span class="jb-co">${esc(p.companyName)}${p.industry&&p.industry.label?` <span class="muted">· ${esc(p.industry.label)}</span>`:''}</span>${pay?`<span class="jb-pay">${esc(pay)}</span>`:''}<span class="jb-meta">${meta.map(x=>`<span>${esc(x)}</span>`).join('')}<span>${JSRC}</span></span></button>`;};
+function jPaint(){const box=document.getElementById('joblist');if(!box)return;const J=st.jobs,t=JT();
+ const f=document.getElementById('jfilters');if(f)f.innerHTML=jFilters();
+ if(!J.data){box.innerHTML=J.err?jErrBox(J.err):'<div class="mskel"></div><div class="mskel"></div><div class="mskel"></div>';return;}
+ const items=jList();let h=J.stale?`<p class="tiny muted" style="margin:0">${t.stale}</p>`:'';
+ if(!items.length)h+=`<div class="bd-empty">${dotI('work','var(--bg)','#22393A',44)}<span class="small muted">${esc(J.near&&!J.type&&!J.kl&&!J.visa?t.emptyNear(RNAME()):t.empty)}</span>${J.near?`<button class="btn line sm" data-act="jall">${t.seeAll}</button>`:''}</div>`;
+ else h+=`<span class="tiny muted">${esc(t.count(items.length))}</span>`+items.slice(0,J.show).map(jCard).join('')+(items.length>J.show?`<button class="btn line" data-act="jmore">${t.more}</button>`:'');
+ if(J.err)h+=jErrBox(J.err); // 목록 일부만 받은 경우
+ box.innerHTML=h;}
+function jRefilter(){st.jobs.show=20;jPaint();}
+function jShow(){const J=st.jobs;if(J.data&&J.data.lang===jLang()&&Date.now()-J.data.at<JOB_TTL)jPaint();else jLoad();}
+function jSetNear(v){st.jobs.near=v;app.querySelectorAll('[data-jtab]').forEach(b=>b.setAttribute('aria-selected',String((b.dataset.jtab==='near')===v)));jRefilter();}
+SCR.jobs=()=>{const t=JT(),J=st.jobs;return `<div class="scr ${isKo()?'ko':''}">${nav(T().menu)}${ttl(t.t,`<span>${esc(RNAME())}</span><span>·</span><span>${t.srcBy} ${JSRC}${isKo()?'':' (Opercent)'}</span>`,{pin:true})}
+ <div class="sheet" style="gap:14px">
+  <div class="mtabs" role="tablist"><button class="mtab" role="tab" data-jtab="near" aria-selected="${J.near}">${esc(RNAME())}<i></i></button><button class="mtab" role="tab" data-jtab="all" aria-selected="${!J.near}">${t.all}<i></i></button></div>
+  <div class="jf" id="jfilters">${jFilters()}</div>
+  ${t.contentLang?`<span class="tiny muted">${t.contentLang}</span>`:''}
+  <div id="joblist" class="col" style="gap:10px"></div>
+  <span class="micro muted" style="line-height:1.55">${esc(t.note(brand()))}</span>
+  <div class="spacer"></div></div>${foot}</div>`;};
+function jOpenItem(id){const J=st.jobs;const p=J.data&&J.data.items.find(x=>String(x.id)===String(id));if(!p)return;J.sel=String(p.id);J.item=p;
+ if(jOpen(p)){J.check[J.sel]='checking';jCheck(J.sel);}go('jdetail');}
+// 공고를 열 때 지금도 지원받는지 한 건 조회로 확인 (10분 보관). 404 면 바로 내림, 잠깐의 오류면 목록 내용 그대로
+async function jCheck(id){const J=st.jobs;let v='err';
+ try{const r=await opc(`/postings/${encodeURIComponent(id)}?lang=${jLang()}`);if(r.gone){v='gone';JC.drop(id);}else if(r.body&&r.body.data){v='ok';if(J.sel===id)J.item=r.body.data;}}catch(e){}
+ J.check[id]=v;if(cur()==='jdetail'&&J.sel===id)render();}
+SCR.jdetail=()=>{const J=st.jobs,t=JT(),p=J.item;if(!p)return SCR.jobs();const ck=J.check[String(p.id)];const gone=ck==='gone'||!jOpen(p)||JC.gone(p.id);
+ const row=(k,v)=>v?`<dt>${k}</dt><dd>${v}</dd>`:'';const addr=p.workAddress||(p.region&&p.region.label)||'';
+ const vis=(Array.isArray(p.visaTypes)?p.visaTypes:[]).filter(Boolean);
+ return `<div class="scr ${isKo()?'ko':''}">${nav(t.t)}${ttl(esc(p.title),`<span>${esc(p.companyName)}</span>`)}
+ <div class="sheet" style="gap:18px">
+  <span class="jsrc">${ic('work',13,'#6E7472')}<span>${t.srcBy} <b>${JSRC}</b>${isKo()?'':' (Opercent)'}</span></span>
+  ${gone?`<div class="jwarn">${ic('alert',16,'#E45C4E')}<span>${t.gone}</span></div>`:ck==='checking'?`<span class="tiny muted">${t.checking}</span>`:''}
+  <dl class="jfacts">${row(t.pay,esc(jPay(p)))}${row(t.type,esc(p.employmentType&&p.employmentType.label))}${row(t.industry,esc(p.industry&&p.industry.label))}${row(t.where,addr?`${esc(addr)} <button class="b small" style="text-decoration:underline;color:var(--deep)" data-naver="${esc(addr)}">${t.map}</button>`:'')}${row(t.days,esc(jDays(p)))}${row(t.hours,esc(jHours(p)))}${row(t.hc,esc(jHead(p)))}${row(t.kl,esc(p.koreanLevel&&p.koreanLevel.label))}${row(t.visas,vis.length?vis.map(v=>esc(v.label)+(v.note?` <span class="muted">(${esc(v.note)})</span>`:'')).join(', '):esc(t.anyVisa))}${row(t.fiveL,p.fiveOrMore===true?t.five[0]:p.fiveOrMore===false?t.five[1]:'')}${row(t.closes,p.closesAt?esc(jDate(p.closesAt)+' '+String(p.closesAt).slice(11,16)):t.always)}${row(t.posted,esc(jDate(p.postedAt)))}</dl>
+  ${t.contentLang?`<span class="tiny muted">${t.contentLang}</span>`:''}
+  ${p.description?`${h2(t.desc)}<div class="jdesc">${esc(p.description)}</div>`:''}
+  ${!gone&&/^https:\/\//.test(p.applyUrl||'')?`<a class="btn dark" href="${esc(p.applyUrl)}" target="_blank" rel="noopener">${ic('ext',16,'#fff')}${t.apply}</a><span class="tiny muted" style="line-height:1.55">${t.applyNote}</span>`:''}
+  <span class="micro muted" style="line-height:1.55">${esc(t.note(brand()))}</span>
+  <div class="spacer"></div>
+ </div>${foot}</div>`;};
+app.addEventListener('change',e=>{if(e.target&&e.target.id==='jvisa'){st.jobs.visa=e.target.value;jSave('visa',st.jobs.visa);jRefilter();}});
+
 function render(){syncHist();syncBrand();clearInterval(bgTimer);clearTimeout(scanTimer);clearTimeout(arrTimer);scanSeq++;const n=cur();if(n!=='w2')stopCam();if(n!=='rules')st.rulesDraft=null;
  app.className='l-'+(st.lang||'en');document.documentElement.lang=st.lang||'ko';app.innerHTML=SCR[n]();
  if(n==='intro')bindIntro();
@@ -1848,6 +2013,7 @@ function render(){syncHist();syncBrand();clearInterval(bgTimer);clearTimeout(sca
  // 위치가 필요한 기능에 들어갈 때만 위치 설정을 요청 (버스: 집 주소 기준 주변 정류장). 집 주소를 아직 안 정했으면 앱을 열 때마다 한 번 (주소 입력 또는 현재 위치)
  if(n==='b1'&&!addrSaved()&&!st.locAsked){st.locAsked=true;setTimeout(()=>{if(cur()==='b1'&&!document.querySelector('.sheetover'))locSheet();},350);}
  if(n==='hosp')loadMed();if(n==='hdetail')loadMedDetail();
+ if(n==='jobs')jShow();
  mountMaps();
  if(n==='w2'){['ph','ph2'].forEach(id=>{const i=document.getElementById(id);i&&i.addEventListener('change',()=>{const f=i.files&&i.files[0];if(f)readPhoto(f);});});
   document.getElementById('shut').addEventListener('click',e=>{if(camStream){e.preventDefault();capture();}});startCam();}
@@ -1869,7 +2035,10 @@ function bindIntro(start=true){const A=document.getElementById('bgA'),B=document
  rail.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){rail.scrollLeft+=e.deltaY;e.preventDefault();}},{passive:false});
 }
 let dragMoved=false;
-app.addEventListener('click',e=>{const el=e.target.closest('[data-sel],[data-go],[data-act],[data-naver],[data-ans],[data-cand],[data-day],[data-stop],[data-news],[data-route],[data-mtab],[data-med],[data-mnav],[data-bpost],[data-bdorig],[data-bdrep],[data-bddel],[data-bdedit],#goBtn,#remind,#ntf');if(!el)return;
+app.addEventListener('click',e=>{const el=e.target.closest('[data-sel],[data-go],[data-act],[data-naver],[data-ans],[data-cand],[data-day],[data-stop],[data-news],[data-route],[data-mtab],[data-med],[data-mnav],[data-bpost],[data-bdorig],[data-bdrep],[data-bddel],[data-bdedit],[data-job],[data-jtab],[data-jtype],#goBtn,#remind,#ntf');if(!el)return;
+ if(el.dataset.job){jOpenItem(el.dataset.job);return;}
+ if(el.dataset.jtab){const v=el.dataset.jtab==='near';if(v!==st.jobs.near)jSetNear(v);return;}
+ if(el.dataset.jtype!=null){st.jobs.type=el.dataset.jtype;jRefilter();return;}
  if(el.dataset.mtab){st.med.tab=el.dataset.mtab;paintMed();return;}
  if(el.dataset.bpost){st.bd.sel=+el.dataset.bpost;st.bd.post=null;st.bd.ask=null;go('bpost');return;}
  if(el.dataset.bdorig){const k=el.dataset.bdorig;st.bd.orig[k]=!st.bd.orig[k];render();return;}
@@ -1906,6 +2075,10 @@ app.addEventListener('click',e=>{const el=e.target.closest('[data-sel],[data-go]
  else if(a==='bdnew'){st.bd.edit=null;go('bwrite');}
  else if(a==='bdretry'){st.bd.list=null;st.bd.err=false;st.bd.region=null;bdPaint();bdLoad();}
  else if(a==='bdmore'){bdLoad(true);}
+ else if(a==='jkl'){st.jobs.kl=!st.jobs.kl;jSave('kl',st.jobs.kl?'1':'');jRefilter();}
+ else if(a==='jall'){jSetNear(false);}
+ else if(a==='jmore'){st.jobs.show+=20;jPaint();}
+ else if(a==='jretry'){jLoad();}
  else if(a==='bdaskx'){st.bd.ask=null;render();}
  else if(a==='gpstoggle'){setGps(gpsPref()==='on'?'off':'on');if(st.med){st.med.pos=null;st.med.at=0;}render();}
  else if(a==='clrdata'){try{['al_lang','al_addr','al_gps','al_rules','al_inst','al_adfree','al_always'].forEach(k=>localStorage.removeItem(k));Object.keys(localStorage).filter(k=>/^al_/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}toast(PT().cleared);setTimeout(()=>location.reload(),900);}

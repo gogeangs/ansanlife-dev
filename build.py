@@ -9,8 +9,12 @@ src/app.template.html 을 읽어 실행 가능한 HTML 을 만듭니다.
   API_URL=https://... python3 build.py   # API 서버(사진 분석·버스·공지 번역) 주소를 넣어 빌드 (server/README.md)
   SUPABASE_URL=... SUPABASE_ANON_KEY=... python3 build.py   # 공지·광고·설문 저장 (supabase/README.md)
   ADSENSE_CLIENT=ca-pub-... ADSENSE_SLOT=... python3 build.py  # 직접 광고가 없을 때 애드센스
+  OPERCENT_KEY=opc_live_... OPERCENT_TEST_KEY=opc_test_... python3 build.py   # 일자리(오퍼센트 채용공고) 브라우저 key
   python3 build.py --inline        # 이미지를 base64로 넣은 단일 파일 dist/ansanlife-inline.html 생성
                                    # (Claude 아티팩트처럼 파일 하나만 올릴 때)
+
+위 값들은 저장소 맨 위의 build.env 파일(커밋 안 됨, .gitignore)에 '이름=값' 줄로 적어 두면 매번 읽습니다.
+같은 이름을 명령에서 직접 주면 그 값이 먼저입니다.
 """
 import base64
 import os
@@ -19,6 +23,26 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 TEMPLATE = ROOT / "src" / "app.template.html"
+
+
+def load_build_env() -> None:
+    """build.env(이름=값, # 주석)를 읽어 환경변수에 없는 것만 채웁니다."""
+    f = ROOT / "build.env"
+    if not f.exists():
+        return
+    for line in f.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        if line.startswith("export "):
+            line = line[7:]
+        k, v = line.split("=", 1)
+        v = v.strip()
+        if v[:1] in ("'", '"') and v[1:].find(v[0]) >= 0:
+            v = v[1:1 + v[1:].find(v[0])]  # 따옴표 안만
+        else:
+            v = v.split(" #", 1)[0].split("\t#", 1)[0].strip()  # 줄 끝 '# 주석' 떼기
+        os.environ.setdefault(k.strip(), v)
 
 HEAD = """<!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
@@ -37,6 +61,7 @@ def data_uri(path: Path) -> str:
 
 def main() -> None:
     inline = "--inline" in sys.argv
+    load_build_env()
     key = os.environ.get("NAVER_KEY", "").strip()
     analyze = (os.environ.get("API_URL") or os.environ.get("ANALYZE_URL") or "").strip().rstrip("/")
     local = analyze.startswith(("http://localhost", "http://127.0.0.1"))  # 내 컴퓨터에서 wrangler dev 로 시험할 때
@@ -78,6 +103,15 @@ def main() -> None:
     html = html.replace("'__SUPABASE_URL__'", f"'{sb_url}'").replace("'__SUPABASE_ANON_KEY__'", f"'{sb_key}'")
     html = html.replace("'__ADSENSE_CLIENT__'", f"'{os.environ.get('ADSENSE_CLIENT', '').strip()}'")
     html = html.replace("'__ADSENSE_SLOT__'", f"'{os.environ.get('ADSENSE_SLOT', '').strip()}'")
+    # 일자리: 오퍼센트 채용공고 브라우저 key (화면 소스에 보이는 key, 허용 도메인으로 묶임).
+    # 운영 key(허용 도메인 sari.kr)는 그 밖의 주소에서, 테스트 key(허용 도메인 localhost:8000)는 localhost 에서만 씀. 운영 key 가 없으면 일자리 메뉴가 숨겨짐
+    opc_live = os.environ.get("OPERCENT_KEY", "").strip()
+    opc_test = os.environ.get("OPERCENT_TEST_KEY", "").strip()
+    if opc_live and not opc_live.startswith("opc_live_"):
+        sys.exit("OPERCENT_KEY 는 opc_live_ 로 시작하는 운영 브라우저 key 여야 합니다")
+    if opc_test and not opc_test.startswith("opc_test_"):
+        sys.exit("OPERCENT_TEST_KEY 는 opc_test_ 로 시작하는 테스트 브라우저 key 여야 합니다")
+    html = html.replace("'__OPERCENT_KEY__'", f"'{opc_live}'").replace("'__OPERCENT_TEST_KEY__'", f"'{opc_test}'")
 
     if inline:
         out = ROOT / "dist" / "ansanlife-inline.html"
@@ -100,7 +134,7 @@ def main() -> None:
         adm = adm.replace("'__SUPABASE_URL__'", f"'{sb_url}'").replace("'__SUPABASE_ANON_KEY__'", f"'{sb_key}'")
         adm = adm.replace("const NAVER_KEY='__NAVER_KEY__';", f"const NAVER_KEY='{key}';")  # 배너 위치 지정용 지도
         (ROOT / "admin.html").write_text(adm, encoding="utf-8")
-    print(f"built {out.relative_to(ROOT)}  (naver map: {'on' if key else 'off'}, google map: {'on' if gkey else 'off'}, api: {analyze or 'off'}, supabase: {'on' if sb_url and sb_key else 'off'})")
+    print(f"built {out.relative_to(ROOT)}  (naver map: {'on' if key else 'off'}, google map: {'on' if gkey else 'off'}, api: {analyze or 'off'}, supabase: {'on' if sb_url and sb_key else 'off'}, jobs: {'live' if opc_live else 'off'}{' + test(localhost)' if opc_test else ''})")
 
 
 if __name__ == "__main__":
